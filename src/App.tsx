@@ -6,6 +6,8 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import ClientLayout from "./layout/ClientLayout";
 import HomePage from "./pages/(client)/home";
+import LoginPage from "./pages/(client)/sign-in";
+import RegisterPage from "./pages/(client)/sign-up";
 
 const routeConfig = [
   {
@@ -14,12 +16,20 @@ const routeConfig = [
     children: [
       {
         path: "",
-        element: <Navigate to="/product" />
+        element: <Navigate to="/home" />
       },
       {
         path: "home",
         element: <HomePage />
-      }
+      },
+      {
+        path: "login",
+        element: <LoginPage />
+      },
+      {
+        path: "register",
+        element: <RegisterPage />
+      },
     ]
   }
 ];
