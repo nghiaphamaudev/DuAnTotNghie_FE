@@ -43,7 +43,7 @@ const HeaderClient = () => {
   ];
 
   return (
-    <div>
+    <div className="w-full">
       {/* Contact Info */}
       <div className="bg-[#000] w-screen hidden text-white py-2 px-16 md:flex justify-between items-center">
         <div className="text-base lg:text-[14px] flex items-center space-x-2">
