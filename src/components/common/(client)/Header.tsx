@@ -1,4 +1,5 @@
-import { Dropdown, MenuProps, Space } from "antd";
+import LogoFshirt from "../../../assets/images/logofshirt-rmbg.png";
+import { Dropdown, MenuProps, Space, Drawer } from "antd";
 import {
   AlignJustify,
   ChevronDown,
@@ -11,14 +12,14 @@ import {
 import { useState } from "react";
 
 const HeaderClient = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  const toggleDrawer = () => {
+    setIsDrawerOpen(!isDrawerOpen);
   };
 
-  const closeMenu = () => {
-    setIsMenuOpen(false);
+  const closeDrawer = () => {
+    setIsDrawerOpen(false);
   };
 
   const items: MenuProps["items"] = [
@@ -44,7 +45,7 @@ const HeaderClient = () => {
   return (
     <div>
       {/* Contact Info */}
-      <div className="bg-[#000] w-full hidden text-white py-2 px-16 md:flex justify-between items-center">
+      <div className="bg-[#000] w-screen hidden text-white py-2 px-16 md:flex justify-between items-center">
         <div className="text-base lg:text-[14px] flex items-center space-x-2">
           <PhoneCall size={18} />
           <span>0988888888</span>
@@ -57,25 +58,24 @@ const HeaderClient = () => {
           {/* Logo */}
           <div className="logo flex items-end justify-center md:justify-between mr-2">
             <AlignJustify
-              className="size-6 block md:hidden cursor-pointer mr-2 mb-1"
-              onClick={toggleMenu}
+              className="block md:hidden cursor-pointer mr-2 mb-1"
+              onClick={toggleDrawer}
             />
-            <span className="text-bg-3 text-3xl font-semibold">F</span>
-            <p className="text-xl font-semibold">Shirt</p>
+            <img src={LogoFshirt} className="w-[100px]" alt="Logo" />
           </div>
 
-          {/* Navigation Links */}
+          {/* Navigation Links (Desktop) */}
           <ul className="hidden justify-center items-center space-x-2 md:flex md:space-x-6 lg:space-x-8">
-            <li className="block text-[13px] font-semibold whitespace-nowrap">
+            <li className="block text-[15px] font-semibold whitespace-nowrap">
               <a href="#">Sản phẩm mới</a>
             </li>
-            <li className="block text-[13px] font-semibold whitespace-nowrap">
+            <li className="block text-[15px] font-semibold whitespace-nowrap">
               <a href="#">Sản phẩm hot</a>
             </li>
-            <li className="block text-[13px] font-semibold whitespace-nowrap">
+            <li className="block text-[15px] font-semibold whitespace-nowrap">
               <a href="#">Bộ sưu tập</a>
             </li>
-            <li className="block text-[13px] font-semibold whitespace-nowrap">
+            <li className="block text-[15px] font-semibold whitespace-nowrap">
               <a href="#">Về chúng tôi</a>
             </li>
           </ul>
@@ -108,7 +108,6 @@ const HeaderClient = () => {
                 <Dropdown menu={{ items }}>
                   <a onClick={(e) => e.preventDefault()}>
                     <Space>
-                      Tài khoản
                       <ChevronDown />
                     </Space>
                   </a>
@@ -118,7 +117,7 @@ const HeaderClient = () => {
               <button className="bg-transparent text-large flex items-center space-x-1">
                 <ShoppingBag size={18} />
                 <p>
-                  Giỏ hàng <span className="text-danger">(0)</span>
+                  <span className="text-danger">(0)</span>
                 </p>
               </button>
             </div>
@@ -135,29 +134,29 @@ const HeaderClient = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        <ul
-          className={`fixed top-0 left-0 w-1/2 bg-white h-screen z-50 transition-transform transform ${
-            isMenuOpen ? "translate-x-0 h-screen" : "-translate-x-full h-screen"
-          } md:hidden`}
+        {/* Mobile Drawer */}
+        <Drawer
+          title="Menu"
+          placement="left"
+          onClose={closeDrawer}
+          open={isDrawerOpen}
+          closeIcon={<X size={24} />}
         >
-          {/* Close Button */}
-          <div className="flex justify-end p-4">
-            <X className="cursor-pointer" size={24} onClick={closeMenu} />
-          </div>
-          <li className="p-4 text-[14px] border-b">
-            <a href="#">Sản phẩm mới</a>
-          </li>
-          <li className="p-4 text-[14px] border-b">
-            <a href="#">Sản phẩm hot</a>
-          </li>
-          <li className="p-4 text-[14px] border-b">
-            <a href="#">Bộ sưu tập</a>
-          </li>
-          <li className="p-4 text-[14px] border-b">
-            <a href="#">Về chúng tôi</a>
-          </li>
-        </ul>
+          <ul className="flex flex-col space-y-4">
+            <li className="p-2">
+              <a href="#">Sản phẩm mới</a>
+            </li>
+            <li className="p-2">
+              <a href="#">Sản phẩm hot</a>
+            </li>
+            <li className="p-2">
+              <a href="#">Bộ sưu tập</a>
+            </li>
+            <li className="p-2">
+              <a href="#">Về chúng tôi</a>
+            </li>
+          </ul>
+        </Drawer>
       </div>
     </div>
   );

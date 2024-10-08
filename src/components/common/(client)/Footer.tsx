@@ -2,6 +2,7 @@ import { Mail } from "lucide-react";
 import listsocial from "../../../assets/images/listsocial.png";
 import vnpay from "../../../assets/images/vnpay.png";
 import zalopay from "../../../assets/images/zalopay.png";
+import LogoFshirt from "../../../assets/images/logofshirt-rmbg.png";
 
 const FooterClient = () => {
   return (
@@ -10,9 +11,14 @@ const FooterClient = () => {
         {/* <img src={cart} alt="" /> */}
 
         {/* Logo */}
-        <div className="flex justify-start items-end mb-10">
-          <span className="text-bg-3 text-5xl font-semibold">F</span>
-          <p className="text-2xl font-semibold">Shirt</p>
+        <div className="flex flex-col justify-center items-center mb-10 ">
+          <img
+            src={LogoFshirt}
+            className="w-[150px] sm:w-[200px] md:w-[250px] lg:w-[300px]"
+            alt="Logo"
+          />
+
+          <div className="w-1/5 h-0.5 bg-[#9a9a9a] my-2"></div>
         </div>
 
         {/* Footer Info Grid */}
