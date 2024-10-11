@@ -14,7 +14,7 @@ const routeConfig = [
     children: [
       {
         path: "",
-        element: <Navigate to="/product" />
+        element: <Navigate to="/home" />
       },
       {
         path: "home",

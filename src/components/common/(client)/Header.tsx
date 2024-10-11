@@ -56,9 +56,9 @@ const HeaderClient = () => {
       <div className="mx-auto px-4 md:px-8 lg:px-16">
         <div className="nav py-2 flex items-center justify-between">
           {/* Logo */}
-          <div className="logo flex items-end justify-center md:justify-between mr-2">
+          <div className="logo flex items-center justify-center md:justify-between  ">
             <AlignJustify
-              className="block md:hidden cursor-pointer mr-2 mb-1"
+              className="block md:hidden cursor-pointer w-20 mb-1"
               onClick={toggleDrawer}
             />
             <img src={LogoFshirt} className="w-[100px]" alt="Logo" />
