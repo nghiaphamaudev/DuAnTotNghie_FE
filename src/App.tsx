@@ -5,6 +5,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import ClientLayout from "./layout/ClientLayout";
+import DetailProduct from "./pages/(client)/detail-product/index";
 import HomePage from "./pages/(client)/home";
 
 const routeConfig = [
@@ -19,6 +20,10 @@ const routeConfig = [
       {
         path: "home",
         element: <HomePage />
+      },
+      {
+        path: "detail-product",
+        element: <DetailProduct />
       }
     ]
   }
