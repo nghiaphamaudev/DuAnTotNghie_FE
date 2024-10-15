@@ -5,10 +5,11 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import ClientLayout from "./layout/ClientLayout";
-import ShoppingCart from "./pages/(client)/cart";
 import HomePage from "./pages/(client)/home";
 import ProductPage from "./pages/(client)/product";
-import CheckoutPage from "./pages/(client)/checkout";
+import AdminRouter from "./routers/AdminRouter";
+// import CheckoutPage from "./pages/(client)/checkout";
+
 
 const routeConfig = [
   {
@@ -27,15 +28,17 @@ const routeConfig = [
         path: "product",
         element: <ProductPage />
       },
-      {
-        path: "cart",
-        element: <ShoppingCart />
-      },
-      {
-        path: "checkout",
-        element: <CheckoutPage />
-      }
+      // comit code lên kiểu j h nhỉ
+      // 
+      // {
+      //   path: "checkout",
+      //   element: <CheckoutPage />
+      // }
     ]
+  },
+  {
+  path: "/admin/*",
+    element: <AdminRouter />
   }
 ];
 
