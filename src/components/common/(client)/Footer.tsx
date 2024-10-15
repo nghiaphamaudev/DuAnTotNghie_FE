@@ -1,137 +1,113 @@
-import { Facebook, Headset, Instagram, Twitter, Youtube } from 'lucide-react';
-// Import Swiper styles
-import { Button, Collapse, CollapseProps, Input } from 'antd';
-
+import { Mail } from "lucide-react";
+import listsocial from "../../../assets/images/listsocial.png";
+import vnpay from "../../../assets/images/vnpay.png";
+import zalopay from "../../../assets/images/zalopay.png";
+import LogoFshirt from "../../../assets/images/logofshirt-rmbg.png";
 
 const FooterClient = () => {
-    const onChange = (key: string | string[]) => {
-        console.log(key);
-    };
+  return (
+    <>
+      <div id="footer" className="mx-auto px-4 md:px-8 lg:px-16 pb-10 mt-20">
+        {/* <img src={cart} alt="" /> */}
 
-    const item: CollapseProps['items'] = [
-        {
-            key: '1',
-            label: 'HỖ TRỢ KHÁCH HÀNG',
-            children:
-                <ul className='text-text-2'>
-                    <li className='text-large mb-1'>Hướng dẫn mua hàng</li>
-                    <li className='text-large my-1'>Hướng dẫn chọn size</li>
-                    <li className='text-large my-1'>Phương thức thanh toán</li>
-                    <li className='text-large my-1'>Chính sách bảo mật</li>
-                </ul>
-            ,
-        },
-        {
-            key: '2',
-            label: 'VỀ CHÚNG TÔI',
-            children:
-                <ul className='text-text-2'>
-                    <li className='text-large mb-1'>Hướng dẫn mua hàng</li>
-                    <li className='text-large my-1'>Hướng dẫn chọn size</li>
-                    <li className='text-large my-1'>Phương thức thanh toán</li>
-                    <li className='text-large my-1'>Chính sách bảo mật</li>
-                </ul>,
-        },
-        {
-            key: '3',
-            label: 'HỆ THỐNG CỬA HÀNG',
-            children:
-                <ul className='text-text-2'>
-                    <li className='text-large mb-1'>Hướng dẫn mua hàng</li>
-                    <li className='text-large my-1'>Hướng dẫn chọn size</li>
-                    <li className='text-large my-1'>Phương thức thanh toán</li>
-                    <li className='text-large my-1'>Chính sách bảo mật</li>
-                </ul>,
-        },
-    ];
-    return (
-        <>
-            <div className='px-2 sm:px-4 md:px-10 md:pt-10 pb-3 pt-3 border-t border-t-bg-1 mt-5'>
-                <div className='grid grid-cols-1 justify-center xsm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-                    <div className='mx-auto border-b border-b-bg-1 lg:border-none py-2 w-full'>
-                        <h3 className='text-medium text-text-1'>GỌI MUA HÀNG(8:30 - 22:20)</h3>
-                        <p className='text-3xl my-3 flex items-center space-x-2'>
-                            <div className='size-10 rounded-full bg-active flex items-center justify-center'>
-                                <Headset />
-                            </div>
-                            <p className='text-text-1'>099999999</p>
-                        </p>
-                        <p className='text-text-1'>Tất cả các ngày trong tuần</p>
-                    </div>
-                    <div className='mx-auto border-b border-b-bg-1 lg:border-none py-2 w-full'>
-                        <h3 className='text-medium text-text-1'>GỌI MUA HÀNG(8:30 - 22:20)</h3>
-                        <p className='text-3xl my-3 flex items-center space-x-2'>
-                            <div className='size-10 rounded-full bg-active flex items-center justify-center'>
-                                <Headset />
-                            </div>
-                            <p className='text-text-1'>099999999</p>
-                        </p>
-                        <p className='text-text-1'>Tất cả các ngày trong tuần</p>
-                    </div>
-                    <div className='mx-auto border-b border-b-bg-1 lg:border-none py-2 w-full'>
-                        <h3 className='text-medium text-text-1'>ĐĂNG KÝ NHẬN THÔNG TIN MỚI</h3>
-                        <form className='mt-3 max-w-[280px] xsm:max-w-32 sm:max-w-44 md:max-w-72 lg:max-w-36 relative '>
-                            <Input className='border-r-0 w-full rounded h-10' placeholder="Email" />
-                            <Button className='rounded-l-none absolute -right-20 h-10 bg-active text-active' color="default" variant="solid">
-                                Đăng ký
-                            </Button>
-                        </form>
-                    </div>
-                    <div className='mx-auto border-b border-b-bg-1 lg:border-none py-2 w-full'>
-                        <h3 className='text-medium text-text-1'>THEO DÕI CHÚNG TÔI</h3>
-                        <div className='flex space-x-2 mt-2'>
-                            <Facebook size={40} />
-                            <Instagram size={40} />
-                            <Twitter size={40} />
-                            <Youtube size={40} />
-                        </div>
-                    </div>
+        {/* Logo */}
+        <div className="flex flex-col justify-center items-center mb-10 ">
+          <img
+            src={LogoFshirt}
+            className="w-[150px] sm:w-[200px] md:w-[250px] lg:w-[300px]"
+            alt="Logo"
+          />
 
-                </div>
+          <div className="w-1/5 h-0.5 bg-[#9a9a9a] my-2"></div>
+        </div>
+
+        {/* Footer Info Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+          {/* First Column */}
+          <div className="info-item flex flex-col">
+            <h3 className="uppercase font-semibold mb-3">
+              Thời trang nam FSHiRT
+            </h3>
+            <p className="text-[#9a9a9a]">
+              Hệ thống thời trang cho phái mạnh hàng đầu Việt Nam, hướng tới
+              phong cách nam tính, lịch lãm và trẻ trung.
+            </p>
+          </div>
+
+          {/* Second Column */}
+          <div className="info-item flex flex-col">
+            <h3 className="uppercase font-semibold mb-3">Thông tin liên hệ</h3>
+            <p className="text-sm text-[#9a9a9a] mb-2">
+              <span className="font-bold text-[#000]">Địa chỉ:</span> Tầng 8,
+              tòa nhà Ford, số 313 Trường Chinh, quận Thanh Xuân, Hà Nội
+            </p>
+            <p className="text-sm text-[#9a9a9a] mb-2">
+              <span className="font-bold text-[#000]">Email:</span>{" "}
+              cdfpt@fpt.edu.vn
+            </p>
+            <p className="text-sm text-[#9a9a9a]">
+              <span className="font-bold text-[#000]">Điện thoại:</span>{" "}
+              0987651781
+            </p>
+          </div>
+
+          {/* Third Column */}
+          <div className="info-item flex flex-col">
+            <h3 className="uppercase font-semibold mb-3">
+              Thời trang nam FSHiRT
+            </h3>
+            <p className="text-[#9a9a9a]">
+              Để cập nhật những sản phẩm mới, nhận thông tin ưu đãi đặc biệt và
+              thông tin giảm giá khác.
+            </p>
+            <form className="flex flex-wrap mt-3">
+              <div className="relative w-full sm:w-auto flex items-center mb-3 sm:mb-0">
+                <Mail className="absolute left-3 text-[#9a9a9a]" />
+                <input
+                  type="text"
+                  placeholder="Nhập email của bạn"
+                  className="outline-none border border-[#9a9a9a] py-2 pl-12 pr-3 w-full"
+                />
+              </div>
+              <button
+                type="button"
+                className="w-full sm:w-auto bg-[#000] text-white px-5 py-2 uppercase"
+              >
+                Đăng kí
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Payment Methods & Links */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="info-item flex flex-col">
+            <h3 className="uppercase font-semibold mb-3">
+              Phương thức thanh toán
+            </h3>
+            <div className="flex gap-2">
+              <img src={vnpay} className="w-[30px]" alt="VNPAY" />
+              <img src={zalopay} className="w-[30px]" alt="ZaloPay" />
             </div>
-            <div className='px-2 sm:px-4 md:px-10 bg-bg-2 '>
-                <div className='xsm:grid gap-4 grid-cols-2 md:grid-cols-4 hidden py-4'>
-                    <div>
-                        <p className='text-medium text-text-1'>HỖ TRỢ KHÁCH HÀNG</p>
-                        <ul className='text-text-2'>
-                            <li className='text-large my-1'>Hướng dẫn mua hàng</li>
-                            <li className='text-large my-1'>Hướng dẫn chọn size</li>
-                            <li className='text-large my-1'>Phương thức thanh toán</li>
-                            <li className='text-large my-1'>Chính sách bảo mật</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <p className='text-medium text-text-1'>HỖ TRỢ KHÁCH HÀNG</p>
-                        <ul className='text-text-2'>
-                            <li className='text-large my-1'>Hướng dẫn mua hàng</li>
-                            <li className='text-large my-1'>Hướng dẫn chọn size</li>
-                            <li className='text-large my-1'>Phương thức thanh toán</li>
-                            <li className='text-large my-1'>Chính sách bảo mật</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <p className='text-medium text-text-1'>HỖ TRỢ KHÁCH HÀNG</p>
-                        <ul className='text-text-2'>
-                            <li className='text-large my-1'>Hướng dẫn mua hàng</li>
-                            <li className='text-large my-1'>Hướng dẫn chọn size</li>
-                            <li className='text-large my-1'>Phương thức thanh toán</li>
-                            <li className='text-large my-1'>Chính sách bảo mật</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <p className='text-medium text-text-1'>HỖ TRỢ KHÁCH HÀNG</p>
-                        <ul className='text-text-2'>
-                            <li className='text-large my-1'>Hướng dẫn mua hàng</li>
-                            <li className='text-large my-1'>Hướng dẫn chọn size</li>
-                            <li className='text-large my-1'>Phương thức thanh toán</li>
-                            <li className='text-large my-1'>Chính sách bảo mật</li>
-                        </ul>
-                    </div>
-                </div>
-                <Collapse className='border-none bg-bg-2 block xsm:hidden' items={item} defaultActiveKey={['']} onChange={onChange} />
-            </div>
-        </>
-    )
-}
+          </div>
 
-export default FooterClient
+          <div className="info-item flex flex-col">
+            <h3 className="uppercase font-semibold mb-3">Nhóm liên kết</h3>
+            <ul className="text-sm list-disc text-[#9a9a9a] ml-3">
+              <li>Giới thiệu</li>
+              <li>Tìm kiếm</li>
+              <li>Chính sách đổi trả</li>
+              <li>Liên hệ</li>
+            </ul>
+          </div>
+
+          <div className="info-item">
+            <img src={listsocial} alt="List" />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default FooterClient;
