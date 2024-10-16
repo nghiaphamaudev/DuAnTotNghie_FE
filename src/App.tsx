@@ -11,7 +11,8 @@ import ProductPage from "./pages/(client)/product";
 import AdminRouter from "./routers/AdminRouter";
 import ShoppingCart from "./pages/(client)/cart";
 import CheckoutPage from "./pages/(client)/checkout";
-// import CheckoutPage from "./pages/(client)/checkout";
+import LoginPage from "./pages/(client)/sign-in";
+import RegisterPage from "./pages/(client)/sign-up";
 
 const routeConfig = [
   {
@@ -41,6 +42,14 @@ const routeConfig = [
       {
         path: "checkout",
         element: <CheckoutPage />
+      },
+      {
+        path: "login",
+        element: <LoginPage />
+      },
+      {
+        path: "register",
+        element: <RegisterPage />
       }
     ]
   },
