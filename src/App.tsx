@@ -6,7 +6,12 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import ClientLayout from "./layout/ClientLayout";
 import DetailProduct from "./pages/(client)/detail-product/index";
+import ShoppingCart from "./pages/(client)/cart";
 import HomePage from "./pages/(client)/home";
+import LoginPage from "./pages/(client)/sign-in";
+import RegisterPage from "./pages/(client)/sign-up";
+import ProductPage from "./pages/(client)/product";
+import CheckoutPage from "./pages/(client)/checkout";
 
 const routeConfig = [
   {
@@ -15,7 +20,7 @@ const routeConfig = [
     children: [
       {
         path: "",
-        element: <Navigate to="/product" />
+        element: <Navigate to="/home" />
       },
       {
         path: "home",
@@ -24,6 +29,25 @@ const routeConfig = [
       {
         path: "detail-product",
         element: <DetailProduct />
+      {
+        path: "login",
+        element: <LoginPage />
+      },
+      {
+        path: "register",
+        element: <RegisterPage />
+      },
+      {
+        path: "product",
+        element: <ProductPage />
+      },
+      {
+        path: "cart",
+        element: <ShoppingCart />
+      },
+      {
+        path: "checkout",
+        element: <CheckoutPage />
       }
     ]
   }
