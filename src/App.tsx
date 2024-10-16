@@ -9,6 +9,8 @@ import DetailProduct from "./pages/(client)/detail-product/index";
 import HomePage from "./pages/(client)/home";
 import ProductPage from "./pages/(client)/product";
 import AdminRouter from "./routers/AdminRouter";
+import ShoppingCart from "./pages/(client)/cart";
+import CheckoutPage from "./pages/(client)/checkout";
 // import CheckoutPage from "./pages/(client)/checkout";
 
 const routeConfig = [
@@ -31,6 +33,14 @@ const routeConfig = [
       {
         path: "detail-product",
         element: <DetailProduct />
+      },
+      {
+        path: "cart",
+        element: <ShoppingCart />
+      },
+      {
+        path: "checkout",
+        element: <CheckoutPage />
       }
     ]
   },
