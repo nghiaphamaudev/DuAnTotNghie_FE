@@ -5,9 +5,12 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import ClientLayout from "./layout/ClientLayout";
+import ShoppingCart from "./pages/(client)/cart";
 import HomePage from "./pages/(client)/home";
 import LoginPage from "./pages/(client)/sign-in";
 import RegisterPage from "./pages/(client)/sign-up";
+import ProductPage from "./pages/(client)/product";
+import CheckoutPage from "./pages/(client)/checkout";
 
 const routeConfig = [
   {
@@ -30,6 +33,17 @@ const routeConfig = [
         path: "register",
         element: <RegisterPage />
       },
+        path: "product",
+        element: <ProductPage />
+      },
+      {
+        path: "cart",
+        element: <ShoppingCart />
+      },
+      {
+        path: "checkout",
+        element: <CheckoutPage />
+      }
     ]
   }
 ];
