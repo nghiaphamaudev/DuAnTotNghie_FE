@@ -1,6 +1,5 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
-import Dashboard from "../pages/admin/dashboard/Dashboard";
+// import Dashboard from "../pages/admin/dashboard/Dashboard";
 // import Bill from "../pages/admin/bill/Bill";
 // import Product from "../pages/admin/product/Product";
 import Category from "../pages/admin/category/Category";
@@ -17,19 +16,19 @@ import PageComment from "../pages/admin/comment/PageComment";
 // import ChangePassword from "../pages/admin/changepassword/ChangePassword";
 import Voucher from "../pages/admin/voucher/voucher";
 import VoucherAdd from "../pages/admin/voucher/voucherAdd";
-import HeaderAdmin from "../components/common/(admin)/HeaderAdmin";
-import Product from "../pages/admin/product/Product";
 
+import Product from "../pages/admin/product/Product";
+import HeaderAdmin from "../components/common/(admin)/HeaderAdmin";
 
 export default function AdminRouter() {
   return (
     <HeaderAdmin>
       <Routes>
-        <Route path="/" element={<Navigate to="/admin/dashboard" />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/" element={<Navigate to="/admin/product" />} />
+        {/* <Route path="/dashboard" element={<Dashboard />} /> */}
         {/* <Route path="/bill" element={<Bill />} />
         <Route path="/bill/detail/:id" element={<BillDetail />} />*/}
-        <Route path="/product" element={<Product />} /> 
+        <Route path="/product" element={<Product />} />
         {/* <Route path="/product/detail/:id" element={<ProductDetailAndEdit />} /> */}
         <Route path="/product/add" element={<ProductAdd />} />
         <Route path="/product/:id" element={<ProductEdit />} />

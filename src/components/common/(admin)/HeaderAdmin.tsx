@@ -5,15 +5,22 @@ import {
   AiOutlineMenuFold,
   AiOutlineMenuUnfold,
   AiOutlineLogout,
-  AiOutlineKey,
+  AiOutlineKey
 } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { ClockCircleOutlined, HomeOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  ClockCircleOutlined,
+  HomeOutlined,
+  UserOutlined
+} from "@ant-design/icons";
 import AdminMenu from "./AdminMenu";
 import "./HeaderAdmin.css";
-import { ACCESS_TOKEN_STORAGE_KEY, USER_INFO_STORAGE_KEY } from "../../../services/constants";
+import {
+  ACCESS_TOKEN_STORAGE_KEY,
+  USER_INFO_STORAGE_KEY
+} from "../../../services/constants";
 
 dayjs.extend(relativeTime);
 
@@ -77,7 +84,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
               style={{
                 margin: "3px",
                 borderRadius: "5px",
-                backgroundColor: "#faebd2",
+                backgroundColor: "#faebd2"
               }}
             >
               <div
@@ -87,7 +94,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
                   justifyContent: "center",
                   maxWidth: "300px",
                   width: "300px",
-                  height: "70px",
+                  height: "70px"
                 }}
               >
                 <Row gutter={8}>
@@ -99,7 +106,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
                         alignItems: "center",
                         width: "70px",
                         height: "70px",
-                        borderRadius: "50%",
+                        borderRadius: "50%"
                       }}
                     >
                       <img
@@ -112,7 +119,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
                         width="60px"
                         height="60px"
                         style={{
-                          borderRadius: "50%",
+                          borderRadius: "50%"
                         }}
                       />
                     </div>
@@ -122,7 +129,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
                       style={{
                         flexDirection: "column",
                         wordWrap: "break-word",
-                        marginLeft: "5px",
+                        marginLeft: "5px"
                       }}
                     >
                       {noti.status === "HOAT_DONG" ? (
@@ -140,13 +147,15 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
                         <ClockCircleOutlined
                           style={{
                             width: screens.xs ? "14px" : "17px", // Adjust size for responsiveness
-                            color: noti.status === "HOAT_DONG" ? "#FC7C27" : "gray",
-                            marginRight: "5px",
+                            color:
+                              noti.status === "HOAT_DONG" ? "#FC7C27" : "gray",
+                            marginRight: "5px"
                           }}
                         />
                         <span
                           style={{
-                            color: noti.status === "HOAT_DONG" ? "#FC7C27" : "gray",
+                            color:
+                              noti.status === "HOAT_DONG" ? "#FC7C27" : "gray"
                           }}
                         >
                           {dayjs(noti.createdAt).fromNow()}
@@ -161,7 +170,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
                         justifyContent: "center",
                         alignItems: "center",
                         width: "15px",
-                        height: "70px",
+                        height: "70px"
                       }}
                     >
                       <div
@@ -170,7 +179,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
                           width: "15px",
                           backgroundColor:
                             noti.status === "HOAT_DONG" ? "#faebd2" : "gray",
-                          borderRadius: "50%",
+                          borderRadius: "50%"
                         }}
                       />
                     </div>
@@ -178,7 +187,9 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
                 </Row>
               </div>
             </Menu.Item>
-            {index < notification.length - 1 && <hr style={{ padding: 0, margin: 0 }} />}
+            {index < notification.length - 1 && (
+              <hr style={{ padding: 0, margin: 0 }} />
+            )}
           </React.Fragment>
         ))}
     </Menu>
@@ -197,7 +208,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
             style={{
               display: "flex",
               justifyContent: "center",
-              alignItems: "center",
+              alignItems: "center"
             }}
           >
             <img
@@ -205,7 +216,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
               alt="logo"
               style={{
                 width: collapsed ? "60%" : "75%",
-                height: "50%",
+                height: "50%"
               }}
             />
           </div>
@@ -223,7 +234,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
             padding: screens.xs ? "0 10px" : "0 20px", // Adjust padding for responsiveness
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: "space-between"
           }}
         >
           {/* Menu Icon */}
@@ -233,7 +244,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
               {
                 onClick: () => setCollapsed(!collapsed),
                 className: "menu-icon",
-                size: screens.xs ? 20 : 24, // Adjust size based on screen size
+                size: screens.xs ? 20 : 24 // Adjust size based on screen size
               }
             )}
           </div>
@@ -243,7 +254,8 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
             <Dropdown overlay={notificationMenu} trigger={["click"]}>
               <Badge
                 count={
-                  notification.filter((item) => item.status === "HOAT_DONG").length
+                  notification.filter((item) => item.status === "HOAT_DONG")
+                    .length
                 }
               />
             </Dropdown>
@@ -261,7 +273,7 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
           style={{
             margin: "16px 16px",
             padding: screens.xs ? "10px" : "16px", // Adjust padding for responsiveness
-            minHeight: 280,
+            minHeight: 280
           }}
         >
           {children}
