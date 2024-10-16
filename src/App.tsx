@@ -5,6 +5,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import ClientLayout from "./layout/ClientLayout";
+import DetailProduct from "./pages/(client)/detail-product/index";
 import ShoppingCart from "./pages/(client)/cart";
 import HomePage from "./pages/(client)/home";
 import LoginPage from "./pages/(client)/sign-in";
@@ -25,6 +26,9 @@ const routeConfig = [
         path: "home",
         element: <HomePage />
       },
+      {
+        path: "detail-product",
+        element: <DetailProduct />
       {
         path: "login",
         element: <LoginPage />
