@@ -33,6 +33,7 @@ const routeConfig = [
         path: "register",
         element: <RegisterPage />
       },
+      {
         path: "product",
         element: <ProductPage />
       },
