@@ -12,8 +12,18 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import ProductCard from "../../../components/common/(client)/ProductCard";
+import { useProduct } from "../../../contexts/ProductContext";
+import { useEffect } from "react";
 
 const HomePage = () => {
+  // context
+  const { allProduct, getAllDataProduct } = useProduct();
+
+  //lifecycle
+  useEffect(() => {
+    getAllDataProduct();
+  }, []);
+
   return (
     <>
       <div>
@@ -172,12 +182,11 @@ const HomePage = () => {
 
         {/*  ProductCard */}
         <div className="product-list flex justify-center items-center flex-wrap gap-3 my-3">
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
+          {
+            allProduct.map((item: any, index: number) => (
+              <ProductCard key={index} item={item} />
+            ))
+          }
         </div>
 
         {/*  EndProductCard */}

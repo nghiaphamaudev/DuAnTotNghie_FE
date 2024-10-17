@@ -27,8 +27,9 @@ const routeConfig = [
         element: <HomePage />
       },
       {
-        path: "detail-product",
+        path: "home/product/:id",
         element: <DetailProduct />
+      },
       {
         path: "login",
         element: <LoginPage />
