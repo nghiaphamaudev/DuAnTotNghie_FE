@@ -1,8 +1,23 @@
-import { useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Image, Button, Modal } from 'antd';
 import './css.css';
 import ProductCard from '../../../components/common/(client)/ProductCard';
+import { useParams } from 'react-router-dom';
+import { useProduct } from '../../../contexts/ProductContext';
 const DetailProduct = () => {
+    //hooks
+    const { id } = useParams();
+
+    //context
+    const { product, getDataProductById } = useProduct();
+
+    //lifceycle
+    useEffect(() => {
+        if(id) {
+            getDataProductById(id);
+        }
+    }, [id]);
+    
     const thumbnailImages = [
         "../src/assets/images/ao1.png",
         "../src/assets/images/size.png",
@@ -87,6 +102,7 @@ const DetailProduct = () => {
             icon.classList.add("fa-plus");
         }
     };
+    console.log(product);
     return (
         <div className="container">
             <div className="left-column">
@@ -197,7 +213,7 @@ const DetailProduct = () => {
             </div>
 
             <div className="right-column">
-                <h1 className="product-title">Áo Nỉ Fitted L.4.7873</h1>
+                <h1 className="product-title">{product?.name}</h1>
                 <span>còn hàng</span>
                 <hr />
                 <div className="product-price">169,000₫</div>
@@ -318,7 +334,7 @@ const DetailProduct = () => {
                     </div>
                 </div>
                 <div className="infor">
-                    <div class="accordion">
+                    <div className="accordion">
 
                         <div className="accordion-item">
                             <div className="accordion-header" onClick={(e) => toggleAccordion(e.currentTarget)}>
@@ -355,17 +371,17 @@ const DetailProduct = () => {
                         </div>
                     </div>
 
-                    <div class="info-section">
-                        <div class="info-item">
-                            <i class="fas fa-truck"></i>
+                    <div className="info-section">
+                        <div className="info-item">
+                            <i className="fas fa-truck"></i>
                             <span>GIAO HÀNG NỘI THÀNH TRONG 24 GIỜ</span>
                         </div>
-                        <div class="info-item">
-                            <i class="fas fa-exchange-alt"></i>
+                        <div className="info-item">
+                            <i className="fas fa-exchange-alt"></i>
                             <span>ĐỔI HÀNG TRONG 30 NGÀY</span>
                         </div>
-                        <div class="info-item">
-                            <i class="fas fa-phone-alt"></i>
+                        <div className="info-item">
+                            <i className="fas fa-phone-alt"></i>
                             <span>TỔNG ĐÀI BÁN HÀNG 096728.4444</span>
                         </div>
                     </div>
