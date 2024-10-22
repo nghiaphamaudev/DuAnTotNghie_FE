@@ -1,0 +1,2 @@
+export const ACCESS_TOKEN_STORAGE_KEY = "F_BEE_TOKEN";
+export const USER_INFO_STORAGE_KEY = "F_BEE_USER_INFO";
