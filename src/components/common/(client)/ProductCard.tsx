@@ -1,8 +1,10 @@
 import { Eye, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import AddToCart from "./AddToCart"; // Import the new AddToCart component
-
-const ProductCard = () => {
+type Props = {
+  item: any;
+}
+const ProductCard = ({ item }: Props) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
 
@@ -35,7 +37,7 @@ const ProductCard = () => {
       <div className="relative">
         <img
           className="w-full object-cover h-[250px] mb-4"
-          src="https://product.hstatic.net/200000690725/product/fsts018_48c852393b464907b40cba8adb235737_master.jpg"
+          src={item?.coverImg}
           alt="Áo T-Shirt Trơn"
         />
 
@@ -66,13 +68,13 @@ const ProductCard = () => {
 
       {/* Tên sản phẩm */}
       <h3 className="text-[14px] font-semibold mb-1">
-        ÁO T SHIRT TRƠN IN LOGO NGỰC FSTS001
+        {item?.name}
       </h3>
 
       {/* Giá sản phẩm */}
       <div className="flex items-center">
         <span className="text-red-500 text-[16px] font-bold mr-2">
-          138,000đ
+          {item?.variants[0]?.sizes[0]?.price}đ
         </span>
         <span className="text-gray-400 text-[14px] line-through">198,000đ</span>
       </div>

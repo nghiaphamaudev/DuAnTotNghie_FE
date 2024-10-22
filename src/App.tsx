@@ -5,10 +5,15 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import ClientLayout from "./layout/ClientLayout";
+
+import DetailProduct from "./pages/(client)/detail-product/index";
+import ShoppingCart from "./pages/(client)/cart";
 import HomePage from "./pages/(client)/home";
+import LoginPage from "./pages/(client)/sign-in";
+import RegisterPage from "./pages/(client)/sign-up";
 import ProductPage from "./pages/(client)/product";
 import AdminRouter from "./routers/AdminRouter";
-// import CheckoutPage from "./pages/(client)/checkout";
+import CheckoutPage from "./pages/(client)/checkout";
 
 
 const routeConfig = [
@@ -25,15 +30,26 @@ const routeConfig = [
         element: <HomePage />
       },
       {
+        path: "home/product/:id",
+        element: <DetailProduct />
+      },
+      {
+        path: "login",
+        element: <LoginPage />
+      },
+      {
+        path: "register",
+        element: <RegisterPage />
+      },
+      {
         path: "product",
         element: <ProductPage />
       },
-      // comit code lên kiểu j h nhỉ
-      // 
-      // {
-      //   path: "checkout",
-      //   element: <CheckoutPage />
-      // }
+      
+      {
+        path: "checkout",
+        element: <CheckoutPage />
+      }
     ]
   },
   {
