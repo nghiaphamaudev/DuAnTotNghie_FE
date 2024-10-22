@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { z } from "zod";
+import { useAuth } from "../../../contexts/AuthContext";
 
 // validate login
 const LoginSchema = z.object({
@@ -78,11 +79,22 @@ type OtpForm = z.infer<typeof OtpSchema>;
 type ChangePasswordForm = z.infer<typeof ChangePasswordSchema>;
 
 const LoginPage = () => {
-  // state ẩn hiện mk
+  // context 
+  const { login: loginAccount } = useAuth();
+
+  // state 
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isOTPVerified, setIsOTPVerified] = useState(false); // Form đổi mật khẩu
+  const [email, setEmail] = useState("");
+  const [isChangePassword, setIsChangePassword] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+
+  // function
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -95,13 +107,6 @@ const LoginPage = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  // Thêm trạng thái để theo dõi việc form quên mật khẩu đang mở
-  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [isOTPVerified, setIsOTPVerified] = useState(false); // Form đổi mật khẩu
-  const [email, setEmail] = useState("");
-  const [isChangePassword, setIsChangePassword] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -120,7 +125,7 @@ const LoginPage = () => {
     setIsModalOpen(false);
   };
 
-  // Form đăng nhập
+  // validate Schema
   const {
     register,
     handleSubmit,
@@ -130,11 +135,16 @@ const LoginPage = () => {
     mode: "onBlur",
   });
 
-  const onSubmit = (data: LoginForm) => {
+  const onSubmit = async (data: LoginForm) => {
     if (isForgotPasswordOpen) {
       return;
     }
-    console.log(data);
+    try {
+      const res = await loginAccount(data);
+      console.log(res); // chuyển trang thông báo làm ở đây
+    } catch (error) {
+      
+    }
   };
 
   // Form quên mật khẩu
