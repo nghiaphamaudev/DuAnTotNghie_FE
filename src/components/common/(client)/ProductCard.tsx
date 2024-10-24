@@ -1,4 +1,5 @@
 import { Eye, ShoppingBag } from "lucide-react";
+import { Link } from "react-router-dom"
 import { useState } from "react";
 import AddToCart from "./AddToCart"; // Import the new AddToCart component
 type Props = {
@@ -53,9 +54,10 @@ const ProductCard = ({ item }: Props) => {
               {/* Icon giỏ hàng */}
               <span className="hidden md:block text-base">Thêm giỏ hàng</span>
             </button>
-            <button className="bg-white p-2 rounded-full shadow-md">
-              <Eye size={20} className="text-gray-800" /> {/* Icon xem */}
-            </button>
+            {/* Nút Xem chi tiết sản phẩm */}
+      <Link to={`/home/product/${item.id}`} className="bg-white p-2 rounded-full shadow-md">
+        <Eye size={20} className="text-gray-800" /> {/* Icon Xem */}
+      </Link>
           </div>
         )}
       </div>
