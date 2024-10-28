@@ -7,6 +7,7 @@ body {
 
 .container {
     display: flex;
+    width: auto;
     padding: 20px;
     flex-wrap: wrap;
 }
@@ -28,7 +29,6 @@ body {
     font-size: 14px;
     padding: 5px;
     margin: 20px 0; 
-    display: flex; 
 }
 
 .breadcrumb a {
@@ -157,10 +157,17 @@ body {
 
 .color-options {
     display: flex;
-    gap: 10px;
-    margin-top: 5px;
+    gap: 10px; /* Giữa các màu sắc */
 }
 
+.color-option {
+    border: 2px solid transparent; /* Biên mặc định */
+    cursor: pointer; /* Con trỏ sẽ biến thành tay khi hover */
+}
+
+.color-option.selected {
+    border: 2px solid blue; /* Biên cho màu đã chọn */
+}
 .color-options img {
     width: 30px;
     height: 30px;
@@ -414,6 +421,7 @@ body {
     border: 1px solid #ddd;
     border-radius: 4px;
     margin-bottom: 10px;
+    margin-top: 20px;
 }
 
 .accordion-item {
