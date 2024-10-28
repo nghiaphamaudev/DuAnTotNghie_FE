@@ -1,63 +1,33 @@
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuth } from "../../../contexts/AuthContext";
+import { RegisterSchema } from "../sign-in/zod";
+import { notification } from "antd";
+import { AxiosError } from "axios";
 
-const LoginSchema = z
-  .object({
-    email: z
-      .string()
-      .nonempty("Vui lòng nhập email")
-      .email("Email không hợp lệ")
-      .refine(
-        (value) =>
-          value.endsWith("@gmail.com") ||
-          value.endsWith("@yahoo.com") ||
-          value.endsWith("@fpt.edu.vn"),
-        "Chưa đúng định dạng email"
-      ),
-    password: z
-      .string()
-      .nonempty("Vui lòng nhập mật khẩu")
-      .min(8, "Mật khẩu phải lớn hơn 8 kí tự ")
-      .regex(/[a-z]/, "Mật khẩu ít nhất phải có một chữ thường")
-      .regex(/[A-Z]/, "Mật khẩu ít nhất phải có một chữ hoa")
-      .regex(/[\d]/, "Mật khẩu ít nhất phải có một số")
-      .regex(/[^a-zA-Z0-9]/, "Mật khẩu ít nhất phải có một ký tự đặc biệt"),
-    fullName: z.string().nonempty("Vui lòng nhập tên người dùng"),
-    phoneNumber: z
-      .string()
-      .nonempty("Vui lòng nhập số điện thoại")
-      .regex(
-        /^0\d{9}$/,
-        "Số điện thoại phải bắt đầu bằng số 0 và bao gồm 10 chữ số"
-      ),
-    passwordConfirm: z.string().nonempty("Vui lòng nhập lại mật khẩu"),
-  })
-  .refine((data) => data.password === data.passwordConfirm, {
-    message: "Mật khẩu và xác nhận mật khẩu không khớp",
-    path: ["passwordConfirm"],
-  });
-
-type LoginForm = z.infer<typeof LoginSchema>;
+type LoginForm = z.infer<typeof RegisterSchema>;
+interface ErrorResponse {
+  message?: string;
+}
 
 const RegisterPage = () => {
   // context
   const { register: registerAccount } = useAuth();
+  const navigate = useNavigate();
 
   // state
   const [showPassword, setShowPassword] = useState(false);
 
-  //validate Schema
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginForm>({
-    resolver: zodResolver(LoginSchema),
+    resolver: zodResolver(RegisterSchema),
     mode: "onBlur",
   });
 
@@ -66,13 +36,65 @@ const RegisterPage = () => {
     setShowPassword(!showPassword);
   };
 
-  const onSubmit =  async (data: LoginForm) => {
+  const onSubmit = async (data: LoginForm) => {
     try {
       const res = await registerAccount(data);
-      console.log('Register response:', res);
-  } catch (error) {
-      console.error('Registration error:', error);
-  }
+
+      notification.success({
+        message: "Đăng ký thành công",
+        description: "Tài khoản của bạn đã được tạo thành công!",
+        placement: "topRight",
+      });
+
+      console.log(res);
+      navigate("/login");
+    } catch (error) {
+      if (isAxiosError(error)) {
+        // In ra cấu trúc của error.response.data để kiểm tra
+        console.error("Register error response:", error.response);
+
+        // Kiểm tra xem response.data có cấu trúc mà bạn mong đợi không
+        const errorData = error.response?.data as ErrorResponse;
+
+        if (
+          error.response?.status === 400 &&
+          errorData.message &&
+          errorData.message.includes("Email đã tồn tại")
+        ) {
+          notification.error({
+            message: "Đăng ký thất bại",
+            description: "Email đã tồn tại, vui lòng sử dụng email khác!",
+            placement: "topRight",
+          });
+        } else {
+          // Hiển thị thông báo đăng ký thất bại khác
+          notification.error({
+            message: "Đăng ký thất bại",
+            description: "Đã xảy ra sự cố. Vui lòng thử lại sau!",
+            placement: "topRight",
+          });
+        }
+      } else {
+        // Xử lý lỗi khác không phải từ Axios
+        notification.error({
+          message: "Đăng ký thất bại",
+          description: "Đã xảy ra sự cố. Vui lòng thử lại sau!",
+          placement: "topRight",
+        });
+      }
+
+      console.error("Register error:", error);
+    }
+  };
+
+  // Hàm kiểm tra kiểu
+  const isAxiosError = (error: unknown): error is AxiosError => {
+    // Kiểm tra xem error có phải là một đối tượng không
+    if (typeof error === "object" && error !== null) {
+      // Kiểm tra xem đối tượng đó có thuộc tính `isAxiosError`
+      return (error as AxiosError).isAxiosError === true;
+    }
+    return false;
   };
 
   return (
@@ -92,8 +114,9 @@ const RegisterPage = () => {
               </label>
               <input
                 type="text"
-                className={`form-input w-full px-4 py-2 border rounded-lg ${errors.fullName ? "border-red-500" : "border-gray-300"
-                  }`}
+                className={`form-input w-full px-4 py-2 border rounded-lg ${
+                  errors.fullName ? "border-red-500" : "border-gray-300"
+                }`}
                 id="fullName"
                 placeholder="Nhập họ tên"
                 {...register("fullName")}
@@ -110,8 +133,9 @@ const RegisterPage = () => {
               </label>
               <input
                 type="text"
-                className={`form-input w-full px-4 py-2 border rounded-lg ${errors.email ? "border-red-500" : "border-gray-300"
-                  }`}
+                className={`form-input w-full px-4 py-2 border rounded-lg ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                }`}
                 id="email"
                 placeholder="Nhập email"
                 {...register("email")}
@@ -123,13 +147,17 @@ const RegisterPage = () => {
               )}
             </div>
             <div className="mb-3">
-              <label htmlFor="phoneNumber" className="block text-md font-medium mb-2">
+              <label
+                htmlFor="phoneNumber"
+                className="block text-md font-medium mb-2"
+              >
                 Số điện thoại
               </label>
               <input
                 type="text"
-                className={`form-input w-full px-4 py-2 border rounded-lg ${errors.phoneNumber ? "border-red-500" : "border-gray-300"
-                  }`}
+                className={`form-input w-full px-4 py-2 border rounded-lg ${
+                  errors.phoneNumber ? "border-red-500" : "border-gray-300"
+                }`}
                 id="phoneNumber"
                 placeholder="Nhập số điện thoại"
                 {...register("phoneNumber")}
@@ -149,8 +177,9 @@ const RegisterPage = () => {
               </label>
               <input
                 type={showPassword ? "text" : "password"}
-                className={`form-input w-full px-4 py-2 border rounded-lg ${errors.password ? "border-red-500" : "border-gray-300"
-                  }`}
+                className={`form-input w-full px-4 py-2 border rounded-lg ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                }`}
                 id="password"
                 placeholder="Nhập mật khẩu"
                 {...register("password")}
@@ -176,8 +205,9 @@ const RegisterPage = () => {
               </label>
               <input
                 type={showPassword ? "text" : "password"}
-                className={`form-input w-full px-4 py-2 border rounded-lg ${errors.passwordConfirm ? "border-red-500" : "border-gray-300"
-                  }`}
+                className={`form-input w-full px-4 py-2 border rounded-lg ${
+                  errors.passwordConfirm ? "border-red-500" : "border-gray-300"
+                }`}
                 id="passwordConfirm"
                 placeholder="Nhập lại mật khẩu"
                 {...register("passwordConfirm")}
@@ -198,7 +228,15 @@ const RegisterPage = () => {
             <div className="mt-4">
               <button
                 type="submit"
-                className="w-full py-2 bg-blue-500 text-white rounded-lg"
+                className={`mt-4 w-full py-2 px-4 text-white rounded-lg ${
+                  errors.email ||
+                  errors.password ||
+                  errors.fullName ||
+                  errors.phoneNumber ||
+                  errors.passwordConfirm
+                    ? "bg-red-500"
+                    : "bg-blue-500"
+                }`}
               >
                 Đăng ký
               </button>

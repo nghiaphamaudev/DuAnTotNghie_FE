@@ -10,19 +10,15 @@ import { LoginSchema } from "./zod";
 import ForgotPasswordModal from "./Modal";
 import { useAuth } from "../../../contexts/AuthContext";
 import { notification } from "antd";
-
-
-
-
 // validate login
 
 type LoginForm = z.infer<typeof LoginSchema>;
 
 const LoginPage = () => {
-  // context 
+  // context
   const { login: loginAccount } = useAuth();
 
-  // state 
+  // state
   const [showPassword, setShowPassword] = useState(false);
 
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
@@ -64,9 +60,9 @@ const LoginPage = () => {
       const res = await loginAccount(data);
 
       notification.success({
-        message: 'Đăng nhập thành công',
-        description: 'Chào mừng bạn quay trở lại!',
-        placement: 'topRight',
+        message: "Đăng nhập thành công",
+        description: "Chào mừng bạn quay trở lại!",
+        placement: "topRight",
       });
 
       console.log(res);
@@ -74,9 +70,9 @@ const LoginPage = () => {
     } catch (error) {
       // Hiển thị thông báo đăng nhập thất bại
       notification.error({
-        message: 'Đăng nhập thất bại',
-        description: 'Tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại!',
-        placement: 'topRight',
+        message: "Đăng nhập thất bại",
+        description: "Tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại!",
+        placement: "topRight",
       });
 
       console.error("Login error:", error);

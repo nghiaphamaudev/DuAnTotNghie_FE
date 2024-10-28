@@ -1,6 +1,6 @@
 import instance from "../config/axios";
 
-export const loginAccount = async (payload: any) => {
+export const loginAccount = async (payload: User) => {
     try {
         const { data } = await instance.post('/users/auth/login', payload);
         return data
