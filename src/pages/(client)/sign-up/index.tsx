@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { z } from "zod";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const LoginSchema = z
   .object({
@@ -26,29 +27,31 @@ const LoginSchema = z
       .regex(/[A-Z]/, "Mật khẩu ít nhất phải có một chữ hoa")
       .regex(/[\d]/, "Mật khẩu ít nhất phải có một số")
       .regex(/[^a-zA-Z0-9]/, "Mật khẩu ít nhất phải có một ký tự đặc biệt"),
-    fullname: z.string().nonempty("Vui lòng nhập tên người dùng"),
-    phone: z
+    fullName: z.string().nonempty("Vui lòng nhập tên người dùng"),
+    phoneNumber: z
       .string()
       .nonempty("Vui lòng nhập số điện thoại")
       .regex(
         /^0\d{9}$/,
         "Số điện thoại phải bắt đầu bằng số 0 và bao gồm 10 chữ số"
       ),
-    confirmPassword: z.string().nonempty("Vui lòng nhập lại mật khẩu"),
+    passwordConfirm: z.string().nonempty("Vui lòng nhập lại mật khẩu"),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.password === data.passwordConfirm, {
     message: "Mật khẩu và xác nhận mật khẩu không khớp",
-    path: ["confirmPassword"],
+    path: ["passwordConfirm"],
   });
 
 type LoginForm = z.infer<typeof LoginSchema>;
 
 const RegisterPage = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  // context
+  const { register: registerAccount } = useAuth();
 
+  // state
+  const [showPassword, setShowPassword] = useState(false);
+
+  //validate Schema
   const {
     register,
     handleSubmit,
@@ -58,8 +61,18 @@ const RegisterPage = () => {
     mode: "onBlur",
   });
 
-  const onSubmit = (data: LoginForm) => {
-    console.log(data);
+  //function
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const onSubmit =  async (data: LoginForm) => {
+    try {
+      const res = await registerAccount(data);
+      console.log('Register response:', res);
+  } catch (error) {
+      console.error('Registration error:', error);
+  }
   };
 
   return (
@@ -72,23 +85,22 @@ const RegisterPage = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-3">
               <label
-                htmlFor="fullname"
+                htmlFor="fullName"
                 className="block text-md font-medium mb-2"
               >
                 Họ tên
               </label>
               <input
                 type="text"
-                className={`form-input w-full px-4 py-2 border rounded-lg ${
-                  errors.fullname ? "border-red-500" : "border-gray-300"
-                }`}
-                id="fullname"
+                className={`form-input w-full px-4 py-2 border rounded-lg ${errors.fullName ? "border-red-500" : "border-gray-300"
+                  }`}
+                id="fullName"
                 placeholder="Nhập họ tên"
-                {...register("fullname")}
+                {...register("fullName")}
               />
-              {errors.fullname && (
+              {errors.fullName && (
                 <span className="text-red-500 text-xs-mt-1">
-                  {errors.fullname.message}
+                  {errors.fullName.message}
                 </span>
               )}
             </div>
@@ -98,9 +110,8 @@ const RegisterPage = () => {
               </label>
               <input
                 type="text"
-                className={`form-input w-full px-4 py-2 border rounded-lg ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`form-input w-full px-4 py-2 border rounded-lg ${errors.email ? "border-red-500" : "border-gray-300"
+                  }`}
                 id="email"
                 placeholder="Nhập email"
                 {...register("email")}
@@ -112,21 +123,20 @@ const RegisterPage = () => {
               )}
             </div>
             <div className="mb-3">
-              <label htmlFor="phone" className="block text-md font-medium mb-2">
+              <label htmlFor="phoneNumber" className="block text-md font-medium mb-2">
                 Số điện thoại
               </label>
               <input
                 type="text"
-                className={`form-input w-full px-4 py-2 border rounded-lg ${
-                  errors.phone ? "border-red-500" : "border-gray-300"
-                }`}
-                id="phone"
+                className={`form-input w-full px-4 py-2 border rounded-lg ${errors.phoneNumber ? "border-red-500" : "border-gray-300"
+                  }`}
+                id="phoneNumber"
                 placeholder="Nhập số điện thoại"
-                {...register("phone")}
+                {...register("phoneNumber")}
               />
-              {errors.phone && (
+              {errors.phoneNumber && (
                 <span className="text-red-500 text-md-mt-1">
-                  {errors.phone.message}
+                  {errors.phoneNumber.message}
                 </span>
               )}
             </div>
@@ -139,9 +149,8 @@ const RegisterPage = () => {
               </label>
               <input
                 type={showPassword ? "text" : "password"}
-                className={`form-input w-full px-4 py-2 border rounded-lg ${
-                  errors.password ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`form-input w-full px-4 py-2 border rounded-lg ${errors.password ? "border-red-500" : "border-gray-300"
+                  }`}
                 id="password"
                 placeholder="Nhập mật khẩu"
                 {...register("password")}
@@ -160,23 +169,22 @@ const RegisterPage = () => {
             </div>
             <div className="mb-3 relative">
               <label
-                htmlFor="confirmPassword"
+                htmlFor="passwordConfirm"
                 className="block text-md font-medium mb-2"
               >
                 Xác nhận mật khẩu
               </label>
               <input
                 type={showPassword ? "text" : "password"}
-                className={`form-input w-full px-4 py-2 border rounded-lg ${
-                  errors.confirmPassword ? "border-red-500" : "border-gray-300"
-                }`}
-                id="confirmPassword"
+                className={`form-input w-full px-4 py-2 border rounded-lg ${errors.passwordConfirm ? "border-red-500" : "border-gray-300"
+                  }`}
+                id="passwordConfirm"
                 placeholder="Nhập lại mật khẩu"
-                {...register("confirmPassword")}
+                {...register("passwordConfirm")}
               />
-              {errors.confirmPassword && (
+              {errors.passwordConfirm && (
                 <span className="text-red-500 text-md mt-1">
-                  {errors.confirmPassword.message}
+                  {errors.passwordConfirm.message}
                 </span>
               )}
               <span

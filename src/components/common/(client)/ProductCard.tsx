@@ -1,8 +1,24 @@
-import { Eye, ShoppingBag } from "lucide-react"; // Import icon từ lucide-react
+import { Eye, ShoppingBag } from "lucide-react";
 import { useState } from "react";
+import AddToCart from "./AddToCart"; // Import the new AddToCart component
 
 const ProductCard = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
+
+  // Function to handle showing modal
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  // Function to handle closing modal
+  const handleOk = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
 
   return (
     <div
@@ -26,10 +42,14 @@ const ProductCard = () => {
         {/* Nút Thêm Giỏ Hàng và Xem chỉ hiển thị khi hover */}
         {isHovered && (
           <div className="absolute inset-0 flex justify-center items-end  mb-5 space-x-4">
-            <button className="bg-white p-2 rounded-full shadow-md flex justify-start items-center gap-1">
+            {/* Button to show the modal */}
+            <button
+              className="bg-white p-2 rounded-full shadow-md flex justify-start items-center gap-1"
+              onClick={showModal} // Show modal on click
+            >
               <ShoppingBag size={20} className="text-gray-800" />{" "}
               {/* Icon giỏ hàng */}
-              <span className="text-sm">Thêm giỏ hàng</span>
+              <span className="hidden md:block text-base">Thêm giỏ hàng</span>
             </button>
             <button className="bg-white p-2 rounded-full shadow-md">
               <Eye size={20} className="text-gray-800" /> {/* Icon xem */}
@@ -56,6 +76,13 @@ const ProductCard = () => {
         </span>
         <span className="text-gray-400 text-[14px] line-through">198,000đ</span>
       </div>
+
+      {/* AddToCart Modal */}
+      <AddToCart
+        isModalVisible={isModalVisible}
+        handleOk={handleOk}
+        handleCancel={handleCancel}
+      />
     </div>
   );
 };

@@ -3,27 +3,39 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
+
 import { LoginSchema } from "./zod";
 import ForgotPasswordModal from "./Modal";
+import { useAuth } from "../../../contexts/AuthContext";
+import { notification } from "antd";
+
+
+
 
 // validate login
 
 type LoginForm = z.infer<typeof LoginSchema>;
 
 const LoginPage = () => {
-  // state ẩn hiện mk
+  // context 
+  const { login: loginAccount } = useAuth();
+
+  // state 
   const [showPassword, setShowPassword] = useState(false);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  // Thêm trạng thái để theo dõi việc form quên mật khẩu đang mở
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  //navigate
+  const navigate = useNavigate();
+
+  // function
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -34,7 +46,7 @@ const LoginPage = () => {
     setIsModalOpen(false);
   };
 
-  // Form đăng nhập
+  // validate Schema
   const {
     register,
     handleSubmit,
@@ -44,11 +56,31 @@ const LoginPage = () => {
     mode: "onBlur",
   });
 
-  const onSubmit = (data: LoginForm) => {
+  const onSubmit = async (data: LoginForm) => {
     if (isForgotPasswordOpen) {
       return;
     }
-    console.log(data);
+    try {
+      const res = await loginAccount(data);
+
+      notification.success({
+        message: 'Đăng nhập thành công',
+        description: 'Chào mừng bạn quay trở lại!',
+        placement: 'topRight',
+      });
+
+      console.log(res);
+      navigate("/home");
+    } catch (error) {
+      // Hiển thị thông báo đăng nhập thất bại
+      notification.error({
+        message: 'Đăng nhập thất bại',
+        description: 'Tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại!',
+        placement: 'topRight',
+      });
+
+      console.error("Login error:", error);
+    }
   };
 
   // Form quên mật khẩu
@@ -126,7 +158,9 @@ const LoginPage = () => {
             </div>
             <button
               type="submit"
-              className="bg-blue-500 text-white py-2 rounded-md w-full mt-4 hover:bg-blue-600"
+              className={`mt-4 w-full py-2 px-4 text-white rounded-lg ${
+                errors.email || errors.password ? "bg-red-500" : "bg-blue-500"
+              }`}
             >
               Đăng nhập
             </button>
