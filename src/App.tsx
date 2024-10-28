@@ -45,7 +45,10 @@ const routeConfig = [
         path: "product",
         element: <ProductPage />
       },
-      
+      {
+        path: "cart",
+        element: <ShoppingCart />
+      },
       {
         path: "checkout",
         element: <CheckoutPage />
