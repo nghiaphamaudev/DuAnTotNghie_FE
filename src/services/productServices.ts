@@ -13,7 +13,7 @@ export const getProductById = async (id: string) => {
     try {
         const { data } = await instance.get('/products/' + id);
         return data
-    } catch (error) {
+    } catch (error) { 
         throw error
     }
 }

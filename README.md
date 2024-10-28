@@ -66,4 +66,4 @@ export default tseslint.config({
    - `vendor`: cập nhật version cho các dependencies, packages.
 
 Quy tắc đặt tên biến cứ đặt theo camelCase cho nhanh nhé.
-VD: `firstName`
+VD: `firstName` .
