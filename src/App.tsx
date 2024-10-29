@@ -5,15 +5,18 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import ClientLayout from "./layout/ClientLayout";
+
 import DetailProduct from "./pages/(client)/detail-product/index";
 import ShoppingCart from "./pages/(client)/cart";
 import HomePage from "./pages/(client)/home";
 import LoginPage from "./pages/(client)/sign-in";
 import RegisterPage from "./pages/(client)/sign-up";
 import ProductPage from "./pages/(client)/product";
+import AdminRouter from "./routers/AdminRouter";
 import CheckoutPage from "./pages/(client)/checkout";
 import AuthGuard from "./pages/(client)/sign-in/PrivateRouter";
 import MenuAccount from "./pages/(client)/my-account";
+
 
 const routeConfig = [
   {
@@ -29,7 +32,7 @@ const routeConfig = [
         element: <HomePage />
       },
       {
-        path: "detail-product",
+        path: "home/product/:id",
         element: <DetailProduct />
       },
       {
@@ -52,10 +55,7 @@ const routeConfig = [
         path: "product",
         element: <ProductPage />
       },
-      {
-        path: "cart",
-        element: <ShoppingCart />
-      },
+      
       {
         path: "checkout",
         element: <CheckoutPage />
@@ -65,6 +65,10 @@ const routeConfig = [
         element: <MenuAccount />
       }
     ]
+  },
+  {
+  path: "/admin/*",
+    element: <AdminRouter />
   }
 ];
 

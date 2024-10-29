@@ -1,45 +1,73 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, Button, Modal } from 'antd';
 import './css.css';
+import { useParams } from 'react-router-dom';
+import { useProduct } from '../../../contexts/ProductContext';
 import ProductCard from '../../../components/common/(client)/ProductCard';
+
 const DetailProduct = () => {
-    const thumbnailImages = [
-        "../src/assets/images/ao1.png",
-        "../src/assets/images/size.png",
-        "../src/assets/images/ao1.png",
-        "../src/assets/images/size.png",
-        "../src/assets/images/ao1.png",
-        "../src/assets/images/ao1.png",
-        "../src/assets/images/ao1.png",
-        "../src/assets/images/ao1.png",
-    ];
-    const [selectedTab, setSelectedTab] = useState("recommended");
-    const [mainImage, setMainImage] = useState(thumbnailImages[0]);
-    const [selectedColor, setSelectedColor] = useState("");
-    const [selectedSize, setSelectedSize] = useState("");
+    // hooks
+    const { id } = useParams();
+
+    // context
+    const { product, getDataProductById } = useProduct();
+    const { allProduct, getAllDataProduct} = useProduct();
+
+    
+ useEffect(() => {
+    if (id) {
+        getDataProductById(id);
+    }
+}, [id]);
+useEffect(() => {
+    getAllDataProduct();
+  }, []);
+
+    // state
+    const [selectedThumbnail, setSelectedThumbnail] = useState(0);
+    const [mainImage, setMainImage] = useState('');
+    const [selectedColor, setSelectedColor] = useState('');
+    const [selectedSize, setSelectedSize] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedThumbnail, setSelectedThumbnail] = useState(0);
     const [isSizeGuideVisible, setIsSizeGuideVisible] = useState(false);
+    const [selectedTab, setSelectedTab] = useState('recommended');
+    const recommendedProducts: any[] = []; 
+    const bestSellingProducts: any[] = []; 
+    const [startIndex, setStartIndex] = useState(0);
+    const productsPerPage = 4; // Maximum number of products to display at once
 
+   
+    // Set default variant and main image when product data is loaded
+    useEffect(() => {
+        if (product?.variants?.length > 0) {
+            const defaultVariant = product.variants[0];
+            setMainImage(defaultVariant.images[0]);
+            setSelectedColor(defaultVariant.color);
+            setSelectedSize(defaultVariant.sizes[0].nameSize);
+            setSelectedThumbnail(0);
+        }
+    }, [product]);
+
+    // Handlers
+    const handleThumbnailClick = (index, image) => {
+        setMainImage(image);
+        setSelectedThumbnail(index);
+    };
     const handleColorSelect = (color) => {
+        const variant = product.variants.find(variant => variant.color === color);
         setSelectedColor(color);
+        setMainImage(variant.images[0]); 
+        setSelectedThumbnail(0); 
+        setSelectedSize(variant.sizes[0].nameSize); 
     };
 
     const handleSizeSelect = (size) => {
         setSelectedSize(size);
     };
 
-    const handleQuantityChange = (amount) => {
-        setQuantity(prev => Math.max(1, prev + amount));
-    };
-
-    const showSizeGuide = () => {
-        setIsSizeGuideVisible(true);
-    };
-
-    const handleSizeGuideCancel = () => {
-        setIsSizeGuideVisible(false);
+    const handleQuantityChange = (change) => {
+        setQuantity((prevQuantity) => Math.max(1, prevQuantity + change));
     };
 
     const showModal = () => {
@@ -50,43 +78,40 @@ const DetailProduct = () => {
         setIsModalVisible(false);
     };
 
-    const handleThumbnailClick = (index) => {
-        setMainImage(thumbnailImages[index]);
-        setSelectedThumbnail(index);
+    const showSizeGuide = () => {
+        setIsSizeGuideVisible(true);
     };
 
-    const recommendedProducts = [
-        <ProductCard />,
-        <ProductCard />,
-        <ProductCard />,
-        <ProductCard />,
-    ];
-
-    const bestSellingProducts = [
-        <ProductCard />,
-        <ProductCard />,
-        <ProductCard />,
-        <ProductCard />,
-
-    ];
+    const handleSizeGuideCancel = () => {
+        setIsSizeGuideVisible(false);
+    };
 
     const handleTabClick = (tab) => {
         setSelectedTab(tab);
     };
+    const handleNext = () => {
+        if (startIndex + productsPerPage < allProduct.length) {
+            setStartIndex(startIndex + productsPerPage);
+        }
+    };
+
+    const handlePrevious = () => {
+        if (startIndex - productsPerPage >= 0) {
+            setStartIndex(startIndex - productsPerPage);
+        }
+    };
     const toggleAccordion = (header) => {
         const content = header.nextElementSibling;
         const icon = header.querySelector('i');
-
-        if (content.style.display === "none" || content.style.display === "") {
-            content.style.display = "block";
-            icon.classList.remove("fa-plus");
-            icon.classList.add("fa-minus");
+        if (content.style.display === 'none' || content.style.display === '') {
+            content.style.display = 'block';
+            icon.className = 'fas fa-minus';
         } else {
-            content.style.display = "none";
-            icon.classList.remove("fa-minus");
-            icon.classList.add("fa-plus");
+            content.style.display = 'none';
+            icon.className = 'fas fa-plus';
         }
     };
+
     return (
         <div className="container">
             <div className="left-column">
@@ -94,31 +119,39 @@ const DetailProduct = () => {
                     <i className="fas fa-home"></i>
                     <a href="#">Trang chủ</a>
                     <span>|</span>
-                    <a href="#">Áo Nỉ / Áo Thun Dài Tay</a>
+                    <a href="#">Category Name</a>
                     <span>|</span>
-                    <a href="#">Áo Nỉ Fitted L.4.7873</a>
+                    <a href="#">{product?.name}</a>
                 </div>
 
+        
                 <div className="image-gallery">
                     <div className="thumbnail-container">
                         <div className="thumbnail-images">
-                            {thumbnailImages.map((src, index) => (
+                            {product?.variants?.find(variant => variant.color === selectedColor)?.images.map((image, index) => (
                                 <img
                                     key={index}
                                     alt={`Thumbnail ${index + 1}`}
                                     className={`thumbnail-image ${selectedThumbnail === index ? 'selected' : ''}`}
-                                    src={src}
-                                    onClick={() => handleThumbnailClick(index)}
+                                    src={image}
+                                    onClick={() => handleThumbnailClick(index, image)}
                                 />
                             ))}
                         </div>
                     </div>
 
                     <div className="main-image-container" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-
+                        {/* Left Arrow */}
                         <div
                             className="arrow-button left"
-                            onClick={() => handleThumbnailClick((selectedThumbnail - 1 + thumbnailImages.length) % thumbnailImages.length)}
+                            onClick={() =>
+                                handleThumbnailClick(
+                                    (selectedThumbnail - 1 + product?.variants.find(variant => variant.color === selectedColor).images.length) % product?.variants.find(variant => variant.color === selectedColor).images.length,
+                                    product?.variants.find(variant => variant.color === selectedColor).images[
+                                        (selectedThumbnail - 1 + product?.variants.find(variant => variant.color === selectedColor).images.length) % product?.variants.find(variant => variant.color === selectedColor).images.length
+                                    ]
+                                )
+                            }
                             style={{
                                 position: 'absolute',
                                 left: '40px',
@@ -130,16 +163,16 @@ const DetailProduct = () => {
                                 zIndex: 1,
                             }}
                         >
-                            &#8592; {/* Left Arrow */}
+                            &#8592;
                         </div>
 
+                        {/* Main Image */}
                         <Image
                             className="main-image"
                             src={mainImage}
-                            alt="Main Product Image"
                             style={{
                                 width: '678px',
-                                height: '700px  ',
+                                height: '700px',
                                 cursor: 'pointer',
                                 display: 'block',
                                 margin: '0 auto',
@@ -152,11 +185,18 @@ const DetailProduct = () => {
                             onClick={showModal}
                         />
 
+                        <Modal visible={isModalVisible} onCancel={handleCancel} footer={null} width={600}>
+                            <Image src={mainImage} style={{ width: '100%', height: 'auto' }} preview={false} />
+                        </Modal>
 
-
-                        <div
+                           <div
                             className="arrow-button right"
-                            onClick={() => handleThumbnailClick((selectedThumbnail + 1) % thumbnailImages.length)}
+                            onClick={() =>
+                                handleThumbnailClick(
+                                    (selectedThumbnail + 1) % product?.variants.find(variant => variant.color === selectedColor).images.length,
+                                    product?.variants.find(variant => variant.color === selectedColor).images[(selectedThumbnail + 1) % product?.variants.find(variant => variant.color === selectedColor).images.length]
+                                )
+                            }
                             style={{
                                 position: 'absolute',
                                 right: '40px',
@@ -166,70 +206,74 @@ const DetailProduct = () => {
                                 padding: '10px',
                                 fontSize: '24px',
                                 zIndex: 1,
-                                margin: '10px auto',
-
                             }}
                         >
-                            &#8594; {/* Right Arrow */}
+                            &#8594;
                         </div>
                     </div>
-                </div>
-
-
-                <Modal
-                    visible={isModalVisible}
-                    onCancel={handleCancel}
-                    footer={null}
-                    width={600}
-                >
-                    <Image
-                        src={mainImage}
-                        alt="Cận cảnh hình sản phẩm"
-                        style={{ width: '100%', height: 'auto' }}
-                        preview={false}
-
-                    />
-
-                </Modal>
-                <div className="image-container">
-                    <img className="image-size" src="../src/assets/images/size.png" alt="" />
-                </div>
+                </div> 
             </div>
 
             <div className="right-column">
-                <h1 className="product-title">Áo Nỉ Fitted L.4.7873</h1>
-                <span>còn hàng</span>
+                <h1 className="product-title">{product?.name}</h1>
+                <span>{product?.status === "Available" ? "Còn hàng" : "Hết hàng"}</span>
                 <hr />
-                <div className="product-price">169,000₫</div>
+                <div className="product-price">
+                    {product?.variants?.find(variant => variant.color === selectedColor)?.sizes[0].price.toLocaleString()}₫
+                </div>
+
                 <div className="product-options">
                     <label htmlFor="color" className="product-options1">Màu Sắc</label>
-                    <br />
                     <div className="color-options">
-                        {["#ccc", "#eee"].map((color, index) => (
-                            <img
+                        {product?.variants?.map((variant, index) => (
+                            <Button
                                 key={index}
-                                src="../src/assets/images/ao1.png"
-                                alt={`Color ${index + 1}`}
-                                className={`color-option ${selectedColor === color ? "selected" : ""}`}
-                                data-color={color}
-                                onClick={() => handleColorSelect(color)}
+                                className={`color-option ${selectedColor === variant.color ? "selected" : ""}`}
+                                onClick={() => handleColorSelect(variant.color, variant.images[0])}
                                 style={{
-                                    border: selectedColor === color ? '2px solid blue' : 'none',
-                                    cursor: 'pointer',
+                                    padding: 0,
+                                    margin: '5px',
+                                    border: selectedColor === variant.color ? '2px solid #000' : '1px solid #ccc',
                                     borderRadius: '50%',
-                                    width: '35px',
-                                    height: '35px',
-                                    objectFit: 'cover',
+                                    width: '40px',
+                                    height: '40px',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
                                 }}
-                            />
+                            >
+                                <img
+                                    src={variant.images[0]}
+                                    alt={variant.color}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        borderRadius: '50%',
+                                        objectFit: 'cover',
+                                    }}
+                                />
+                            </Button>
                         ))}
                     </div>
 
-                    <br />
                     <label className="product-options1" htmlFor="size">Kích Thước</label>
                     <a className="size-review size-review-link" onClick={showSizeGuide} style={{ cursor: 'pointer' }}>
                         Hướng dẫn chọn size
                     </a>
+
+                    <div className="size-options">
+                        {product?.variants
+                            ?.find(variant => variant.color === selectedColor)?.sizes.map(size => (
+                                <Button
+                                    key={size._id}
+                                    className={`size-option ${selectedSize === size.nameSize ? "selected" : ""}`}
+                                    onClick={() => handleSizeSelect(size.nameSize)}
+                                >
+                                    {size.nameSize}
+                                </Button>
+                            ))}
+                    </div>
+                  
 
                     <Modal
                         visible={isSizeGuideVisible}
@@ -238,7 +282,7 @@ const DetailProduct = () => {
                         width={600}
                     >
                         <Image
-                            src="../src/assets/images/size.png"
+                            src="../../../assets/images/size.png"
                             alt="Hướng dẫn chọn size"
                             style={{ width: '100%', height: 'auto' }}
                             preview={false}
@@ -246,17 +290,7 @@ const DetailProduct = () => {
                     </Modal>
 
                     <br />
-                    <div className="size-options">
-                        {["2XL", "XL", "L", "M"].map((size) => (
-                            <Button
-                                key={size}
-                                className={`size-option ${selectedSize === size ? "selected" : ""}`}
-                                onClick={() => handleSizeSelect(size)}
-                            >
-                                {size}
-                            </Button>
-                        ))}
-                    </div>
+
                 </div>
                 <div className="quantity-selector">
                     <Button onClick={() => handleQuantityChange(-1)}>-</Button>
@@ -308,22 +342,30 @@ const DetailProduct = () => {
                                         {store.address}
                                     </div>
                                     <span className={store.available ? "available" : "unavailable"}>
-                                    ({store.available ? "Còn hàng" : "Hết hàng"})
-                                </span>
+                                        ({store.available ? "Còn hàng" : "Hết hàng"})
+                                    </span>
                                 </p>
-                               
+
                             </div>
 
                         ))}
                     </div>
                 </div>
                 <div className="infor">
-                    <div class="accordion">
+                    <div className="accordion">
 
                         <div className="accordion-item">
-                            <div className="accordion-header" onClick={(e) => toggleAccordion(e.currentTarget)}>
-                                <span>THÔNG TIN SẢN PHẨM</span>
-                                <i className="fas fa-plus"></i>
+                            <div className="accordion-item">
+                                <div className="accordion-header" onClick={(e) => toggleAccordion(e.currentTarget)}>
+                                    <span>THÔNG TIN SẢN PHẨM</span>
+
+                                    <i className="fas fa-plus"></i>
+                                </div>
+                                <div className="accordion-content" style={{ display: 'none' }}>
+                                    <p>
+                                        {product?.description}
+                                    </p>
+                                </div>
                             </div>
                             <div className="accordion-content" style={{ display: 'none' }}>
                                 <p></p>
@@ -355,17 +397,17 @@ const DetailProduct = () => {
                         </div>
                     </div>
 
-                    <div class="info-section">
-                        <div class="info-item">
-                            <i class="fas fa-truck"></i>
+                    <div className="info-section">
+                        <div className="info-item">
+                            <i className="fas fa-truck"></i>
                             <span>GIAO HÀNG NỘI THÀNH TRONG 24 GIỜ</span>
                         </div>
-                        <div class="info-item">
-                            <i class="fas fa-exchange-alt"></i>
+                        <div className="info-item">
+                            <i className="fas fa-exchange-alt"></i>
                             <span>ĐỔI HÀNG TRONG 30 NGÀY</span>
                         </div>
-                        <div class="info-item">
-                            <i class="fas fa-phone-alt"></i>
+                        <div className="info-item">
+                            <i className="fas fa-phone-alt"></i>
                             <span>TỔNG ĐÀI BÁN HÀNG 096728.4444</span>
                         </div>
                     </div>
@@ -391,16 +433,22 @@ const DetailProduct = () => {
                     </div>
                 </div>
                 <div className="product-list">
-                    <i className="fas fa-chevron-left arrow" />
-                    {selectedTab === "recommended"
-                        ? recommendedProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))
-                        : bestSellingProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    <i className="fas fa-chevron-right arrow" />
-                </div>
+            <i
+                className={`fas fa-chevron-left arrow ${startIndex === 0 ? 'disabled' : ''}`}
+                onClick={handlePrevious}
+                style={{ cursor: startIndex === 0 ? 'not-allowed' : 'pointer' }}
+            />
+
+            {allProduct.slice(startIndex, startIndex + productsPerPage).map((item, index) => (
+                <ProductCard key={index} item={item} />
+            ))}
+ 
+            <i
+                className={`fas fa-chevron-right arrow ${startIndex + productsPerPage >= allProduct.length ? 'disabled' : ''}`}
+                onClick={handleNext}
+                style={{ cursor: startIndex + productsPerPage >= allProduct.length ? 'not-allowed' : 'pointer' }}
+            />
+        </div>
 
             </div>
 
