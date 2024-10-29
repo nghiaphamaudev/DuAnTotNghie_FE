@@ -38,24 +38,23 @@ const routeConfig = [
       {
         path: "login",
         element: (
-          <AuthGuard>
             <LoginPage/>
-          </AuthGuard>
         )
       },
       {
         path: "register",
         element: (
-          <AuthGuard>
             <RegisterPage/>
-          </AuthGuard>
         )
       },
       {
         path: "product",
         element: <ProductPage />
       },
-      
+      {
+        path: "cart",
+        element: <ShoppingCart />
+      },
       {
         path: "checkout",
         element: <CheckoutPage />
