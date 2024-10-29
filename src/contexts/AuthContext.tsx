@@ -1,17 +1,18 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { notification } from "antd";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, UserResponse } from "../common/types/User";
-import { loginAccount, registerAccount } from "../services/authServices";
+import { User, UserRequest, UserResponse } from "../common/types/User";
+import { addAddress, getProfile, loginAccount, registerAccount } from "../services/authServices";
 
 type AuthContextProps = {
   isLogin: boolean;
   setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;
   register: (formData: User) => void;
-  login: (formData: User) => void;
+  login: (formData: UserRequest) => void;
   user: User | null;
   handleLogout: () => void;
+  addMyAddress: (formData: any) => void;
 };
 
 const AuthContext = createContext({} as AuthContextProps);
@@ -47,16 +48,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // mutation login
   const { mutateAsync: login } = useMutation({
-    mutationFn: async (formData: User) => {
+    mutationFn: async (formData: UserRequest) => {
       const data = await loginAccount(formData);
       return data;
     },
     onSuccess: (data: UserResponse) => {
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("user", JSON.stringify(data.data));
-      setUser(data.data);
+      // setUser(data.data);
     },
   });
+
+    // mutation add address
+    const { mutateAsync: addMyAddress } = useMutation({
+      mutationFn: async (formData: any) => {
+        const data = await addAddress(formData);
+        return data;
+      },
+      onSuccess: (data: any) => {
+        //thông báo ở đây
+      },
+    });
+
+  // mutation get profile
+  useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
+        const res = await getProfile()
+        setUser(res.data)
+        return res.data
+    },
+    enabled: !!token
+})
+
   const handleLogout = () => {
     try {
       localStorage.removeItem("user");
@@ -76,10 +100,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
     }
   };
-  
+
   return (
     <AuthContext.Provider
-      value={{ isLogin, setIsLogin, register, login, user, handleLogout }}
+      value={{ isLogin, setIsLogin, register, login, user, handleLogout, addMyAddress }}
     >
       {children}
     </AuthContext.Provider>

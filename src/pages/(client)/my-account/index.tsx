@@ -60,12 +60,13 @@ const MenuAccount = () => {
         setCurrentContent(<UserProfile />);
     }
   };
-  useEffect(() => {
-    if (!isLogin) {
-      navigate("/login"); // Chuyển hướng về trang đăng nhập sau khi đăng xuất
-    }
-  }, [isLogin, navigate]);
 
+  // useEffect(() => {
+  //   if (!isLogin) {
+  //     navigate("/login"); // Chuyển hướng về trang đăng nhập sau khi đăng xuất
+  //   }
+  // }, [isLogin, navigate]);
+  console.log(user);
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center py-10">
       <div className="grid grid-cols-12 gap-4 w-full max-w-7xl">

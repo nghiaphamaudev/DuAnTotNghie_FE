@@ -17,6 +17,11 @@ export type UserResponse = {
   accessToken: string;
   data: User; // Thông tin người dùng
 };
+
+export type UserRequest = {
+  email: string;
+  password: string;
+}
 export type Address = {
   address?: string;
   name: string;
