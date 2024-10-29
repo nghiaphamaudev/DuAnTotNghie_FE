@@ -1,4 +1,4 @@
-import { Dropdown, MenuProps, Space, Drawer } from "antd";
+import { Drawer, Dropdown, MenuProps, Space } from "antd";
 import {
   AlignJustify,
   ChevronDown,
@@ -6,16 +6,20 @@ import {
   PhoneCall,
   Search,
   ShoppingBag,
-  X
+  X,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import LogoFshirt from "../../../assets/images/logofshirt-rmbg.png";
+import { useAuth } from "../../../contexts/AuthContext";
 import QuickCart from "./QuickCart";
 
 const HeaderClient = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
+  const {isLogin, handleLogout, user} = useAuth()
+
+  
 
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -33,25 +37,37 @@ const HeaderClient = () => {
     setIsDrawerOpen(false);
   };
 
-  const items: MenuProps["items"] = [
-    {
-      key: "1",
-      label: "My Account",
-      disabled: true
-    },
-    {
-      key: "2",
-      label: "Thông tin cá nhân"
-    },
-    {
-      key: "3",
-      label: "Lịch sử đặt hàng"
-    },
-    {
-      key: "4",
-      label: "Đăng xuất"
-    }
-  ];
+  const items: MenuProps["items"] = isLogin
+    ? [
+        {
+          key: "1",
+          label: "My Account",
+          disabled: true,
+        },
+        {
+          key: "2",
+          label: <Link to="/my-account">Thông tin cá nhân</Link>,
+        },
+        {
+          key: "3",
+          label: "Lịch sử đặt hàng",
+        },
+        {
+          key: "4",
+          label: "Đăng xuất",
+          onClick: handleLogout,
+        },
+      ]
+    : [
+        {
+          key: "1",
+          label: <Link to="/login">Đăng nhập</Link>,
+        },
+        {
+          key: "2",
+          label: <Link to="/register">Đăng ký</Link>,
+        },
+      ];
 
   // Example cart items and total price
   const cartItems = [
@@ -64,8 +80,8 @@ const HeaderClient = () => {
         "https://product.hstatic.net/200000690725/product/thiet_ke_chua_co_ten__1__9074b85ed0384a0a9360158a2d908bbd_master.png",
       size: "S",
       color: "Nâu nhạt",
-      quantity: 1
-    }
+      quantity: 1,
+    },
   ];
   const totalPrice = 299000;
   const freeShippingThreshold = 500000;
@@ -134,6 +150,9 @@ const HeaderClient = () => {
             {/* Account and Cart Icons (visible in all views) */}
             <div className="flex space-x-4 md:space-x-3 items-center ml-2">
               {/* Account */}
+              {user && (
+                <span className="font-semibold text-sm mr-2"> Xin chào, {user.fullName}</span>
+              )}
               <button className="bg-transparent text-large flex items-center space-x-1">
                 <CircleUserRound size={18} />
                 <Dropdown menu={{ items }}>
