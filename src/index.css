@@ -15,7 +15,6 @@ body {
   font-family: sans-serif;
 }
 
-
 /* Thẻ tiêu đề */
 h1,
 h2,
@@ -138,14 +137,13 @@ blockquote {
   border-color: #000;
 }
 .ant-tabs-green .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: #2AB573 !important; /* Màu xanh lá cho tab được chọn */
+  color: #2ab573 !important; /* Màu xanh lá cho tab được chọn */
 }
 
 .ant-tabs-green .ant-tabs-tab:hover .ant-tabs-tab-btn {
-  color: #2AB573 !important; /* Màu xanh lá khi hover */
+  color: #2ab573 !important; /* Màu xanh lá khi hover */
 }
 
 .ant-tabs-green .ant-tabs-ink-bar {
-  background-color: #2AB573 !important; /* Đổi màu gạch chân thành xanh lá */
+  background-color: #2ab573 !important; /* Đổi màu gạch chân thành xanh lá */
 }
-
