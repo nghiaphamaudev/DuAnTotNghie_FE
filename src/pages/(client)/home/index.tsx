@@ -144,7 +144,7 @@ const HomePage = () => {
 
         {/*  Category */}
         <div className="w-full px-4 sm:px-10 md:px-20 bg-[#f0f0f0] py-10">
-          <h1 className="text-[24px] font-semibold text-center mb-8">
+          <h1 className="text-[24px] font-semibold text-center mb-2">
             DANH MỤC SẢN PHẨM
           </h1>
           <div className="navigation flex justify-end items-center mb-3 gap-3">
