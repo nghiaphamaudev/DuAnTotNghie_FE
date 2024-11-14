@@ -46,12 +46,11 @@ const ProductCard = ({ item }: ProductCardProps) => {
               <ShoppingBag size={20} className="text-gray-800" />
               <span className="hidden md:block text-base">Thêm giỏ hàng</span>
             </button>
-            <Link
-              to={`/home/product/${item.id}`}
-              className="bg-white p-2 rounded-full shadow-md"
-            >
-              <Eye size={20} className="text-gray-800" />
+            {/* Nút Xem chi tiết sản phẩm */}
+            <Link to={`/home/product/${item?.id}`} className="bg-white p-2 rounded-full shadow-md">
+              <Eye size={20} className="text-gray-800" /> {/* Icon Xem */}
             </Link>
+
           </div>
         )}
       </div>
