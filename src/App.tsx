@@ -14,9 +14,8 @@ import RegisterPage from "./pages/(client)/sign-up";
 import ProductPage from "./pages/(client)/product";
 import AdminRouter from "./routers/AdminRouter";
 import CheckoutPage from "./pages/(client)/checkout";
-import AuthGuard from "./pages/(client)/sign-in/PrivateRouter";
+// import AuthGuard from "./pages/(client)/sign-in/PrivateRouter";
 import MenuAccount from "./pages/(client)/my-account";
-
 
 const routeConfig = [
   {
@@ -37,15 +36,11 @@ const routeConfig = [
       },
       {
         path: "login",
-        element: (
-            <LoginPage/>
-        )
+        element: <LoginPage />
       },
       {
         path: "register",
-        element: (
-            <RegisterPage/>
-        )
+        element: <RegisterPage />
       },
       {
         path: "product",
@@ -66,7 +61,7 @@ const routeConfig = [
     ]
   },
   {
-  path: "/admin/*",
+    path: "/admin/*",
     element: <AdminRouter />
   }
 ];

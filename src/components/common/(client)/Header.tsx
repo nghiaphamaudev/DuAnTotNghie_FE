@@ -6,7 +6,7 @@ import {
   PhoneCall,
   Search,
   ShoppingBag,
-  X,
+  X
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -17,9 +17,7 @@ import QuickCart from "./QuickCart";
 const HeaderClient = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
-  const {isLogin, handleLogout, user} = useAuth()
-
-  
+  const { isLogin, handleLogout, user } = useAuth();
 
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -42,31 +40,31 @@ const HeaderClient = () => {
         {
           key: "1",
           label: "My Account",
-          disabled: true,
+          disabled: true
         },
         {
           key: "2",
-          label: <Link to="/my-account">Thông tin cá nhân</Link>,
+          label: <Link to="/my-account">Thông tin cá nhân</Link>
         },
         {
           key: "3",
-          label: "Lịch sử đặt hàng",
+          label: "Lịch sử đặt hàng"
         },
         {
           key: "4",
           label: "Đăng xuất",
-          onClick: handleLogout,
-        },
+          onClick: handleLogout
+        }
       ]
     : [
         {
           key: "1",
-          label: <Link to="/login">Đăng nhập</Link>,
+          label: <Link to="/login">Đăng nhập</Link>
         },
         {
           key: "2",
-          label: <Link to="/register">Đăng ký</Link>,
-        },
+          label: <Link to="/register">Đăng ký</Link>
+        }
       ];
 
   // Example cart items and total price
@@ -80,8 +78,8 @@ const HeaderClient = () => {
         "https://product.hstatic.net/200000690725/product/thiet_ke_chua_co_ten__1__9074b85ed0384a0a9360158a2d908bbd_master.png",
       size: "S",
       color: "Nâu nhạt",
-      quantity: 1,
-    },
+      quantity: 1
+    }
   ];
   const totalPrice = 299000;
   const freeShippingThreshold = 500000;
@@ -113,16 +111,16 @@ const HeaderClient = () => {
           {/* Navigation Links (Desktop) */}
           <ul className="hidden justify-center items-center space-x-2 md:flex md:space-x-6 lg:space-x-8">
             <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <a href="#">Sản phẩm mới</a>
+              <Link to="/product">Sản phẩm mới</Link>
             </li>
             <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <a href="#">Sản phẩm hot</a>
+              <a href="#hotproduct">Sản phẩm hot</a>
             </li>
             <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <a href="#">Bộ sưu tập</a>
+              <a href="#collection">Bộ sưu tập</a>
             </li>
             <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <a href="#">Về chúng tôi</a>
+              <a href="#aboutus">Về chúng tôi</a>
             </li>
           </ul>
 
@@ -151,7 +149,10 @@ const HeaderClient = () => {
             <div className="flex space-x-4 md:space-x-3 items-center ml-2">
               {/* Account */}
               {user && (
-                <span className="font-semibold text-sm mr-2"> Xin chào, {user.fullName}</span>
+                <span className="font-semibold text-sm mr-2">
+                  {" "}
+                  Xin chào, {user.fullName}
+                </span>
               )}
               <button className="bg-transparent text-large flex items-center space-x-1">
                 <CircleUserRound size={18} />
