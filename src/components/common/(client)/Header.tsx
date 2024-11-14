@@ -6,7 +6,7 @@ import {
   PhoneCall,
   Search,
   ShoppingBag,
-  X,
+  X
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -110,16 +110,16 @@ const HeaderClient = () => {
           {/* Navigation Links (Desktop) */}
           <ul className="hidden justify-center items-center space-x-2 md:flex md:space-x-6 lg:space-x-8">
             <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <a href="#">Sản phẩm mới</a>
+              <Link to="/product">Sản phẩm mới</Link>
             </li>
             <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <a href="#">Sản phẩm hot</a>
+              <a href="#hotproduct">Sản phẩm hot</a>
             </li>
             <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <a href="#">Bộ sưu tập</a>
+              <a href="#collection">Bộ sưu tập</a>
             </li>
             <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <a href="#">Về chúng tôi</a>
+              <a href="#aboutus">Về chúng tôi</a>
             </li>
           </ul>
 
@@ -148,7 +148,10 @@ const HeaderClient = () => {
             <div className="flex space-x-4 md:space-x-3 items-center ml-2">
               {/* Account */}
               {user && (
-                <span className="font-semibold text-sm mr-2"> Xin chào, {user.fullName}</span>
+                <span className="font-semibold text-sm mr-2">
+                  {" "}
+                  Xin chào, {user.fullName}
+                </span>
               )}
               <button className="bg-transparent text-large flex items-center space-x-1">
                 <CircleUserRound size={18} />

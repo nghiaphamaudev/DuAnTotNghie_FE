@@ -1,39 +1,24 @@
 import { Eye, ShoppingBag } from "lucide-react";
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import AddToCart from "./AddToCart";
 import { Product } from "../../../common/types/Product";
 
-type Props = {
+type ProductCardProps = {
   item: Product;
 };
 
-const ProductCard = ({ item }: Props) => {
+const ProductCard = ({ item }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const countColors = (): number => {
-    return item?.variants.length;
-  };
+  const countColors = (): number => item?.variants.length;
+  const countSizes = (): number =>
+    item?.variants.reduce((total, variant) => total + variant.sizes.length, 0);
 
-  const countSizes = (): number => {
-    return item?.variants.reduce(
-      (total, variant) => total + variant.sizes.length,
-      0
-    );
-  };
-
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleOk = () => {
-    setIsModalVisible(false);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
+  const showModal = () => setIsModalVisible(true);
+  const handleOk = () => setIsModalVisible(false);
+  const handleCancel = () => setIsModalVisible(false);
 
   return (
     <div
@@ -76,7 +61,6 @@ const ProductCard = ({ item }: Props) => {
       <h3 className="text-[14px] font-semibold mb-1 line-clamp-1">
         {item?.name}
       </h3>
-
       <div className="flex items-center">
         <span className="text-red-500 text-[16px] font-bold mr-2">
           {item?.variants[0]?.sizes[0]?.price.toLocaleString()}đ
@@ -87,7 +71,7 @@ const ProductCard = ({ item }: Props) => {
         isModalVisible={isModalVisible}
         handleOk={handleOk}
         handleCancel={handleCancel}
-        item={item} // Truyền dữ liệu sản phẩm xuống AddToCart
+        item={item}
       />
     </div>
   );
