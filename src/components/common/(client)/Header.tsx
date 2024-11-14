@@ -17,9 +17,7 @@ import QuickCart from "./QuickCart";
 const HeaderClient = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
-  const {isLogin, handleLogout, user} = useAuth()
-
-  
+  const { isLogin, handleLogout, userData } = useAuth();
 
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -150,8 +148,10 @@ const HeaderClient = () => {
             {/* Account and Cart Icons (visible in all views) */}
             <div className="flex space-x-4 md:space-x-3 items-center ml-2">
               {/* Account */}
-              {user && (
-                <span className="font-semibold text-sm mr-2"> Xin chào, {user.fullName}</span>
+              {userData && (
+                <span className="font-semibold text-sm mr-2">
+                  Xin chào, {userData.fullName}
+                </span>
               )}
               <button className="bg-transparent text-large flex items-center space-x-1">
                 <CircleUserRound size={18} />

@@ -9,17 +9,17 @@ import {
   ShoppingCartOutlined,
 } from "@ant-design/icons";
 import { Card, Menu } from "antd";
-import React, { useEffect, useState } from "react"; // Đảm bảo import React
-import PromoCode from "./PromoCode";
-import MyOrders from "./MyOrders";
-import Address from "./Address";
-import Favorite from "./Favorite";
-import ViewHistoty from "./ViewHistoty";
-import ResetPassword from "./ResetPassword";
+import React, { useState } from "react"; // Đảm bảo import React
+import Address from "../../../components/common/(client)/menu-account/Address";
+import Favorite from "../../../components/common/(client)/menu-account/Favorite";
+import MyOrders from "../../../components/common/(client)/menu-account/MyOrders";
+import PromoCode from "../../../components/common/(client)/menu-account/PromoCode";
+import ResetPassword from "../../../components/common/(client)/menu-account/ResetPassword";
+import ViewHistoty from "../../../components/common/(client)/menu-account/ViewHistoty";
 
-import UserProfile from "./UserProfile";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
+import UserProfile from "../../../components/common/(client)/menu-account/UserProfile";
+import ImageUploader from "../../../components/common/(client)/menu-account/ImageUploader";
 
 type MenuItemKey = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
@@ -27,8 +27,7 @@ const MenuAccount = () => {
   const [currentContent, setCurrentContent] = useState<React.ReactNode>(
     <UserProfile />
   );
-  const { handleLogout, isLogin, user } = useAuth();
-  const navigate = useNavigate();
+  const { handleLogout, userData } = useAuth();
 
   const handleMenuClick = (key: MenuItemKey) => {
     switch (key) {
@@ -61,23 +60,26 @@ const MenuAccount = () => {
     }
   };
 
+  const handleImageUploadSuccess = () => {
+    console.log("Hình ảnh đã được upload thành công.");
+  };
   // useEffect(() => {
   //   if (!isLogin) {
   //     navigate("/login"); // Chuyển hướng về trang đăng nhập sau khi đăng xuất
   //   }
   // }, [isLogin, navigate]);
-  console.log(user);
+  
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center py-10">
       <div className="grid grid-cols-12 gap-4 w-full max-w-7xl">
         <div className="col-span-12 md:col-span-3 bg-white shadow-lg rounded-lg p-6">
           <div className="flex flex-col items-center mb-6">
-            <div className="w-20 h-20 bg-gray-200 rounded-full mb-3"></div>
+          <ImageUploader  onUploadSuccess={handleImageUploadSuccess} />
             <div className="flex items-center">
               <span className="text-lg font-semibold">
-                {user && (
+                {userData && (
                   <span className="font-semibold text-sm mr-2">
-                    {user.fullName}
+                    {userData.fullName}
                   </span>
                 )}
               </span>

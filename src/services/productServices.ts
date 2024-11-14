@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-catch */
 import instance from "../config/axios";
 
 export const getAllProduct = async () => {

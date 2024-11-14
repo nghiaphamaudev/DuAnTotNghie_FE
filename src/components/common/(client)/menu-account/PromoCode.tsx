@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Tabs, Card, Button, Typography, Pagination, Modal } from "antd";
-import discount from "../../../assets/images/discount.png";
+import discount from "../../../../assets/images/discount.png";
 import { CloseOutlined, CopyOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
