@@ -6,6 +6,7 @@ import { Product } from "../../../common/types/Product";
 
 type ProductCardProps = {
   item: Product;
+  setIsModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const ProductCard = ({ item }: ProductCardProps) => {
@@ -72,6 +73,7 @@ const ProductCard = ({ item }: ProductCardProps) => {
         handleOk={handleOk}
         handleCancel={handleCancel}
         item={item}
+        setIsModalVisible={setIsModalVisible}
       />
     </div>
   );
