@@ -16,6 +16,7 @@ import AdminRouter from "./routers/AdminRouter";
 import CheckoutPage from "./pages/(client)/checkout";
 import AuthGuard from "./pages/(client)/sign-in/PrivateRouter";
 import MenuAccount from "./pages/(client)/my-account";
+import { ScrollToTop } from "./ultils/client";
 
 
 const routeConfig = [
@@ -38,13 +39,13 @@ const routeConfig = [
       {
         path: "login",
         element: (
-            <LoginPage/>
+          <LoginPage />
         )
       },
       {
         path: "register",
         element: (
-            <RegisterPage/>
+          <RegisterPage />
         )
       },
       {
@@ -66,14 +67,20 @@ const routeConfig = [
     ]
   },
   {
-  path: "/admin/*",
+    path: "/admin/*",
     element: <AdminRouter />
   }
 ];
 
 const App = () => {
   const routers = useRoutes(routeConfig);
-  return <main>{routers}</main>;
+  return (
+    <main>
+       <ScrollToTop />
+      {routers}
+    </main>
+  )
+
 };
 
 export default App;

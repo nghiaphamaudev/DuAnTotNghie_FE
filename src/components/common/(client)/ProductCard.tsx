@@ -62,9 +62,9 @@ const ProductCard = ({ item }: Props) => {
               <span className="hidden md:block text-base">Thêm giỏ hàng</span>
             </button>
             {/* Nút Xem chi tiết sản phẩm */}
-      <Link to={`/home/product/${item.id}`} className="bg-white p-2 rounded-full shadow-md">
-        <Eye size={20} className="text-gray-800" /> {/* Icon Xem */}
-      </Link>
+            <Link to={`/home/product/${item?.id}`} className="bg-white p-2 rounded-full shadow-md">
+              <Eye size={20} className="text-gray-800" /> {/* Icon Xem */}
+            </Link>
 
           </div>
         )}

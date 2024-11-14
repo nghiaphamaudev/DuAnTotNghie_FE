@@ -57,7 +57,7 @@ const LoginPage = () => {
       return;
     }
     try {
-      const res = await loginAccount(data);
+      await loginAccount(data);
 
       notification.success({
         message: "Đăng nhập thành công",
@@ -65,7 +65,6 @@ const LoginPage = () => {
         placement: "topRight",
       });
 
-      console.log(res);
       navigate("/home");
     } catch (error) {
       // Hiển thị thông báo đăng nhập thất bại
