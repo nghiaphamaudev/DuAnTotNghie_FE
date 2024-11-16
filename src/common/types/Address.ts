@@ -1,19 +1,19 @@
 export type AddressRequest = {
-  id: string
+  id?: string
   nameReceiver: string; // Tên người nhận
   phoneNumberReceiver: string; // Số điện thoại người nhận
   addressReceiver: {
     province: {
-      provinceName: any;
-      code: string; // Mã tỉnh/thành phố 
+      name: string;
+      code: string;
     };
     district: {
-      districtName: any;
-      code: string; // Mã quận/huyện
+      name: string;
+      code: string;
     };
     ward: {
-      wardName: any;
-      code: string; // Mã phường/xã
+      name: string;
+      code: string;
     };
   };
   detailAddressReceiver?: string; // Địa chỉ chi tiết

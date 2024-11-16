@@ -29,8 +29,12 @@ type AuthContextProps = {
   updateUser: (formData: User) => void;
   addMyAddress: (formData: AddressRequest) => void;
   updateMyAddress: (formData: AddressRequest) => void;
-  deleteMyAddress: (formData: AddressRequest) => void;
+  deleteMyAddress: (id: string) => void;
   userData: User;
+  handleRefetchUser: () => void;
+  isFetching : boolean;
+  isPendingAddAddress: boolean;
+  isPendingUpdateAddress: boolean;
 };
 
 const AuthContext = createContext({} as AuthContextProps);
@@ -83,7 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   // mutation get profile
-  const { data: userData } = useQuery({
+  const { data: userData, refetch: refetchUserData, isFetching  } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       const res = await getProfile();
@@ -91,7 +95,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     },
     enabled: !!token,
   });
-  console.log(userData);
 
   // mutation updateProfile
   const { mutateAsync: updateUser } = useMutation({
@@ -117,8 +120,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   //mutation update address
-
-  const { mutateAsync: updateMyAddress } = useMutation({
+  const { mutateAsync: updateMyAddress, isPending: isPendingUpdateAddress } = useMutation({
     mutationFn: async (formData: AddressRequest) => {
       const data = await updateAddress(formData);
       return data;
@@ -138,7 +140,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   // mutation add address
-  const { mutateAsync: addMyAddress } = useMutation({
+  const { mutateAsync: addMyAddress, isPending: isPendingAddAddress } = useMutation({
     mutationFn: async (formData: AddressRequest) => {
       const data = await addAddress(formData);
       return data;
@@ -193,6 +195,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const handleRefetchUser = () => {
+    refetchUserData (); // Tái thực hiện lại request để lấy thông tin mới
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -207,6 +213,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         userData,
         updateMyAddress,
         deleteMyAddress,
+        handleRefetchUser,
+        isFetching ,
+        isPendingAddAddress,
+        isPendingUpdateAddress
       }}
     >
       {children}
