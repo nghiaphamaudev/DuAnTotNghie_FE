@@ -17,16 +17,12 @@ export const getProductById = async (id: string) => {
         throw error
     }
 }
-export const addItemToCart = async (productId, variantId, sizeId, quantity) => {
+export const addItemToCart = async (productData) => {
     try {
-        const response = await instance.post(
-            '/cart/add',
-            { productId, variantId, sizeId, quantity },
-            { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-        );
+        const response = await instance.post('/cart/add', productData);
+        console.log(response.data); 
         return response.data;
     } catch (error) {
-        console.error("Failed to add item to cart:", error.response?.data || error.message);
-        throw error;
+        throw error; 
     }
 };

@@ -4,20 +4,25 @@ import './css.css';
 import { useParams, Link } from 'react-router-dom';
 import { useProduct } from '../../../contexts/ProductContext';
 import ProductCard from '../../../components/common/(client)/ProductCard';
+import { addItemToCart } from '../../../services/productServices';
 
 const DetailProduct = () => {
     const { id } = useParams();
+    const [price, setPrice] = useState(0);
+
     const { product, getDataProductById, addItemToCartHandler } = useProduct();
     const { allProduct, getAllDataProduct } = useProduct();
     const [selectedThumbnail, setSelectedThumbnail] = useState(0);
     const [mainImage, setMainImage] = useState('');
     const [selectedColor, setSelectedColor] = useState('');
     const [selectedSize, setSelectedSize] = useState('');
+    const [selectedPrice, setSelectedPrice] = useState(0); // New state for selected price
     const [quantity, setQuantity] = useState(1);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isSizeGuideVisible, setIsSizeGuideVisible] = useState(false);
     const [startIndex, setStartIndex] = useState(0);
     const productsPerPage = 4;
+
 
     useEffect(() => {
         if (id) {
@@ -28,33 +33,48 @@ const DetailProduct = () => {
     useEffect(() => {
         getAllDataProduct();
     }, []);
-
-  
     useEffect(() => {
         if (product?.data?.variants?.length > 0) {
             const defaultVariant = product.data.variants[0];
             setSelectedColor(defaultVariant.color || '');
             setSelectedSize(defaultVariant.sizes[0]?.nameSize || '');
+            setSelectedPrice(defaultVariant.sizes[0]?.price || 0);
             setMainImage(defaultVariant.images[0] || '');
             setSelectedThumbnail(0);
         }
     }, [product]);
-    
+
+    const handleArrowClick = (direction) => {
+        const images = product?.data?.variants.find(variant => variant.color === selectedColor)?.images;
+        const newIndex = (selectedThumbnail + direction + images.length) % images.length;
+        setSelectedThumbnail(newIndex);
+        setMainImage(images[newIndex]);
+    };
+
     const handleThumbnailClick = (index, image) => {
         setMainImage(image);
         setSelectedThumbnail(index);
     };
-
     const handleColorSelect = (color) => {
         const variant = product.data.variants.find(variant => variant.color === color);
         setSelectedColor(color);
         setMainImage(variant.images[0]);
         setSelectedThumbnail(0);
-        setSelectedSize(variant.sizes[0].nameSize);
+
+        if (variant.sizes.length > 0) {
+            setSelectedSize(variant.sizes[0].nameSize);  // Cập nhật kích thước đầu tiên của màu này
+            setPrice(variant.sizes[0].price);             // Cập nhật giá của kích thước đầu tiên
+        }
     };
 
     const handleSizeSelect = (size) => {
         setSelectedSize(size);
+
+        const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
+        const selectedSizeObject = selectedVariant?.sizes.find(sizeObj => sizeObj.nameSize === size);
+        if (selectedSizeObject) {
+            setPrice(selectedSizeObject.price);  // Cập nhật giá theo kích thước được chọn
+        }
     };
 
     const handleQuantityChange = (change) => {
@@ -89,31 +109,37 @@ const DetailProduct = () => {
     };
     const [openAccordion, setOpenAccordion] = useState(null);
 
-const handleAccordionToggle = (index) => {
-    setOpenAccordion(openAccordion === index ? null : index);
-};
+    const handleAccordionToggle = (index) => {
+        setOpenAccordion(openAccordion === index ? null : index);
+    };
+    const handleAddToCart = async () => {
+        if (!product?.data) {
+            message.error('Không tìm thấy thông tin sản phẩm.');
+            return;
+        }
 
-const handleAddToCart = () => {
-    // Kiểm tra xem người dùng đã chọn đủ màu sắc và kích thước chưa
-    if (!selectedColor || !selectedSize || !quantity || quantity <= 0) {
-        message.error('Vui lòng chọn đầy đủ màu sắc, kích thước và số lượng.');
-        return;
-    }
+        const productId = product?.data?.id;
+        const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
+        const selectedSizeObject = selectedVariant?.sizes.find(size => size.nameSize === selectedSize);
 
-    // Thông tin sản phẩm cần thêm vào giỏ hàng
-    const productData = {
-        productId: product._id, // Lấy productId từ sản phẩm hiện tại
-        variantId: selectedColor._id, // Lấy variantId từ lựa chọn màu sắc
-        sizeId: selectedSize._id, // Lấy sizeId từ lựa chọn kích thước
-        quantity: quantity, // Số lượng người dùng đã chọn
+        if (!productId || !selectedVariant || !selectedSizeObject) {
+            message.error('Vui lòng chọn đầy đủ thông tin sản phẩm.');
+            return;
+        }
+
+        const productData = {
+            productId,
+            variantId: selectedVariant.id,
+            sizeId: selectedSizeObject.id,
+            quantity,
+        };
+
+
+        addItemToCartHandler(productData);
+
     };
 
-    // Gọi API để thêm sản phẩm vào giỏ hàng
-    addItemToCartHandler(productData);
-};
 
-    
-    
     return (
         <div className="container">
             <div className="left-column">
@@ -142,30 +168,7 @@ const handleAddToCart = () => {
                     </div>
 
                     <div className="main-image-container" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        <div
-                            className="arrow-button left"
-                            onClick={() =>
-                                handleThumbnailClick(
-                                    (selectedThumbnail - 1 + product?.data?.variants.find(variant => variant.color === selectedColor).images.length) % product?.data?.variants.find(variant => variant.color === selectedColor).images.length,
-                                    product?.data?.variants.find(variant => variant.color === selectedColor).images[
-                                    (selectedThumbnail - 1 + product?.data?.variants.find(variant => variant.color === selectedColor).images.length) % product?.data?.variants.find(variant => variant.color === selectedColor).images.length
-                                    ]
-                                )
-                            }
-                            style={{
-                                position: 'absolute',
-                                left: '40px',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                cursor: 'pointer',
-                                padding: '10px',
-                                fontSize: '24px',
-                                zIndex: 1,
-                            }}
-                        >
-                            &#8592;
-                        </div>
-
+                        <div className="arrow-button left" onClick={() => handleArrowClick(-1)}>&#8592;</div>
                         <Image
                             className="main-image"
                             src={mainImage}
@@ -183,33 +186,13 @@ const handleAddToCart = () => {
                             preview={false}
                             onClick={showModal}
                         />
-                       <Modal open={isModalVisible} onCancel={handleCancel} footer={null} width={600}>
+                        <Modal open={isModalVisible} onCancel={handleCancel} footer={null} width={600}>
 
                             <Image src={mainImage || product?.data?.coverImg} preview={false} />
                         </Modal>
 
 
-                        <div
-                            className="arrow-button right"
-                            onClick={() =>
-                                handleThumbnailClick(
-                                    (selectedThumbnail + 1) % product?.data?.variants.find(variant => variant.color === selectedColor).images.length,
-                                    product?.data?.variants.find(variant => variant.color === selectedColor).images[(selectedThumbnail + 1) % product?.variants.find(variant => variant.color === selectedColor).images.length]
-                                )
-                            }
-                            style={{
-                                position: 'absolute',
-                                right: '40px',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                cursor: 'pointer',
-                                padding: '10px',
-                                fontSize: '24px',
-                                zIndex: 1,
-                            }}
-                        >
-                            &#8594;
-                        </div>
+                        <div className="arrow-button right" onClick={() => handleArrowClick(1)}>&#8594;</div>
                     </div>
                 </div>
             </div>
@@ -219,8 +202,9 @@ const handleAddToCart = () => {
                 <span>{product?.data?.status ? "Còn hàng" : "Hết hàng"}</span>
                 <hr />
                 <div className="product-price">
-                    {product?.data?.variants?.find(variant => variant.color === selectedColor)?.sizes[0].price.toLocaleString()}₫
+                    {price.toLocaleString()}₫
                 </div>
+
 
                 <div className="product-options">
                     <label htmlFor="color" className="product-options1">Màu Sắc</label>
@@ -267,21 +251,21 @@ const handleAddToCart = () => {
                     <div className="size-options">
                         {product?.data?.variants
                             ?.find(variant => variant.color === selectedColor)?.sizes.map(size => (
-                            <Button
-                                key={size._id}
-                                onClick={() => handleSizeSelect(size.nameSize)}
-                                style={{
-                                    border: selectedSize === size.nameSize ? '2px solid #000' : '1px solid #ccc',
-                                }}
-                            >
-                                {size.nameSize}
-                            </Button>
-                        ))}
+                                <Button
+                                    key={size._id}
+                                    onClick={() => handleSizeSelect(size.nameSize)}
+                                    style={{
+                                        border: selectedSize === size.nameSize ? '2px solid #000' : '1px solid #ccc',
+                                    }}
+                                >
+                                    {size.nameSize}
+                                </Button>
+                            ))}
                     </div>
 
 
                     <Modal open={isSizeGuideVisible} onCancel={handleSizeGuideCancel} footer={null} width={600}>
-                    <Image
+                        <Image
                             src="../../../assets/images/size.png"
                             alt="Hướng dẫn chọn size"
                             style={{ width: '100%', height: 'auto' }}
@@ -297,7 +281,7 @@ const handleAddToCart = () => {
                 </div>
 
                 <div className="action-buttons">
-                <button className="add-to-cart" onClick={handleAddToCart}>THÊM VÀO GIỎ HÀNG</button>
+                    <button className="add-to-cart" onClick={handleAddToCart}>THÊM VÀO GIỎ HÀNG</button>
                     <button className="buy-now">MUA NGAY</button>
                 </div>
                 <div className="action-button2">
@@ -308,7 +292,6 @@ const handleAddToCart = () => {
                         CHIA SẺ <i className="fab fa-facebook"></i>
                     </button>
                 </div>
-             
                 <div className="title11">
                     <h1 >Những cửa hàng còn mặt hàng này</h1>
 
@@ -354,21 +337,16 @@ const handleAddToCart = () => {
                     <div className="accordion">
 
                         <div className="accordion-item">
-                            <div className="accordion-item">
-                            <div className="accordion-header" onClick={() => handleAccordionToggle(1)}>
-    <span>THÔNG TIN SẢN PHẨM</span>
-    <i className={openAccordion === 1 ? "fas fa-minus" : "fas fa-plus"}></i>
-</div>
-<div className="accordion-content" style={{ display: openAccordion === 1 ? 'block' : 'none' }}>
-    <p>{product?.data?.description}</p>
+                        <div className="accordion-item">
+    <div className="accordion-header" onClick={() => handleAccordionToggle(1)}>
+        <span>THÔNG TIN SẢN PHẨM</span>
+        <i className={openAccordion === 1 ? "fas fa-minus" : "fas fa-plus"}></i>
+    </div>
+    <div className="accordion-content" style={{ display: openAccordion === 1 ? 'block' : 'none' }}>
+        <p>{product?.data?.description}</p>
+    </div>
 </div>
 
-                                <div className="accordion-content" style={{ display: 'none' }}>
-                                    <p>
-                                        {product?.data?.description}
-                                    </p>
-                                </div>
-                            </div>
                             <div className="accordion-content" style={{ display: 'none' }}>
                                 <p></p>
                             </div>
@@ -414,9 +392,10 @@ const handleAddToCart = () => {
                         </div>
                     </div>
                 </div>
+
+
             </div>
 
-          
             <div className="product-like">
                 <div className="product-list">
                     <i
@@ -434,6 +413,7 @@ const handleAddToCart = () => {
                     />
                 </div>
             </div>
+
         </div>
     );
 };
