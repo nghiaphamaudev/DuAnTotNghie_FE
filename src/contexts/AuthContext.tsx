@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, UserRequest, UserResponse } from "../common/types/User";
 import { addAddress, getProfile, loginAccount, registerAccount } from "../services/authServices";
+import { useCart } from "./CartContext";
 
 type AuthContextProps = {
   isLogin: boolean;
@@ -13,6 +14,7 @@ type AuthContextProps = {
   user: User | null;
   handleLogout: () => void;
   addMyAddress: (formData: any) => void;
+  token: string | null;
 };
 
 const AuthContext = createContext({} as AuthContextProps);
@@ -25,7 +27,10 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  //hooks
   const nav = useNavigate();
+
+  //state
   const [isLogin, setIsLogin] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const token = localStorage.getItem("accessToken");
@@ -36,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       setIsLogin(false);
     }
-  });
+  }, [token]);
 
   // mutation register
   const { mutateAsync: register } = useMutation({
@@ -55,31 +60,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     onSuccess: (data: UserResponse) => {
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("user", JSON.stringify(data.data));
-      // setUser(data.data);
     },
   });
 
-    // mutation add address
-    const { mutateAsync: addMyAddress } = useMutation({
-      mutationFn: async (formData: any) => {
-        const data = await addAddress(formData);
-        return data;
-      },
-      onSuccess: (data: any) => {
-        //thông báo ở đây
-      },
-    });
+  // mutation add address
+  const { mutateAsync: addMyAddress } = useMutation({
+    mutationFn: async (formData: any) => {
+      const data = await addAddress(formData);
+      return data;
+    },
+  });
 
   // mutation get profile
   useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-        const res = await getProfile()
-        setUser(res.data)
-        return res.data
+      const res = await getProfile()
+      setUser(res.data)
+      return res.data
     },
     enabled: !!token
-})
+  })
 
   const handleLogout = () => {
     try {
@@ -103,7 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isLogin, setIsLogin, register, login, user, handleLogout, addMyAddress }}
+      value={{ isLogin, setIsLogin, register, login, user, handleLogout, addMyAddress, token }}
     >
       {children}
     </AuthContext.Provider>

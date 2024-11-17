@@ -1,13 +1,25 @@
+import React, { useState } from "react";
 import { Row, Col, Button, Input, Divider, message, Popconfirm } from "antd";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
-import ProductCard from "../../../components/common/(client)/ProductCard";
 import { Link } from "react-router-dom";
-import { Trash } from "lucide-react"; // Import the delete icon
+import { Trash, Minus, Plus } from "lucide-react";
 
-const ShoppingCart = () => {
-  const cartItems = [
+type CartItem = {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  color: string;
+  size: string;
+  quantity: number;
+};
+
+type Voucher = string;
+
+const ShoppingCart: React.FC = () => {
+  const [cartItems, setCartItems] = useState<CartItem[]>([
     {
       id: 1,
       name: "Áo Polo dài tay basic FWTP065",
@@ -28,12 +40,9 @@ const ShoppingCart = () => {
       size: "S",
       quantity: 1
     }
-  ];
+  ]);
 
-  const totalAmount = cartItems.reduce((total, item) => total + item.price, 0);
-
-  // List of vouchers
-  const vouchers = [
+  const vouchers: Voucher[] = [
     "GIAM30K1A2",
     "GIAM30K3B4",
     "GIAM30K5C6",
@@ -41,22 +50,34 @@ const ShoppingCart = () => {
     "GIAM30K9E0"
   ];
 
-  // Function to display vouchers when the button is clicked
-  const handleVoucherClick = () => {
+  const totalAmount = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  const handleVoucherClick = (): void => {
     const voucherMessage = `Các mã giảm giá hiện có: ${vouchers.join(", ")}`;
-    message.success(voucherMessage, 5); // Show the message for 5 seconds
+    message.success(voucherMessage, 5);
   };
 
-  // Function to handle item deletion
-  const handleDelete = (id: number) => {
-    // Logic to delete the item from cart can go here
+  const handleDelete = (id: number): void => {
+    setCartItems(cartItems.filter((item) => item.id !== id));
     message.success(`Đã xóa sản phẩm có ID: ${id}`);
+  };
+
+  const handleQuantityChange = (id: number, newQuantity: number): void => {
+    setCartItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id
+          ? { ...item, quantity: newQuantity > 0 ? newQuantity : 1 }
+          : item
+      )
+    );
   };
 
   return (
     <div className="mx-auto px-5 py-8">
       <Row gutter={[16, 16]} className="shopping-cart">
-        {/* Cart Items Section */}
         <Col xs={24} lg={16}>
           <h2 className="text-xl font-bold mb-5">Giỏ hàng của bạn</h2>
           {cartItems.map((item) => (
@@ -79,13 +100,30 @@ const ShoppingCart = () => {
                   <p className="text-red-500 font-bold">
                     {item.price.toLocaleString()}₫
                   </p>
-                  <Input
-                    type="number"
-                    min={1}
-                    defaultValue={item.quantity}
-                    className="w-16"
-                  />
-                  {/* Popconfirm for delete confirmation */}
+                  <div className="flex items-center justify-end mt-2">
+                    <Button
+                      icon={<Minus size={16} />}
+                      onClick={() =>
+                        handleQuantityChange(item.id, item.quantity - 1)
+                      }
+                      disabled={item.quantity <= 1}
+                    />
+                    <Input
+                      value={item.quantity}
+                      onChange={(e) =>
+                        handleQuantityChange(item.id, parseInt(e.target.value))
+                      }
+                      type="number"
+                      min={1}
+                      className="w-16 mx-2 text-center"
+                    />
+                    <Button
+                      icon={<Plus size={16} />}
+                      onClick={() =>
+                        handleQuantityChange(item.id, item.quantity + 1)
+                      }
+                    />
+                  </div>
                   <Popconfirm
                     title="Bạn sẽ xóa sản phẩm ra khỏi giỏ hàng chứ?"
                     onConfirm={() => handleDelete(item.id)}
@@ -102,6 +140,7 @@ const ShoppingCart = () => {
               </Row>
             </div>
           ))}
+          <Divider />
           <Row className="mt-8">
             <Col>
               <h2 className="text-xl font-bold mb-5">
@@ -118,17 +157,13 @@ const ShoppingCart = () => {
                 pagination={{ clickable: true }}
               >
                 {[1, 2, 3, 4, 5, 6].map((product) => (
-                  <SwiperSlide key={product}>
-                    <ProductCard />
-                  </SwiperSlide>
+                  <SwiperSlide key={product}>ProductCard</SwiperSlide>
                 ))}
               </Swiper>
             </Col>
           </Row>
-          <Divider />
         </Col>
 
-        {/* Summary Section */}
         <Col xs={24} lg={8}>
           <div className="lg:sticky lg:top-44 lg:w-full">
             <div className="bg-white-100 border-[0.8px] border-gray-200 shadow-md p-4 rounded-sm">
@@ -160,7 +195,7 @@ const ShoppingCart = () => {
             <div className="vorcher w-full mt-3 mx-auto py-5 px-3 border-[1px]">
               <button
                 className="text-medium font-bold"
-                onClick={handleVoucherClick} // Handle voucher click
+                onClick={handleVoucherClick}
               >
                 Nhấn để nhận vorcher giảm giá
               </button>
