@@ -49,7 +49,7 @@ const AddressModal: React.FC<AddressModalProps> = ({
   useEffect(() => {
     fetchData();
     loadEditingData();
-  }, [editingAddress, form]);
+  }, [editingAddress, form, isModalVisible]);
 
   const fetchData = async () => {
     try {
