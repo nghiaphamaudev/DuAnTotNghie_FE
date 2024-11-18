@@ -18,6 +18,7 @@ export type ProductVariant = {
 
 // Định nghĩa type cho sản phẩm chính (product)
 export type Product = {
+  data: any;
   id: string; // ID của sản phẩm
   name: string; // Tên sản phẩm
   description: string; // Mô tả sản phẩm
