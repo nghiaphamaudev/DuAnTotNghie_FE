@@ -1,4 +1,6 @@
+import { Button, Image, Modal, message, notification } from 'antd';
 import { useEffect, useState } from 'react';
+<<<<<<< HEAD
 import { Image, Button, Modal, message } from 'antd';
 import './css.css';
 import { useParams } from 'react-router-dom';
@@ -9,6 +11,20 @@ import ProductCard from '../../../components/common/(client)/ProductCard';
 const DetailProduct = () => {
     const { id } = useParams<{ id: string }>();
     const { product, getDataProductById, addItemToCartHandler } = useProduct();
+=======
+import { useParams } from 'react-router-dom';
+import ProductCard from '../../../components/common/(client)/ProductCard';
+import { useCart } from '../../../contexts/CartContext';
+import { useProduct } from '../../../contexts/ProductContext';
+import './css.css';
+
+const DetailProduct = () => {
+    const { id } = useParams();
+    const [price, setPrice] = useState(0);
+
+    const { product, getDataProductById } = useProduct();
+    const { addItemToCart } = useCart();
+>>>>>>> bd1a1c53f5d31f47fec2056997bcf1a94f04944e
     const { allProduct, getAllDataProduct } = useProduct();
 
     const [price, setPrice] = useState<number>(0);
@@ -133,7 +149,18 @@ const DetailProduct = () => {
             quantity,
         };
 
+<<<<<<< HEAD
         addItemToCartHandler(productData);
+=======
+        const res = await addItemToCart(productData);
+        if (res && res?.status) {
+            notification.success({
+              message: "Thêm sản phẩm thành công",
+              placement: "topRight",
+              duration: 2,
+            });
+          }
+>>>>>>> bd1a1c53f5d31f47fec2056997bcf1a94f04944e
     };
 
     const showModal = () => setIsModalVisible(true);
