@@ -35,6 +35,7 @@ type AuthContextProps = {
   isFetching : boolean;
   isPendingAddAddress: boolean;
   isPendingUpdateAddress: boolean;
+  token: string | null;
 };
 
 const AuthContext = createContext({} as AuthContextProps);
@@ -219,7 +220,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         handleRefetchUser,
         isFetching ,
         isPendingAddAddress,
-        isPendingUpdateAddress
+        isPendingUpdateAddress,
+        token
       }}
     >
       {children}

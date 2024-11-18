@@ -6,7 +6,7 @@ import { Product } from "../../../common/types/Product";
 
 type ProductCardProps = {
   item: Product;
-  setIsModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsModalVisible?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const ProductCard = ({ item }: ProductCardProps) => {
