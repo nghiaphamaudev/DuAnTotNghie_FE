@@ -38,7 +38,7 @@ const RegisterPage = () => {
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      const res = await registerAccount(data);
+      await registerAccount(data);
 
       notification.success({
         message: "Đăng ký thành công",
@@ -46,7 +46,6 @@ const RegisterPage = () => {
         placement: "topRight",
       });
 
-      console.log(res);
       navigate("/login");
     } catch (error) {
       if (isAxiosError(error)) {

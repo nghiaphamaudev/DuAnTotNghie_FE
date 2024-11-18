@@ -1,18 +1,44 @@
 
-import { Button, Card, Form, Input } from "antd";
+import { Button, Card, Form, Input, notification } from "antd";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 import { FormProps } from "antd/lib";
+import { addCategory } from "../../../services/categoryServices";
+import { useMutation } from "@tanstack/react-query";
+import { CategoryRequest } from "../../../common/types/Category";
 const listHis = [{ link: "/admin/category", name: "Danh mục" }];
 type FieldType = {
   name: string
 };
 const CategoryAdd = () => {
-  const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    console.log('Success:', values);
+
+  const [form] = Form.useForm();
+
+  // function
+  const { mutate } = useMutation({
+    mutationFn: (data: CategoryRequest) => addCategory(data),
+    onSuccess: () => {
+      notification.success({
+        message: "Thành công",
+        duration: 2,
+      });
+      form.resetFields();
+    },
+    onError: () => {
+      notification.error({
+        message: "Thất bị. Xin thử được thêm",
+        duration: 2,
+      });
+    },
+  });
+  const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
+    mutate(values);
   };
 
-  const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+  const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = () => {
+    notification.error({
+      message: "Thất bại. Xin thử lại",
+      duration: 2,
+    });
   };
 
   return (
@@ -26,10 +52,11 @@ const CategoryAdd = () => {
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
+          form={form}
         >
           <Form.Item
             label="Loại"
-            name="loai"
+            name="name"
             rules={[
               {
                 required: true,

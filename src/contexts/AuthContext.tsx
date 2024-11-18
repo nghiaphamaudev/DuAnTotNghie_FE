@@ -47,7 +47,10 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  //hooks
   const nav = useNavigate();
+
+  //state
   const [isLogin, setIsLogin] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const token = localStorage.getItem("accessToken");
