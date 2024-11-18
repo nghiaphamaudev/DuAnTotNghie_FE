@@ -1,16 +1,17 @@
+import { Button, Image, Modal, message, notification } from 'antd';
 import { useEffect, useState } from 'react';
-import { Image, Button, Modal, message } from 'antd';
-import './css.css';
-import { useParams, Link } from 'react-router-dom';
-import { useProduct } from '../../../contexts/ProductContext';
+import { useParams } from 'react-router-dom';
 import ProductCard from '../../../components/common/(client)/ProductCard';
-import { addItemToCart } from '../../../services/productServices';
+import { useCart } from '../../../contexts/CartContext';
+import { useProduct } from '../../../contexts/ProductContext';
+import './css.css';
 
 const DetailProduct = () => {
     const { id } = useParams();
     const [price, setPrice] = useState(0);
 
-    const { product, getDataProductById, addItemToCartHandler } = useProduct();
+    const { product, getDataProductById } = useProduct();
+    const { addItemToCart } = useCart();
     const { allProduct, getAllDataProduct } = useProduct();
     const [selectedThumbnail, setSelectedThumbnail] = useState(0);
     const [mainImage, setMainImage] = useState('');
@@ -134,9 +135,14 @@ const DetailProduct = () => {
             quantity,
         };
 
-
-        addItemToCartHandler(productData);
-
+        const res = await addItemToCart(productData);
+        if (res && res?.status) {
+            notification.success({
+              message: "Thêm sản phẩm thành công",
+              placement: "topRight",
+              duration: 2,
+            });
+          }
     };
 
 
@@ -337,15 +343,15 @@ const DetailProduct = () => {
                     <div className="accordion">
 
                         <div className="accordion-item">
-                        <div className="accordion-item">
-    <div className="accordion-header" onClick={() => handleAccordionToggle(1)}>
-        <span>THÔNG TIN SẢN PHẨM</span>
-        <i className={openAccordion === 1 ? "fas fa-minus" : "fas fa-plus"}></i>
-    </div>
-    <div className="accordion-content" style={{ display: openAccordion === 1 ? 'block' : 'none' }}>
-        <p>{product?.data?.description}</p>
-    </div>
-</div>
+                            <div className="accordion-item">
+                                <div className="accordion-header" onClick={() => handleAccordionToggle(1)}>
+                                    <span>THÔNG TIN SẢN PHẨM</span>
+                                    <i className={openAccordion === 1 ? "fas fa-minus" : "fas fa-plus"}></i>
+                                </div>
+                                <div className="accordion-content" style={{ display: openAccordion === 1 ? 'block' : 'none' }}>
+                                    <p>{product?.data?.description}</p>
+                                </div>
+                            </div>
 
                             <div className="accordion-content" style={{ display: 'none' }}>
                                 <p></p>

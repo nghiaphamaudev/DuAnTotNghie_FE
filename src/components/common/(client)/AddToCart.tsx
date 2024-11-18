@@ -20,12 +20,14 @@ interface AddToCartProps {
   handleOk: (quantity: number) => void;
   handleCancel: () => void;
   item: Product; // Nhận dữ liệu sản phẩm từ ProductCard
+  setIsModalVisible: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const AddToCart = ({
   isModalVisible,
   handleCancel,
-  item
+  item,
+  setIsModalVisible
 }: AddToCartProps) => {
   //context
   const { addItemToCart } = useCart();
@@ -70,7 +72,7 @@ const AddToCart = ({
   }, []);
 
   //function
-  const handleKeyPress = (event: KeyboardEvent) => {
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     // Kiểm tra nếu ký tự không phải là số (0-9)
     if (!/[0-9]/.test(event.key)) {
       event.preventDefault(); // Chặn ký tự không phải số
@@ -113,6 +115,7 @@ const AddToCart = ({
           placement: "topRight",
           duration: 2,
         });
+        setIsModalVisible(false)
       }
     } catch (error) {
       console.log(error);
@@ -216,7 +219,7 @@ const AddToCart = ({
 
           <div className="flex items-center mb-4">
             <span className="text-red-500 text-xl font-semibold">
-              {price}
+              {price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
             </span>
             <span className="text-gray-400 text-lg line-through ml-4">
               850,000 đ
@@ -262,7 +265,7 @@ const AddToCart = ({
                 max={10}
                 value={quantity}
                 onChange={onChangeQuantity}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 className="w-14 mx-2"
               />
               <Button onClick={() => setQuantity(quantity + 1)}>+</Button>

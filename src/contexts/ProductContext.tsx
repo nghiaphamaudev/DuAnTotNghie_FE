@@ -1,5 +1,4 @@
 import { createContext, useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { addItemToCart, getAllProduct, getProductById } from "../services/productServices";
 import { useMutation } from "@tanstack/react-query";
 import { Product } from "../common/types/Product";
@@ -25,7 +24,6 @@ export const useProduct = () => {
 };
 
 export const ProductProvider = ({ children }: { children: React.ReactNode }) => {
-  const nav = useNavigate();
   const [allProduct, setAllProduct] = useState<Product[]>([]);
   const [product, setProduct] = useState<Product | null>(null);
 
