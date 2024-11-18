@@ -1,8 +1,9 @@
 import { createContext, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllProduct, getProductById } from "../services/productServices";
+import { addItemToCart, getAllProduct, getProductById } from "../services/productServices";
 import { useMutation } from "@tanstack/react-query";
 import { Product } from "../common/types/Product";
+import { message } from "antd";
 
 type ProductContextProps = {
   allProduct: Product[];
@@ -10,24 +11,20 @@ type ProductContextProps = {
   setAllProduct: React.Dispatch<React.SetStateAction<Product[]>>;
   getAllDataProduct: () => void;
   getDataProductById: (id: string) => void;
+  addItemToCartHandler: (productData: { productId: string, variantId: string, sizeId: string, quantity: number }) => void;
 };
 
-const ProductContext = createContext({} as ProductContextProps);
-// eslint-disable-next-line react-refresh/only-export-components
+const ProductContext = createContext<ProductContextProps | undefined>(undefined);
+
 export const useProduct = () => {
   const context = useContext(ProductContext);
   if (!context) {
-    throw new Error("useProduct must be used within an AuthProvider");
+    throw new Error("useProduct must be used within a ProductProvider");
   }
   return context;
 };
 
-export const ProductProvider = ({
-  children
-}: {
-  children: React.ReactNode;
-}) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const ProductProvider = ({ children }: { children: React.ReactNode }) => {
   const nav = useNavigate();
   const [allProduct, setAllProduct] = useState<Product[]>([]);
   const [product, setProduct] = useState<Product | null>(null);
@@ -48,17 +45,43 @@ export const ProductProvider = ({
     }
   });
 
+  const { mutateAsync: addItemToCartHandler } = useMutation({
+    mutationFn: async (productData: { productId: string, variantId: string, sizeId: string, quantity: number }) => {
+      try {
+        const response = await addItemToCart(productData);
+        console.log(response);
+  
+        if (response.status === "success") {
+          message.success("Sản phẩm đã được thêm vào giỏ hàng thành công!");
+          return response;
+        } else if (response.status === "unauthorized") {
+          message.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
+          throw new Error("Chưa đăng nhập.");
+        } else {
+          throw new Error("Đã xảy ra lỗi.");
+        }
+      } catch (error: any) {
+        const errorMessage = error.response?.data?.message || error.message || "Lỗi thêm sản phẩm vào giỏ hàng.";
+        message.error(errorMessage);
+        throw error; 
+      }
+    },
+  });
+  
+  
+
   return (
     <ProductContext.Provider
-      value={{
-        allProduct,
-        product,
-        setAllProduct,
-        getAllDataProduct,
-        getDataProductById
-      }}
-    >
-      {children}
-    </ProductContext.Provider>
+    value={{
+      allProduct,
+      product,
+      setAllProduct,
+      getAllDataProduct,
+      getDataProductById,
+      addItemToCartHandler,
+    }}
+  >
+    {children}
+  </ProductContext.Provider>
   );
 };

@@ -17,3 +17,12 @@ export const getProductById = async (id: string) => {
         throw error
     }
 }
+export const addItemToCart = async (productData) => {
+    try {
+        const response = await instance.post('/cart/add', productData);
+        console.log(response.data); 
+        return response.data;
+    } catch (error) {
+        throw error; 
+    }
+};
