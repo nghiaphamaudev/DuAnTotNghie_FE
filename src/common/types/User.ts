@@ -1,3 +1,5 @@
+import { AddressRequest } from "./Address";
+
 export type User = {
   email: string;
   fullName: string;
@@ -12,39 +14,25 @@ export type User = {
   createdAt: string;
   updatedAt: string;
   id: string;
+  gender: boolean;
+  birthday: Date;
 };
 export type UserResponse = {
   accessToken: string;
   data: User; // Thông tin người dùng
 };
 
-export type UserRequest = {
+export type UserLoginRequest = {
   email: string;
   password: string;
-}
-export type Address = {
-  address?: string;
-  name: string;
-  phone: string;
-  city?: string;
-  district?: string;
-  ward?: string;
-  detailedAddress?: string;
-  addressType?: string;
-  defaultAddress?: boolean;
 };
 
-export type Province = {
-  code: string;
-  name: string;
+export type UserRegisterRequest = {
+  email: string;
+  password: string;
+  phoneNumber?: string;
+  confirmPassword?: string;
+  fullName?: string;
 };
 
-export type District = {
-  code: string;
-  name: string;
-};
 
-export type Ward = {
-  code: string;
-  name: string;
-};
