@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-catch */
 import instance from "../config/axios";
 
 export const getAllProduct = async () => {
@@ -17,3 +18,12 @@ export const getProductById = async (id: string) => {
         throw error
     }
 }
+export const addItemToCart = async (productData) => {
+    try {
+        const response = await instance.post('/cart/add', productData);
+        console.log(response.data); 
+        return response.data;
+    } catch (error) {
+        throw error; 
+    }
+};

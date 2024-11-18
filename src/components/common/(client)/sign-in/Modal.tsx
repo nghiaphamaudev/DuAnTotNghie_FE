@@ -1,8 +1,9 @@
 import { Modal } from "antd";
 import { useState } from "react";
 import ForgotPasswordForm from "./ForgotPasswordForm";
-import OtpForm from "./OtpForm";
+
 import ChangePasswordForm from "./ChangePasswordForm";
+import OtpForm from "./OtpForm";
 
 const ForgotPasswordModal = ({
   isModalOpen,

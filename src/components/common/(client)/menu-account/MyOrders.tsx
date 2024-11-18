@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Button, Typography, Rate } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
-import ao from "../../../assets/images/ao.png";
+import ao from "../../../../assets/images/ao.png";
 
 const { Title, Text } = Typography;
 

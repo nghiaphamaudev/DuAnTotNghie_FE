@@ -6,8 +6,8 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 
-import { LoginSchema } from "./zod";
-import ForgotPasswordModal from "./Modal";
+import { LoginSchema } from "../../../components/common/(client)/sign-in/zod";
+import ForgotPasswordModal from "../../../components/common/(client)/sign-in/Modal";
 import { useAuth } from "../../../contexts/AuthContext";
 import { notification } from "antd";
 // validate login
@@ -69,7 +69,7 @@ const LoginPage = () => {
     } catch (error) {
       // Hiển thị thông báo đăng nhập thất bại
       notification.error({
-        message: "Đăng nhập thất bại",
+        message: "Đăng nhập thất bại",  
         description: "Tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại!",
         placement: "topRight",
       });
