@@ -1,17 +1,5 @@
 import { Button, Image, Modal, message, notification } from 'antd';
 import { useEffect, useState } from 'react';
-<<<<<<< HEAD
-import { Image, Button, Modal, message } from 'antd';
-import './css.css';
-import { useParams } from 'react-router-dom';
-import { useProduct } from '../../../contexts/ProductContext';
-import ProductCard from '../../../components/common/(client)/ProductCard';
-
-
-const DetailProduct = () => {
-    const { id } = useParams<{ id: string }>();
-    const { product, getDataProductById, addItemToCartHandler } = useProduct();
-=======
 import { useParams } from 'react-router-dom';
 import ProductCard from '../../../components/common/(client)/ProductCard';
 import { useCart } from '../../../contexts/CartContext';
@@ -24,92 +12,83 @@ const DetailProduct = () => {
 
     const { product, getDataProductById } = useProduct();
     const { addItemToCart } = useCart();
->>>>>>> bd1a1c53f5d31f47fec2056997bcf1a94f04944e
     const { allProduct, getAllDataProduct } = useProduct();
-
-    const [price, setPrice] = useState<number>(0);
-    const [selectedThumbnail, setSelectedThumbnail] = useState<number>(0);
-    const [mainImage, setMainImage] = useState<string>('');
-    const [selectedColor, setSelectedColor] = useState<string>('');
-    const [selectedSize, setSelectedSize] = useState<string>('');
-    const [quantity, setQuantity] = useState<number>(1);
-    const [startIndex, setStartIndex] = useState<number>(0);
-    const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-    const [isSizeGuideVisible, setIsSizeGuideVisible] = useState<boolean>(false);
-    const [openAccordion, setOpenAccordion] = useState<number | null>(null);
-
+    const [selectedThumbnail, setSelectedThumbnail] = useState(0);
+    const [mainImage, setMainImage] = useState('');
+    const [selectedColor, setSelectedColor] = useState('');
+    const [selectedSize, setSelectedSize] = useState('');
+    const [selectedPrice, setSelectedPrice] = useState(0); // New state for selected price
+    const [quantity, setQuantity] = useState(1);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isSizeGuideVisible, setIsSizeGuideVisible] = useState(false);
+    const [startIndex, setStartIndex] = useState(0);
     const productsPerPage = 4;
 
+
     useEffect(() => {
-        if (id) getDataProductById(id);
+        if (id) {
+            getDataProductById(id);
+        }
     }, [id]);
 
     useEffect(() => {
         getAllDataProduct();
     }, []);
-
     useEffect(() => {
         if (product?.data?.variants?.length > 0) {
             const defaultVariant = product.data.variants[0];
             setSelectedColor(defaultVariant.color || '');
-            setMainImage(defaultVariant.images?.[0] || '');
+            setSelectedSize(defaultVariant.sizes[0]?.nameSize || '');
+            setSelectedPrice(defaultVariant.sizes[0]?.price || 0);
+            setMainImage(defaultVariant.images[0] || '');
             setSelectedThumbnail(0);
-
-            if (defaultVariant.sizes.length > 0) {
-                setSelectedSize(defaultVariant.sizes[0].nameSize);
-                setPrice(defaultVariant.sizes[0].price);
-            }
         }
     }, [product]);
 
-    useEffect(() => {
-        const selectedVariant = product?.data?.variants.find((variant: { color: string; }) => variant.color === selectedColor);
-        if (selectedVariant) {
-            const sizeObject = selectedVariant.sizes.find((size: { nameSize: string; }) => size.nameSize === selectedSize);
-            if (sizeObject) setPrice(sizeObject.price);
-        }
-    }, [selectedColor, selectedSize]);
-
-    // Handlers
-    const handleThumbnailClick = (index: number, image: string) => {
-        setMainImage(image);
-        setSelectedThumbnail(index);
-    };
-
-    const handleArrowClick = (direction: number) => {
-        const images = product?.data?.variants.find((variant: { color: string; }) => variant.color === selectedColor)?.images || [];
+    const handleArrowClick = (direction) => {
+        const images = product?.data?.variants.find(variant => variant.color === selectedColor)?.images;
         const newIndex = (selectedThumbnail + direction + images.length) % images.length;
         setSelectedThumbnail(newIndex);
         setMainImage(images[newIndex]);
     };
 
-    const handleColorSelect = (color: string) => {
-        const variant = product.data.variants.find((variant: { color: string; }) => variant.color === color);
-        if (variant) {
-            setSelectedColor(color);
-            setMainImage(variant.images[0]);
-            setSelectedThumbnail(0);
+    const handleThumbnailClick = (index, image) => {
+        setMainImage(image);
+        setSelectedThumbnail(index);
+    };
+    const handleColorSelect = (color) => {
+        const variant = product.data.variants.find(variant => variant.color === color);
+        setSelectedColor(color);
+        setMainImage(variant.images[0]);
+        setSelectedThumbnail(0);
 
-            if (variant.sizes.length > 0) {
-                setSelectedSize(variant.sizes[0].nameSize);
-                setPrice(variant.sizes[0].price);
-            }
+        if (variant.sizes.length > 0) {
+            setSelectedSize(variant.sizes[0].nameSize);  // Cập nhật kích thước đầu tiên của màu này
+            setPrice(variant.sizes[0].price);             // Cập nhật giá của kích thước đầu tiên
         }
     };
 
-    const handleSizeSelect = (size: string) => {
+    const handleSizeSelect = (size) => {
         setSelectedSize(size);
 
-        const selectedVariant = product?.data?.variants.find((variant: { color: string; }) => variant.color === selectedColor);
-        const selectedSizeObject = selectedVariant?.sizes.find((sizeObj: { nameSize: string; }) => sizeObj.nameSize === size);
+        const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
+        const selectedSizeObject = selectedVariant?.sizes.find(sizeObj => sizeObj.nameSize === size);
         if (selectedSizeObject) {
-            setPrice(selectedSizeObject.price);
+            setPrice(selectedSizeObject.price);  // Cập nhật giá theo kích thước được chọn
         }
     };
 
-    const handleQuantityChange = (change: number) => {
+    const handleQuantityChange = (change) => {
         setQuantity(prevQuantity => Math.max(1, prevQuantity + change));
     };
+
+    const showModal = () => setIsModalVisible(true);
+    const handleCancel = () => setIsModalVisible(false);
+
+    const showSizeGuide = () => setIsSizeGuideVisible(true);
+    const handleSizeGuideCancel = () => setIsSizeGuideVisible(false);
+
+    const handleTabClick = (tab) => setSelectedTab(tab);
 
     const handleNext = () => {
         if (startIndex + productsPerPage < allProduct.length) {
@@ -123,10 +102,17 @@ const DetailProduct = () => {
         }
     };
 
-    const handleAccordionToggle = (index: number) => {
+    const toggleAccordion = (header) => {
+        const content = header.nextElementSibling;
+        const icon = header.querySelector('i');
+        content.style.display = content.style.display === 'none' ? 'block' : 'none';
+        icon.className = content.style.display === 'none' ? 'fas fa-plus' : 'fas fa-minus';
+    };
+    const [openAccordion, setOpenAccordion] = useState(null);
+
+    const handleAccordionToggle = (index) => {
         setOpenAccordion(openAccordion === index ? null : index);
     };
-
     const handleAddToCart = async () => {
         if (!product?.data) {
             message.error('Không tìm thấy thông tin sản phẩm.');
@@ -134,8 +120,8 @@ const DetailProduct = () => {
         }
 
         const productId = product?.data?.id;
-        const selectedVariant = product?.data?.variants.find((variant: { color: string; }) => variant.color === selectedColor);
-        const selectedSizeObject = selectedVariant?.sizes.find((size: { nameSize: string; }) => size.nameSize === selectedSize);
+        const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
+        const selectedSizeObject = selectedVariant?.sizes.find(size => size.nameSize === selectedSize);
 
         if (!productId || !selectedVariant || !selectedSizeObject) {
             message.error('Vui lòng chọn đầy đủ thông tin sản phẩm.');
@@ -149,26 +135,23 @@ const DetailProduct = () => {
             quantity,
         };
 
-<<<<<<< HEAD
-        addItemToCartHandler(productData);
-=======
         const res = await addItemToCart(productData);
         if (res && res?.status) {
             notification.success({
-              message: "Thêm sản phẩm thành công",
-              placement: "topRight",
-              duration: 2,
+                message: "Thêm sản phẩm thành công",
+                placement: "topRight",
+                duration: 2,
             });
-          }
->>>>>>> bd1a1c53f5d31f47fec2056997bcf1a94f04944e
+            setIsModalVisible(false)
+        } else {
+            notification.error({
+                message: res.message,
+                placement: "topRight",
+                duration: 2,
+            });
+            setIsModalVisible(false)
+        }
     };
-
-    const showModal = () => setIsModalVisible(true);
-    const handleCancel = () => setIsModalVisible(false);
-
-    const showSizeGuide = () => setIsSizeGuideVisible(true);
-    const handleSizeGuideCancel = () => setIsSizeGuideVisible(false);
-
 
 
     return (
@@ -186,7 +169,7 @@ const DetailProduct = () => {
                 <div className="image-gallery">
                     <div className="thumbnail-container">
                         <div className="thumbnail-images">
-                            {product?.data?.variants?.find((variant: { color: string; }) => variant.color === selectedColor)?.images.map((image: string, index: number) => (
+                            {product?.data?.variants?.find(variant => variant.color === selectedColor)?.images.map((image, index) => (
                                 <img
                                     key={index}
                                     alt={`Thumbnail ${index + 1}`}
@@ -240,7 +223,7 @@ const DetailProduct = () => {
                 <div className="product-options">
                     <label htmlFor="color" className="product-options1">Màu Sắc</label>
                     <div className="color-options">
-                        {product?.data?.variants?.map((variant: { color: string; images: any[]; }, index: any) => (
+                        {product?.data?.variants?.map((variant, index) => (
                             <Button
                                 key={index}
                                 className={`color-option ${selectedColor === variant.color ? "selected" : ""}`}
@@ -281,7 +264,7 @@ const DetailProduct = () => {
                     </a>
                     <div className="size-options">
                         {product?.data?.variants
-                            ?.find((variant: { color: string; }) => variant.color === selectedColor)?.sizes.map((size: { _id: any; nameSize: string; }) => (
+                            ?.find(variant => variant.color === selectedColor)?.sizes.map(size => (
                                 <Button
                                     key={size._id}
                                     onClick={() => handleSizeSelect(size.nameSize)}
@@ -383,7 +366,7 @@ const DetailProduct = () => {
                             </div>
                         </div>
                         <div className="accordion-item">
-                            <div className="accordion-header" onClick={(e: { currentTarget: any; }) => openAccordion(e.currentTarget)}>
+                            <div className="accordion-header" onClick={(e) => toggleAccordion(e.currentTarget)}>
                                 <span>CHÍNH SÁCH ĐỔI TRẢ</span>
                                 <i className="fas fa-plus"></i>
                             </div>
@@ -398,7 +381,7 @@ const DetailProduct = () => {
                             </div>
                         </div>
                         <div className="accordion-item">
-                            <div className="accordion-header" onClick={(e: { currentTarget: any; }) => openAccordion(e.currentTarget)}>
+                            <div className="accordion-header" onClick={(e) => toggleAccordion(e.currentTarget)}>
                                 <span>ƯU ĐÃI MEMBER</span>
                                 <i className="fas fa-plus"></i>
                             </div>
