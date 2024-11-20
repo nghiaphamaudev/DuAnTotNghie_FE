@@ -70,7 +70,7 @@ const App = () => {
   const routers = useRoutes(routeConfig);
   return (
     <main>
-       <ScrollToTop />
+      <ScrollToTop />
       {routers}
     </main>
   )

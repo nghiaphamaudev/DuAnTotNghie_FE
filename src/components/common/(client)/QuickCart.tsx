@@ -1,10 +1,12 @@
 import { Button, Divider, Drawer, Progress } from "antd";
 import { Trash, X } from "lucide-react";
 import { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../../contexts/CartContext";
 import CartEmptyImage from "../../../assets/images/empty_cart_retina.png";
+import CartNotToken from "../../../assets/images/cart_not_token.jpg";
 import { CartItem } from "../../../interface/Cart";
+import { useAuth } from "../../../contexts/AuthContext";
 
 
 
@@ -24,8 +26,12 @@ const QuickCart: FC<QuickCartProps> = ({
   freeShippingThreshold
 }) => {
 
+  //hooks
+  const nav = useNavigate();
+
   //context
   const { deleteItemCart } = useCart();
+  const { token } = useAuth();
 
   //functions
   const remainingAmountForFreeShipping = Math.max(
@@ -41,6 +47,25 @@ const QuickCart: FC<QuickCartProps> = ({
     }
   }
 
+  const handleLogin = () => {
+    nav('/login');
+    closeCartDrawer();
+  }
+
+  const handleRegister = () => {
+    nav('/register');
+    closeCartDrawer();
+  }
+
+  const handleClickToCart = () => {
+    nav('/cart');
+    closeCartDrawer();
+  }
+
+
+
+  
+
   return (
     <Drawer
       title="Giỏ hàng"
@@ -51,7 +76,23 @@ const QuickCart: FC<QuickCartProps> = ({
       width={400}
     >
       {
-        cartItems && cartItems.length > 0 && (
+        !token && (
+          <div className="text-center">
+            <img className="mt-16" src={CartNotToken} alt="cart_not_token" />
+            <h2 className="text-large font-semibold"> Bạn chưa đăng nhập</h2>
+            <div className="mx-auto text-medium">
+              Vui lòng ấn
+              {' '}
+              <button onClick={() => { handleLogin() }} className="text-blue-500">đăng nhập</button>/
+              <button onClick={() => { handleRegister() }} className="text-blue-500">đăng ký</button>
+              {' '}
+              để tiếp tục
+            </div>
+          </div>
+        )
+      }
+      {
+        token && cartItems && cartItems.length > 0 && (
           <div className="p-4">
             {totalPrice >= freeShippingThreshold ? (
               <p className="text-green-500">
@@ -80,10 +121,10 @@ const QuickCart: FC<QuickCartProps> = ({
       <div className="flex flex-col h-full">
         {/* Cart items */}
         {
-          cartItems && cartItems.length === 0 && (
+          token && cartItems && cartItems.length === 0 && (
             <>
               <img className="mt-16" src={CartEmptyImage} alt="cart_empty" />
-              <div className="mx-auto text-large mt-10">Chưa có sản phẩm trong giỏ hàng</div>
+              <div className="mx-auto text-medium mt-10">Chưa có sản phẩm trong giỏ hàng</div>
             </>
           )
         }
@@ -141,7 +182,7 @@ const QuickCart: FC<QuickCartProps> = ({
                     {totalPrice.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
                   </span>
                 </div>
-                <button className="bg-red-500 text-white font-semibold w-full px-5 py-2 rounded-none">
+                <button onClick={() => handleClickToCart()} className="bg-red-500 text-white font-semibold w-full px-5 py-2 rounded-none">
                   THANH TOÁN
                 </button>
                 <div className="flex justify-between items-center mt-4">
