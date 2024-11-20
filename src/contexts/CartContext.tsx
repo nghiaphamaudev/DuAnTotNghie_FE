@@ -1,15 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useState } from "react";
-import { addItemToCartServices, deleteItemFromCartServices, getCartForUserServices } from "../services/cartServices";
+import { addItemToCartServices, deleteItemFromCartServices, getCartForUserServices, updateQuantityItemCartServices } from "../services/cartServices";
 import { useAuth } from "./AuthContext";
-import { AdđToCartRequest, Cart } from "../interface/Cart";
+import { AdđToCartRequest, Cart, UpdateQuantityCartRequest } from "../interface/Cart";
 import { ResponseData } from "../interface/http";
 
 type CartContextProps = {
     cartData: Cart | null,
     setCartData: React.Dispatch<React.SetStateAction<Cart | null>>,
     deleteItemCart: (id: string) => void,
-    addItemToCart: (payload: AdđToCartRequest) => Promise<ResponseData>
+    addItemToCart: (payload: AdđToCartRequest) => Promise<ResponseData>,
+    countItemCart: number,
+    updateQuantityItem: (payload: UpdateQuantityCartRequest) => Promise<ResponseData>,
 };
 
 const CartContext = createContext({} as CartContextProps);
@@ -17,7 +19,7 @@ const CartContext = createContext({} as CartContextProps);
 export const useCart = () => {
     const context = useContext(CartContext);
     if (!context) {
-        throw new Error("useCart must be used within an AuthProvider");
+        throw new Error("useCart must be used within an CartProvider");
     }
     return context;
 };
@@ -28,6 +30,7 @@ export const CartProvider = ({
     children: React.ReactNode;
 }) => {
     const [cartData, setCartData] = useState<Cart | null>(null);
+    const [countItemCart, setCountItemCart] = useState<number>(0)
     const { token } = useAuth();
 
     const queryClient = useQueryClient();
@@ -44,10 +47,13 @@ export const CartProvider = ({
     })
 
     useEffect(() => {
-        if (!token) {
+        if (!token || !cartData) {
             setCartData(null);
+            setCountItemCart(0)
+        } else {
+            setCountItemCart(cartData?.items.length)
         }
-    }, [token])
+    }, [token, cartData])
 
     // thêm sản phẩm vào cart
     const { mutateAsync: addItemToCart } = useMutation({
@@ -59,7 +65,7 @@ export const CartProvider = ({
             queryClient.invalidateQueries({
                 queryKey: ["carts"],
             });
-        },
+        }
     });
 
     // xóa item trong cart
@@ -75,6 +81,19 @@ export const CartProvider = ({
         },
     });
 
+        // update số lượng item trong cart
+        const { mutateAsync: updateQuantityItem } = useMutation({
+            mutationFn: async (payload: UpdateQuantityCartRequest) => {
+                const res = await updateQuantityItemCartServices(payload);
+                return res;
+            },
+            onSuccess: () => {
+                queryClient.invalidateQueries({
+                    queryKey: ["carts"],
+                });
+            },
+        });
+
 
     return (
         <CartContext.Provider
@@ -82,7 +101,9 @@ export const CartProvider = ({
                 setCartData,
                 cartData,
                 deleteItemCart,
-                addItemToCart
+                addItemToCart,
+                countItemCart,
+                updateQuantityItem,
             }}
         >
             {children}

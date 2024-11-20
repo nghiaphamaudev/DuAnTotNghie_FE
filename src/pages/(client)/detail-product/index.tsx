@@ -138,11 +138,19 @@ const DetailProduct = () => {
         const res = await addItemToCart(productData);
         if (res && res?.status) {
             notification.success({
-              message: "Thêm sản phẩm thành công",
-              placement: "topRight",
-              duration: 2,
+                message: "Thêm sản phẩm thành công",
+                placement: "topRight",
+                duration: 2,
             });
-          }
+            setIsModalVisible(false)
+        } else {
+            notification.error({
+                message: res.message,
+                placement: "topRight",
+                duration: 2,
+            });
+            setIsModalVisible(false)
+        }
     };
 
 
