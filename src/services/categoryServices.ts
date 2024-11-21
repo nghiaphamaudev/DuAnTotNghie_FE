@@ -21,9 +21,12 @@ export const addCategory = async (payload: any) => {
 
 export const getCategoryById = async (id: string) => {
     try {
-        const { data } = await instance.get('/categories/' + id);
-        return data
-    } catch (error) { 
-        throw error
+        const { data } = await instance.get(`/categories/${id}`);
+        console.log("Category data fetched successfully:", data);
+
+        return data;
+    } catch (error) {
+        console.error('Error fetching category by ID:', error);
+        throw error;
     }
-}
+};
