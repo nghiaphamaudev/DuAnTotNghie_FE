@@ -82,7 +82,7 @@ const ProductEdit: React.FC = () => {
     formData.append('discount', values.discount?.toString() || '0');
     formData.append('ratingAverage', '0');
     formData.append('ratingQuantity', '0');
-    formData.append('status', values.status?.toString() || 'true');
+    formData.append('isActive', values.isActive);
 
     // Xử lý ảnh bìa
     if (values.coverImage && values.coverImage.length > 0) {
@@ -131,7 +131,7 @@ const ProductEdit: React.FC = () => {
 
     try {
       const response = await updateProduct(id, formData);
-      if (response.status === 'success') {
+      if (response.status) {
         message.success('Cập nhật sản phẩm thành công!');
         form.resetFields();
       } else {

@@ -53,9 +53,9 @@ export const addProduct = async (product: Products) => {
         throw error;
     }
 };
-export const deleteProductStatus = async (id: string, status: boolean) => {
+export const deleteProductStatus = async (id: string, isActive: boolean) => {
     try {
-        const response = await instance.patch(`/products/${id}/status`, { status });
+        const response = await instance.patch(`/products/${id}/status`, { isActive });
         console.log('API response:', response.data);
         if (!response.data || !response.data.data || !response.data.data.id) {
             throw new Error('Product ID is invalid');
