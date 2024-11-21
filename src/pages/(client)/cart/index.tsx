@@ -1,25 +1,37 @@
-import { Button, Col, Divider, Input, notification, Popconfirm, Row } from "antd";
+import {
+  Button,
+  Col,
+  Divider,
+  Input,
+  notification,
+  Popconfirm,
+  Row,
+  Checkbox
+} from "antd";
 import { Minus, Plus, Trash } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/pagination";
 import { useCart } from "../../../contexts/CartContext";
 
-
 const ShoppingCart: React.FC = () => {
-
-  //context
+  // context
   const { cartData, deleteItemCart, updateQuantityItem } = useCart();
-  const cartItems = cartData?.items
+  const cartItems = cartData?.items;
   const totalAmount = cartData?.totalCartPrice;
 
-  //state
+  // state để lưu danh sách sản phẩm đã chọn
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
-  // const handleVoucherClick = (): void => {
-  //   const voucherMessage = `Các mã giảm giá hiện có: ${vouchers.join(", ")}`;
-  //   message.success(voucherMessage, 5);
-  // };
+  // Hàm xử lý khi checkbox thay đổi
+  const handleCheckboxChange = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedItems((prev) => [...prev, id]); // Thêm ID vào danh sách đã chọn
+    } else {
+      setSelectedItems((prev) => prev.filter((itemId) => itemId !== id)); // Xóa ID khỏi danh sách đã chọn
+    }
+  };
 
   const handleDeleteItemCart = async (id: string) => {
     try {
@@ -27,22 +39,26 @@ const ShoppingCart: React.FC = () => {
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
-  const handleQuantityChange = async (id: string, value: number, option: string) => {
+  const handleQuantityChange = async (
+    id: string,
+    value: number,
+    option: string
+  ) => {
     const payload = {
       cartItemId: id,
       option: option
-    }
+    };
     const res = await updateQuantityItem(payload);
     if (!res.status) {
       notification.error({
         message: res.message,
         placement: "topRight",
-        duration: 2,
+        duration: 2
       });
     }
-  }
+  };
 
   return (
     <div className="mx-auto px-5 py-8">
@@ -54,7 +70,7 @@ const ShoppingCart: React.FC = () => {
               <Row gutter={[16, 16]} align="top">
                 <Col xs={6} md={4}>
                   <img
-                    className="w-full h-[300px] max-h-fit object-cover rounded-md"
+                    className="w-full h-[150px] max-h-fit object-cover rounded-md" // Làm ảnh nhỏ lại
                     src={item?.images}
                     alt={item?.name}
                   />
@@ -69,7 +85,7 @@ const ShoppingCart: React.FC = () => {
                   <p className="text-red-500 font-bold">
                     {item.price.toLocaleString()}₫
                   </p>
-                  <div className="flex items-center justify-end mt-2">
+                  <div className="flex  items-start justify-end mt-2 ">
                     <Button
                       icon={<Minus size={16} />}
                       onClick={() =>
@@ -79,9 +95,6 @@ const ShoppingCart: React.FC = () => {
                     />
                     <Input
                       value={item.quantity}
-                      // onChange={(e) =>
-                      //   handleQuantityChange(item.id, parseInt(e.target.value))
-                      // }
                       type="number"
                       min={1}
                       className="w-16 mx-2 text-center"
@@ -93,44 +106,34 @@ const ShoppingCart: React.FC = () => {
                       }
                     />
                   </div>
-                  <Popconfirm
-                    title="Bạn sẽ xóa sản phẩm ra khỏi giỏ hàng chứ?"
-                    onConfirm={() => handleDeleteItemCart(item.id)}
-                    okText="Có"
-                    cancelText="Không"
-                  >
-                    <Button
-                      type="text"
-                      icon={<Trash size={20} />}
-                      className="text-red-500 hover:bg-red-100"
-                    />
-                  </Popconfirm>
+                  <div className="flex justify-end items-center mt-5">
+                    {/* Checkbox cho việc chọn sản phẩm */}
+                    <Checkbox
+                      checked={selectedItems.includes(item.id)}
+                      onChange={(e) =>
+                        handleCheckboxChange(item.id, e.target.checked)
+                      }
+                    >
+                      Chọn sản phẩm
+                    </Checkbox>
+                    <Popconfirm
+                      title="Bạn sẽ xóa sản phẩm ra khỏi giỏ hàng chứ?"
+                      onConfirm={() => handleDeleteItemCart(item.id)}
+                      okText="Có"
+                      cancelText="Không"
+                    >
+                      <Button
+                        type="text"
+                        icon={<Trash size={20} />}
+                        className="text-red-500 hover:bg-red-100"
+                      />
+                    </Popconfirm>
+                  </div>
                 </Col>
               </Row>
             </div>
           ))}
           <Divider />
-          {/* <Row className="mt-8">
-            <Col>
-              <h2 className="text-xl font-bold mb-5">
-                Sản phẩm bạn có thể quan tâm
-              </h2>
-              <Swiper
-                spaceBetween={16}
-                slidesPerView={2}
-                breakpoints={{
-                  640: { slidesPerView: 2 },
-                  768: { slidesPerView: 3 },
-                  1024: { slidesPerView: 4 }
-                }}
-                pagination={{ clickable: true }}
-              >
-                {[1, 2, 3, 4, 5, 6].map((product) => (
-                  <SwiperSlide key={product}>ProductCard</SwiperSlide>
-                ))}
-              </Swiper>
-            </Col>
-          </Row> */}
         </Col>
 
         <Col xs={24} lg={8}>
@@ -147,6 +150,7 @@ const ShoppingCart: React.FC = () => {
                 type="primary"
                 danger
                 className="w-full mt-4 py-5 rounded-none text-[16px] font-bold"
+                disabled={selectedItems.length === 0} // Disable nếu không có sản phẩm được chọn
               >
                 <Link to="/checkout"> Thanh Toán</Link>
               </Button>
@@ -160,14 +164,6 @@ const ShoppingCart: React.FC = () => {
                 Hiện chúng tôi chỉ áp dụng thanh toán với đơn hàng có giá trị từ
                 <span className="font-bold"> 0₫</span> trở lên!
               </p>
-            </div>
-            <div className="vorcher w-full mt-3 mx-auto py-5 px-3 border-[1px]">
-              <button
-                className="text-medium font-bold"
-              // onClick={handleVoucherClick}
-              >
-                Nhấn để nhận vorcher giảm giá
-              </button>
             </div>
           </div>
         </Col>

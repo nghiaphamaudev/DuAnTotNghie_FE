@@ -16,6 +16,9 @@ import AdminRouter from "./routers/AdminRouter";
 import CheckoutPage from "./pages/(client)/checkout";
 import MenuAccount from "./pages/(client)/my-account";
 import { ScrollToTop } from "./ultils/client";
+import OrderDetail, {
+  mockOrderDetail
+} from "./components/common/(client)/menu-account/OrderDetail";
 
 const routeConfig = [
   {
@@ -57,6 +60,10 @@ const routeConfig = [
       {
         path: "my-account",
         element: <MenuAccount />
+      },
+      {
+        path: "order-detail/:orderId",
+        element: <OrderDetail data={mockOrderDetail} />
       }
     ]
   },
@@ -73,8 +80,7 @@ const App = () => {
       <ScrollToTop />
       {routers}
     </main>
-  )
-
+  );
 };
 
 export default App;
