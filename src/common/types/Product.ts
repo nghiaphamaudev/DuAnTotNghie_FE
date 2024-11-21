@@ -5,6 +5,7 @@ export type ProductSize = {
   price: number; // Giá tương ứng với kích thước
   inventory: number; // Số lượng sản phẩm còn lại trong kho
   id: string; // Một ID nữa (có thể giống _id hoặc khác nếu schema yêu cầu)
+  status?: boolean
 };
 
 // Định nghĩa type cho biến thể sản phẩm (variant)

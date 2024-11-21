@@ -34,6 +34,7 @@ const DetailProduct = () => {
     useEffect(() => {
         getAllDataProduct();
     }, []);
+
     useEffect(() => {
         if (product?.data?.variants?.length > 0) {
             const defaultVariant = product.data.variants[0];
@@ -153,7 +154,7 @@ const DetailProduct = () => {
         }
     };
 
-
+    console.log(product)
     return (
         <div className="container">
             <div className="left-column">
@@ -161,7 +162,7 @@ const DetailProduct = () => {
                     <i className="fas fa-home"></i>
                     <a href="#">Trang chủ</a>
                     <span>|</span>
-                    <a href="#">Danh mục {product?.data?.category}</a>
+                    <a href="#">Danh mục {product?.data?.category?.name}</a>
                     <span>|</span>
                     <a href="#">{product?.data?.name}</a>
                 </div>
@@ -213,7 +214,7 @@ const DetailProduct = () => {
 
             <div className="right-column">
                 <h1 className="product-title">{product?.data?.name}</h1>
-                <span>{product?.data?.status ? "Còn hàng" : "Hết hàng"}</span>
+                <span>{product?.data?.isActive ? "Còn hàng" : "Hết hàng"}</span>
                 <hr />
                 <div className="product-price">
                     {price.toLocaleString()}₫
@@ -309,43 +310,6 @@ const DetailProduct = () => {
                 <div className="title11">
                     <h1 >Những cửa hàng còn mặt hàng này</h1>
 
-                </div>
-                <div className="store-availability">
-                    <div className="store-box">
-                        <select id="province-select" className="select-placeholder">
-                            <option value="" disabled selected hidden>--Tỉnh Thành--</option>
-                            <option value="HN">Hà Nội</option>
-                            <option value="HCM">Hồ Chí Minh</option>
-                        </select>
-                    </div>
-
-                    <div className="store-list">
-                        {[
-                            { name: "110 Phố Nhổn", phone: "0968959050", address: "Chi nhánh 1: 110 Phố Nhổn, Bắc Từ Liêm - HN", available: true },
-                            { name: "154 Quang Trung Hà Đông", phone: "0968959050", address: "Chi nhánh 6: 154 Quang Trung, Hà Đông, HN", available: true },
-                            { name: "326 Cầu Giấy", phone: "0968959050", address: "Chi nhánh 2: 326 Cầu Giấy, HN", available: false },
-                            { name: "110 Phố Nhổn", phone: "0968959050", address: "Chi nhánh 1: 110 Phố Nhổn, Bắc Từ Liêm - HN", available: true },
-                            { name: "154 Quang Trung Hà Đông", phone: "0968959050", address: "Chi nhánh 6: 154 Quang Trung, Hà Đông, HN", available: true },
-                            { name: "326 Cầu Giấy", phone: "0968959050", address: "Chi nhánh 2: 326 Cầu Giấy, HN", available: false },
-                        ].map(store => (
-                            <div className="store" key={store.name}>
-                                <p className="store-name">
-                                    <strong><i className="fa fa-map-marker-alt"></i> {store.name}</strong>
-                                </p>
-                                <p className="store-details">
-                                    {store.phone} <br />
-                                    <div className="store-andress">
-                                        {store.address}
-                                    </div>
-                                    <span className={store.available ? "available" : "unavailable"}>
-                                        ({store.available ? "Còn hàng" : "Hết hàng"})
-                                    </span>
-                                </p>
-
-                            </div>
-
-                        ))}
-                    </div>
                 </div>
                 <div className="infor">
                     <div className="accordion">
