@@ -74,7 +74,7 @@ export default function Product() {
         const { data } = productData;
         setDataSource(prevDataSource =>
           prevDataSource.map(product =>
-            product.id === data.id ? { ...product, status: data.status } : product
+            product.id === data.id ? { ...product, isActive: data.isActive } : product
           )
         );
       }
@@ -146,13 +146,13 @@ export default function Product() {
 
     {
       title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
+      dataIndex: "isActive",
+      key: "isActive",
       align: "center",
       width: "10%",
-      render: (status, record) => (
+      render: (isActive, record) => (
         <Switch
-          checked={status === true}
+          checked={isActive === true}
           checkedChildren=""
           unCheckedChildren=""
           onChange={(checked) => handleStatusChange(checked, record.id)}
