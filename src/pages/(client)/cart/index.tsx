@@ -1,94 +1,101 @@
-import { Row, Col, Button, Input, Divider, message, Popconfirm } from "antd";
-import { Swiper, SwiperSlide } from "swiper/react";
+import { Button, Col, Divider, Input, notification, Popconfirm, Row } from "antd";
+import { Minus, Plus, Trash } from "lucide-react";
+import React from "react";
+import { Link } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/pagination";
-import ProductCard from "../../../components/common/(client)/ProductCard";
-import { Link } from "react-router-dom";
-import { Trash } from "lucide-react"; // Import the delete icon
+import { useCart } from "../../../contexts/CartContext";
 
-const ShoppingCart = () => {
-  const cartItems = [
-    {
-      id: 1,
-      name: "Áo Polo dài tay basic FWTP065",
-      price: 299000,
-      image:
-        "https://product.hstatic.net/200000690725/product/thiet_ke_chua_co_ten__1__9074b85ed0384a0a9360158a2d908bbd_medium.png",
-      color: "Xanh dương",
-      size: "S",
-      quantity: 1
-    },
-    {
-      id: 2,
-      name: "Áo Polo dài tay basic FWTP065",
-      price: 299000,
-      image:
-        "https://product.hstatic.net/200000690725/product/avt_web_1150_x_1475_px__4173548a343d4291a95efb537d93de4c_master.png",
-      color: "Nâu nhạt",
-      size: "S",
-      quantity: 1
+
+const ShoppingCart: React.FC = () => {
+
+  //context
+  const { cartData, deleteItemCart, updateQuantityItem } = useCart();
+  const cartItems = cartData?.items
+  const totalAmount = cartData?.totalCartPrice;
+
+  //state
+
+  // const handleVoucherClick = (): void => {
+  //   const voucherMessage = `Các mã giảm giá hiện có: ${vouchers.join(", ")}`;
+  //   message.success(voucherMessage, 5);
+  // };
+
+  const handleDeleteItemCart = async (id: string) => {
+    try {
+      await deleteItemCart(id);
+    } catch (error) {
+      console.log(error);
     }
-  ];
+  }
 
-  const totalAmount = cartItems.reduce((total, item) => total + item.price, 0);
-
-  // List of vouchers
-  const vouchers = [
-    "GIAM30K1A2",
-    "GIAM30K3B4",
-    "GIAM30K5C6",
-    "GIAM30K7D8",
-    "GIAM30K9E0"
-  ];
-
-  // Function to display vouchers when the button is clicked
-  const handleVoucherClick = () => {
-    const voucherMessage = `Các mã giảm giá hiện có: ${vouchers.join(", ")}`;
-    message.success(voucherMessage, 5); // Show the message for 5 seconds
-  };
-
-  // Function to handle item deletion
-  const handleDelete = (id: number) => {
-    // Logic to delete the item from cart can go here
-    message.success(`Đã xóa sản phẩm có ID: ${id}`);
-  };
+  const handleQuantityChange = async (id: string, value: number, option: string) => {
+    const payload = {
+      cartItemId: id,
+      option: option
+    }
+    const res = await updateQuantityItem(payload);
+    if (!res.status) {
+      notification.error({
+        message: res.message,
+        placement: "topRight",
+        duration: 2,
+      });
+    }
+  }
 
   return (
     <div className="mx-auto px-5 py-8">
       <Row gutter={[16, 16]} className="shopping-cart">
-        {/* Cart Items Section */}
         <Col xs={24} lg={16}>
           <h2 className="text-xl font-bold mb-5">Giỏ hàng của bạn</h2>
-          {cartItems.map((item) => (
+          {cartItems?.map((item) => (
             <div key={item.id} className="p-4 border mb-4">
               <Row gutter={[16, 16]} align="top">
                 <Col xs={6} md={4}>
                   <img
-                    className="w-full h-auto max-h-fit object-cover rounded-md"
-                    src={item.image}
-                    alt={item.name}
+                    className="w-full h-[300px] max-h-fit object-cover rounded-md"
+                    src={item?.images}
+                    alt={item?.name}
                   />
                 </Col>
                 <Col xs={12} md={14} className="mt-3">
-                  <h3 className="font-semibold text-lg">{item.name}</h3>
+                  <h3 className="font-semibold text-lg">{item?.name}</h3>
                   <p>
-                    Màu: {item.color} / Kích thước: {item.size}
+                    Màu: {item.color} / Kích thước: {item?.size}
                   </p>
                 </Col>
                 <Col xs={6} md={6} className="text-right">
                   <p className="text-red-500 font-bold">
                     {item.price.toLocaleString()}₫
                   </p>
-                  <Input
-                    type="number"
-                    min={1}
-                    defaultValue={item.quantity}
-                    className="w-16"
-                  />
-                  {/* Popconfirm for delete confirmation */}
+                  <div className="flex items-center justify-end mt-2">
+                    <Button
+                      icon={<Minus size={16} />}
+                      onClick={() =>
+                        handleQuantityChange(item?.id, -1, "increase")
+                      }
+                      disabled={item.quantity <= 1}
+                    />
+                    <Input
+                      value={item.quantity}
+                      // onChange={(e) =>
+                      //   handleQuantityChange(item.id, parseInt(e.target.value))
+                      // }
+                      type="number"
+                      min={1}
+                      className="w-16 mx-2 text-center"
+                    />
+                    <Button
+                      icon={<Plus size={16} />}
+                      onClick={() =>
+                        handleQuantityChange(item?.id, 1, "decrease")
+                      }
+                    />
+                  </div>
                   <Popconfirm
                     title="Bạn sẽ xóa sản phẩm ra khỏi giỏ hàng chứ?"
-                    onConfirm={() => handleDelete(item.id)}
+                    onConfirm={() => handleDeleteItemCart(item.id)}
                     okText="Có"
                     cancelText="Không"
                   >
@@ -102,7 +109,8 @@ const ShoppingCart = () => {
               </Row>
             </div>
           ))}
-          <Row className="mt-8">
+          <Divider />
+          {/* <Row className="mt-8">
             <Col>
               <h2 className="text-xl font-bold mb-5">
                 Sản phẩm bạn có thể quan tâm
@@ -118,17 +126,13 @@ const ShoppingCart = () => {
                 pagination={{ clickable: true }}
               >
                 {[1, 2, 3, 4, 5, 6].map((product) => (
-                  <SwiperSlide key={product}>
-                    <ProductCard />
-                  </SwiperSlide>
+                  <SwiperSlide key={product}>ProductCard</SwiperSlide>
                 ))}
               </Swiper>
             </Col>
-          </Row>
-          <Divider />
+          </Row> */}
         </Col>
 
-        {/* Summary Section */}
         <Col xs={24} lg={8}>
           <div className="lg:sticky lg:top-44 lg:w-full">
             <div className="bg-white-100 border-[0.8px] border-gray-200 shadow-md p-4 rounded-sm">
@@ -136,7 +140,7 @@ const ShoppingCart = () => {
               <p className="text-gray-700 flex justify-between items-center">
                 <span>Tổng tiền:</span>{" "}
                 <span className="text-lg font-semibold text-red-500">
-                  {totalAmount.toLocaleString()}₫
+                  {totalAmount?.toLocaleString()}₫
                 </span>
               </p>
               <Button
@@ -160,7 +164,7 @@ const ShoppingCart = () => {
             <div className="vorcher w-full mt-3 mx-auto py-5 px-3 border-[1px]">
               <button
                 className="text-medium font-bold"
-                onClick={handleVoucherClick} // Handle voucher click
+              // onClick={handleVoucherClick}
               >
                 Nhấn để nhận vorcher giảm giá
               </button>

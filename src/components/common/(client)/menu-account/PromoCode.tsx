@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Tabs, Card, Button, Typography, Pagination, Modal } from "antd";
-import discount from "../../../assets/images/discount.png";
+import discount from "../../../../assets/images/discount.png";
 import { CloseOutlined, CopyOutlined } from "@ant-design/icons";
+import { ScrollToTop } from "../../../ultils/client";
+
 
 const { Title, Text } = Typography;
 
@@ -59,8 +61,8 @@ const PromoCodePage: React.FC = () => {
     activeTab === "1"
       ? vouchers.all
       : activeTab === "2"
-      ? vouchers.online
-      : vouchers.store;
+        ? vouchers.online
+        : vouchers.store;
 
   return (
     <>
@@ -103,7 +105,7 @@ const PromoCodePage: React.FC = () => {
                           type="link"
                           className="ml-4"
                           onClick={showModal}
-                          style={{ color: "#2AB573"}}
+                          style={{ color: "#2AB573" }}
                         >
                           Điều kiện
                         </Button>

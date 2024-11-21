@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import AddToCart from "../../../components/common/(client)/AddToCart";
+
 import { Eye, ShoppingBag } from "lucide-react";
 import { Typography } from "antd";
-import ao from "../../../assets/images/ao.png";
+import ao from "../../../../assets/images/ao.png";
+import AddToCart from "../AddToCart";
 
 const ViewHistoty = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);

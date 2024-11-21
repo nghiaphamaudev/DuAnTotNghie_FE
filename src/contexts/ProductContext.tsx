@@ -1,23 +1,24 @@
 import { createContext, useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { getAllProduct, getProductById } from "../services/productServices";
 import { useMutation } from "@tanstack/react-query";
 import { Products } from "../common/types/Product";
+import { message } from "antd";
+import { useNavigate } from "react-router-dom";
 
 type ProductContextProps = {
   allProduct: Products[];
   product: Products | null;
   setAllProduct: React.Dispatch<React.SetStateAction<Products[]>>;
   getAllDataProduct: () => void;
-  getDataProductById: (id: string) => void;
+  getDataProductById: (id: string) => void
 };
 
-const ProductContext = createContext({} as ProductContextProps);
-// eslint-disable-next-line react-refresh/only-export-components
+const ProductContext = createContext<ProductContextProps | undefined>(undefined);
+
 export const useProduct = () => {
   const context = useContext(ProductContext);
   if (!context) {
-    throw new Error("useProduct must be used within an AuthProvider");
+    throw new Error("useProduct must be used within a ProductProvider");
   }
   return context;
 };
@@ -53,6 +54,9 @@ export const ProductProvider = ({
       return data;
     }
   });
+
+
+
 
   return (
     <ProductContext.Provider

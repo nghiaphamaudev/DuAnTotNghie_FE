@@ -34,7 +34,7 @@ const CategoryAdd = () => {
     mutate(values);
   };
 
-  const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
+  const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = () => {
     notification.error({
       message: "Thất bại. Xin thử lại",
       duration: 2,

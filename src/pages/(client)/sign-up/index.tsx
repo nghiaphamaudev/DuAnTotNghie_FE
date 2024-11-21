@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuth } from "../../../contexts/AuthContext";
-import { RegisterSchema } from "../sign-in/zod";
+import { RegisterSchema } from "../../../components/common/(client)/sign-in/zod";
 import { notification } from "antd";
 import { AxiosError } from "axios";
 
@@ -38,7 +38,7 @@ const RegisterPage = () => {
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      const res = await registerAccount(data);
+      await registerAccount(data);
 
       notification.success({
         message: "Đăng ký thành công",
@@ -46,7 +46,6 @@ const RegisterPage = () => {
         placement: "topRight",
       });
 
-      console.log(res);
       navigate("/login");
     } catch (error) {
       if (isAxiosError(error)) {
@@ -59,6 +58,16 @@ const RegisterPage = () => {
         if (
           error.response?.status === 400 &&
           errorData.message &&
+          errorData.message.includes("Số điện thoại đã tồn tại")
+        ) {
+          notification.error({
+            message: "Đăng ký thất bại",
+            description: "Số điện thoại đã tồn tại, vui lòng sử dụng số khác!",
+            placement: "topRight",
+          });
+        } else if (
+          error.response?.status === 400 &&
+          errorData.message &&
           errorData.message.includes("Email đã tồn tại")
         ) {
           notification.error({
@@ -67,7 +76,6 @@ const RegisterPage = () => {
             placement: "topRight",
           });
         } else {
-          // Hiển thị thông báo đăng ký thất bại khác
           notification.error({
             message: "Đăng ký thất bại",
             description: "Đã xảy ra sự cố. Vui lòng thử lại sau!",
@@ -75,7 +83,6 @@ const RegisterPage = () => {
           });
         }
       } else {
-        // Xử lý lỗi khác không phải từ Axios
         notification.error({
           message: "Đăng ký thất bại",
           description: "Đã xảy ra sự cố. Vui lòng thử lại sau!",

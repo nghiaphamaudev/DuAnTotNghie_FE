@@ -1,94 +1,95 @@
+import { Button, Image, Modal, message, notification } from 'antd';
 import { useEffect, useState } from 'react';
-import { Image, Button, Modal } from 'antd';
-import './css.css';
 import { useParams } from 'react-router-dom';
-import { useProduct } from '../../../contexts/ProductContext';
 import ProductCard from '../../../components/common/(client)/ProductCard';
+import { useCart } from '../../../contexts/CartContext';
+import { useProduct } from '../../../contexts/ProductContext';
+import './css.css';
 
 const DetailProduct = () => {
-    // hooks
     const { id } = useParams();
+    const [price, setPrice] = useState(0);
 
-    // context
     const { product, getDataProductById } = useProduct();
-    const { allProduct, getAllDataProduct} = useProduct();
-
-    
- useEffect(() => {
-    if (id) {
-        getDataProductById(id);
-    }
-}, [id]);
-useEffect(() => {
-    getAllDataProduct();
-  }, []);
-
-    // state
+    const { addItemToCart } = useCart();
+    const { allProduct, getAllDataProduct } = useProduct();
     const [selectedThumbnail, setSelectedThumbnail] = useState(0);
     const [mainImage, setMainImage] = useState('');
     const [selectedColor, setSelectedColor] = useState('');
     const [selectedSize, setSelectedSize] = useState('');
+    const [selectedPrice, setSelectedPrice] = useState(0); // New state for selected price
     const [quantity, setQuantity] = useState(1);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isSizeGuideVisible, setIsSizeGuideVisible] = useState(false);
-    const [selectedTab, setSelectedTab] = useState('recommended');
-    const recommendedProducts: any[] = []; 
-    const bestSellingProducts: any[] = []; 
     const [startIndex, setStartIndex] = useState(0);
-    const productsPerPage = 4; // Maximum number of products to display at once
+    const productsPerPage = 4;
 
-   
-    // Set default variant and main image when product data is loaded
+
     useEffect(() => {
-        if (product?.variants?.length > 0) {
-            const defaultVariant = product.variants[0];
-            setMainImage(defaultVariant.images[0]);
-            setSelectedColor(defaultVariant.color);
-            setSelectedSize(defaultVariant.sizes[0].nameSize);
+        if (id) {
+            getDataProductById(id);
+        }
+    }, [id]);
+
+    useEffect(() => {
+        getAllDataProduct();
+    }, []);
+    useEffect(() => {
+        if (product?.data?.variants?.length > 0) {
+            const defaultVariant = product.data.variants[0];
+            setSelectedColor(defaultVariant.color || '');
+            setSelectedSize(defaultVariant.sizes[0]?.nameSize || '');
+            setSelectedPrice(defaultVariant.sizes[0]?.price || 0);
+            setMainImage(defaultVariant.images[0] || '');
             setSelectedThumbnail(0);
         }
     }, [product]);
 
-    // Handlers
+    const handleArrowClick = (direction) => {
+        const images = product?.data?.variants.find(variant => variant.color === selectedColor)?.images;
+        const newIndex = (selectedThumbnail + direction + images.length) % images.length;
+        setSelectedThumbnail(newIndex);
+        setMainImage(images[newIndex]);
+    };
+
     const handleThumbnailClick = (index, image) => {
         setMainImage(image);
         setSelectedThumbnail(index);
     };
     const handleColorSelect = (color) => {
-        const variant = product.variants.find(variant => variant.color === color);
+        const variant = product.data.variants.find(variant => variant.color === color);
         setSelectedColor(color);
-        setMainImage(variant.images[0]); 
-        setSelectedThumbnail(0); 
-        setSelectedSize(variant.sizes[0].nameSize); 
+        setMainImage(variant.images[0]);
+        setSelectedThumbnail(0);
+
+        if (variant.sizes.length > 0) {
+            setSelectedSize(variant.sizes[0].nameSize);  // Cập nhật kích thước đầu tiên của màu này
+            setPrice(variant.sizes[0].price);             // Cập nhật giá của kích thước đầu tiên
+        }
     };
 
     const handleSizeSelect = (size) => {
         setSelectedSize(size);
+
+        const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
+        const selectedSizeObject = selectedVariant?.sizes.find(sizeObj => sizeObj.nameSize === size);
+        if (selectedSizeObject) {
+            setPrice(selectedSizeObject.price);  // Cập nhật giá theo kích thước được chọn
+        }
     };
 
     const handleQuantityChange = (change) => {
-        setQuantity((prevQuantity) => Math.max(1, prevQuantity + change));
+        setQuantity(prevQuantity => Math.max(1, prevQuantity + change));
     };
 
-    const showModal = () => {
-        setIsModalVisible(true);
-    };
+    const showModal = () => setIsModalVisible(true);
+    const handleCancel = () => setIsModalVisible(false);
 
-    const handleCancel = () => {
-        setIsModalVisible(false);
-    };
+    const showSizeGuide = () => setIsSizeGuideVisible(true);
+    const handleSizeGuideCancel = () => setIsSizeGuideVisible(false);
 
-    const showSizeGuide = () => {
-        setIsSizeGuideVisible(true);
-    };
+    const handleTabClick = (tab) => setSelectedTab(tab);
 
-    const handleSizeGuideCancel = () => {
-        setIsSizeGuideVisible(false);
-    };
-
-    const handleTabClick = (tab) => {
-        setSelectedTab(tab);
-    };
     const handleNext = () => {
         if (startIndex + productsPerPage < allProduct.length) {
             setStartIndex(startIndex + productsPerPage);
@@ -100,17 +101,58 @@ useEffect(() => {
             setStartIndex(startIndex - productsPerPage);
         }
     };
+
     const toggleAccordion = (header) => {
         const content = header.nextElementSibling;
         const icon = header.querySelector('i');
-        if (content.style.display === 'none' || content.style.display === '') {
-            content.style.display = 'block';
-            icon.className = 'fas fa-minus';
+        content.style.display = content.style.display === 'none' ? 'block' : 'none';
+        icon.className = content.style.display === 'none' ? 'fas fa-plus' : 'fas fa-minus';
+    };
+    const [openAccordion, setOpenAccordion] = useState(null);
+
+    const handleAccordionToggle = (index) => {
+        setOpenAccordion(openAccordion === index ? null : index);
+    };
+    const handleAddToCart = async () => {
+        if (!product?.data) {
+            message.error('Không tìm thấy thông tin sản phẩm.');
+            return;
+        }
+
+        const productId = product?.data?.id;
+        const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
+        const selectedSizeObject = selectedVariant?.sizes.find(size => size.nameSize === selectedSize);
+
+        if (!productId || !selectedVariant || !selectedSizeObject) {
+            message.error('Vui lòng chọn đầy đủ thông tin sản phẩm.');
+            return;
+        }
+
+        const productData = {
+            productId,
+            variantId: selectedVariant.id,
+            sizeId: selectedSizeObject.id,
+            quantity,
+        };
+
+        const res = await addItemToCart(productData);
+        if (res && res?.status) {
+            notification.success({
+                message: "Thêm sản phẩm thành công",
+                placement: "topRight",
+                duration: 2,
+            });
+            setIsModalVisible(false)
         } else {
-            content.style.display = 'none';
-            icon.className = 'fas fa-plus';
+            notification.error({
+                message: res.message,
+                placement: "topRight",
+                duration: 2,
+            });
+            setIsModalVisible(false)
         }
     };
+
 
     return (
         <div className="container">
@@ -119,16 +161,15 @@ useEffect(() => {
                     <i className="fas fa-home"></i>
                     <a href="#">Trang chủ</a>
                     <span>|</span>
-                    <a href="#">Category Name</a>
+                    <a href="#">Danh mục {product?.data?.category}</a>
                     <span>|</span>
-                    <a href="#">{product?.name}</a>
+                    <a href="#">{product?.data?.name}</a>
                 </div>
 
-        
                 <div className="image-gallery">
                     <div className="thumbnail-container">
                         <div className="thumbnail-images">
-                            {product?.variants?.find(variant => variant.color === selectedColor)?.images.map((image, index) => (
+                            {product?.data?.variants?.find(variant => variant.color === selectedColor)?.images.map((image, index) => (
                                 <img
                                     key={index}
                                     alt={`Thumbnail ${index + 1}`}
@@ -141,32 +182,7 @@ useEffect(() => {
                     </div>
 
                     <div className="main-image-container" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        {/* Left Arrow */}
-                        <div
-                            className="arrow-button left"
-                            onClick={() =>
-                                handleThumbnailClick(
-                                    (selectedThumbnail - 1 + product?.variants.find(variant => variant.color === selectedColor).images.length) % product?.variants.find(variant => variant.color === selectedColor).images.length,
-                                    product?.variants.find(variant => variant.color === selectedColor).images[
-                                        (selectedThumbnail - 1 + product?.variants.find(variant => variant.color === selectedColor).images.length) % product?.variants.find(variant => variant.color === selectedColor).images.length
-                                    ]
-                                )
-                            }
-                            style={{
-                                position: 'absolute',
-                                left: '40px',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                cursor: 'pointer',
-                                padding: '10px',
-                                fontSize: '24px',
-                                zIndex: 1,
-                            }}
-                        >
-                            &#8592;
-                        </div>
-
-                        {/* Main Image */}
+                        <div className="arrow-button left" onClick={() => handleArrowClick(-1)}>&#8592;</div>
                         <Image
                             className="main-image"
                             src={mainImage}
@@ -184,52 +200,34 @@ useEffect(() => {
                             preview={false}
                             onClick={showModal}
                         />
+                        <Modal open={isModalVisible} onCancel={handleCancel} footer={null} width={600}>
 
-                        <Modal visible={isModalVisible} onCancel={handleCancel} footer={null} width={600}>
-                            <Image src={mainImage} style={{ width: '100%', height: 'auto' }} preview={false} />
+                            <Image src={mainImage || product?.data?.coverImg} preview={false} />
                         </Modal>
 
-                           <div
-                            className="arrow-button right"
-                            onClick={() =>
-                                handleThumbnailClick(
-                                    (selectedThumbnail + 1) % product?.variants.find(variant => variant.color === selectedColor).images.length,
-                                    product?.variants.find(variant => variant.color === selectedColor).images[(selectedThumbnail + 1) % product?.variants.find(variant => variant.color === selectedColor).images.length]
-                                )
-                            }
-                            style={{
-                                position: 'absolute',
-                                right: '40px',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                cursor: 'pointer',
-                                padding: '10px',
-                                fontSize: '24px',
-                                zIndex: 1,
-                            }}
-                        >
-                            &#8594;
-                        </div>
+
+                        <div className="arrow-button right" onClick={() => handleArrowClick(1)}>&#8594;</div>
                     </div>
-                </div> 
+                </div>
             </div>
 
             <div className="right-column">
-                <h1 className="product-title">{product?.name}</h1>
-                <span>{product?.status === "Available" ? "Còn hàng" : "Hết hàng"}</span>
+                <h1 className="product-title">{product?.data?.name}</h1>
+                <span>{product?.data?.status ? "Còn hàng" : "Hết hàng"}</span>
                 <hr />
                 <div className="product-price">
-                    {product?.variants?.find(variant => variant.color === selectedColor)?.sizes[0].price.toLocaleString()}₫
+                    {price.toLocaleString()}₫
                 </div>
+
 
                 <div className="product-options">
                     <label htmlFor="color" className="product-options1">Màu Sắc</label>
                     <div className="color-options">
-                        {product?.variants?.map((variant, index) => (
+                        {product?.data?.variants?.map((variant, index) => (
                             <Button
                                 key={index}
                                 className={`color-option ${selectedColor === variant.color ? "selected" : ""}`}
-                                onClick={() => handleColorSelect(variant.color, variant.images[0])}
+                                onClick={() => handleColorSelect(variant.color)}
                                 style={{
                                     padding: 0,
                                     margin: '5px',
@@ -242,16 +240,20 @@ useEffect(() => {
                                     alignItems: 'center',
                                 }}
                             >
-                                <img
-                                    src={variant.images[0]}
-                                    alt={variant.color}
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        borderRadius: '50%',
-                                        objectFit: 'cover',
-                                    }}
-                                />
+                                {variant.images?.[0] ? (
+                                    <img
+                                        src={variant.images[0]}
+                                        alt={variant.color}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            borderRadius: '50%',
+                                            objectFit: 'cover',
+                                        }}
+                                    />
+                                ) : (
+                                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', backgroundColor: '#ccc' }}></div>
+                                )}
                             </Button>
                         ))}
                     </div>
@@ -260,27 +262,23 @@ useEffect(() => {
                     <a className="size-review size-review-link" onClick={showSizeGuide} style={{ cursor: 'pointer' }}>
                         Hướng dẫn chọn size
                     </a>
-
                     <div className="size-options">
-                        {product?.variants
+                        {product?.data?.variants
                             ?.find(variant => variant.color === selectedColor)?.sizes.map(size => (
                                 <Button
                                     key={size._id}
-                                    className={`size-option ${selectedSize === size.nameSize ? "selected" : ""}`}
                                     onClick={() => handleSizeSelect(size.nameSize)}
+                                    style={{
+                                        border: selectedSize === size.nameSize ? '2px solid #000' : '1px solid #ccc',
+                                    }}
                                 >
                                     {size.nameSize}
                                 </Button>
                             ))}
                     </div>
-                  
 
-                    <Modal
-                        visible={isSizeGuideVisible}
-                        onCancel={handleSizeGuideCancel}
-                        footer={null}
-                        width={600}
-                    >
+
+                    <Modal open={isSizeGuideVisible} onCancel={handleSizeGuideCancel} footer={null} width={600}>
                         <Image
                             src="../../../assets/images/size.png"
                             alt="Hướng dẫn chọn size"
@@ -288,17 +286,16 @@ useEffect(() => {
                             preview={false}
                         />
                     </Modal>
-
-                    <br />
-
                 </div>
+
                 <div className="quantity-selector">
                     <Button onClick={() => handleQuantityChange(-1)}>-</Button>
                     <input type="text" value={quantity} readOnly />
                     <Button onClick={() => handleQuantityChange(1)}>+</Button>
                 </div>
+
                 <div className="action-buttons">
-                    <button className="add-to-cart">THÊM VÀO GIỎ HÀNG</button>
+                    <button className="add-to-cart" onClick={handleAddToCart}>THÊM VÀO GIỎ HÀNG</button>
                     <button className="buy-now">MUA NGAY</button>
                 </div>
                 <div className="action-button2">
@@ -309,7 +306,6 @@ useEffect(() => {
                         CHIA SẺ <i className="fab fa-facebook"></i>
                     </button>
                 </div>
-
                 <div className="title11">
                     <h1 >Những cửa hàng còn mặt hàng này</h1>
 
@@ -356,17 +352,15 @@ useEffect(() => {
 
                         <div className="accordion-item">
                             <div className="accordion-item">
-                                <div className="accordion-header" onClick={(e) => toggleAccordion(e.currentTarget)}>
+                                <div className="accordion-header" onClick={() => handleAccordionToggle(1)}>
                                     <span>THÔNG TIN SẢN PHẨM</span>
-
-                                    <i className="fas fa-plus"></i>
+                                    <i className={openAccordion === 1 ? "fas fa-minus" : "fas fa-plus"}></i>
                                 </div>
-                                <div className="accordion-content" style={{ display: 'none' }}>
-                                    <p>
-                                        {product?.description}
-                                    </p>
+                                <div className="accordion-content" style={{ display: openAccordion === 1 ? 'block' : 'none' }}>
+                                    <p>{product?.data?.description}</p>
                                 </div>
                             </div>
+
                             <div className="accordion-content" style={{ display: 'none' }}>
                                 <p></p>
                             </div>
@@ -413,45 +407,26 @@ useEffect(() => {
                     </div>
                 </div>
 
+
             </div>
 
             <div className="product-like">
-                <div className="title-container">
-                    <div
-                        className={`title ${selectedTab === "recommended" ? "active" : ""}`}
-                        onClick={() => handleTabClick("recommended")}
-                    >
-                        CÓ THỂ BẠN THÍCH
-                        <div className="underline"></div>
-                    </div>
-                    <div
-                        className={`title ${selectedTab === "bestSelling" ? "active" : ""}`}
-                        onClick={() => handleTabClick("bestSelling")}
-                    >
-                        SẢN PHẨM BÁN CHẠY
-                        <div className="underline right"></div>
-                    </div>
-                </div>
                 <div className="product-list">
-            <i
-                className={`fas fa-chevron-left arrow ${startIndex === 0 ? 'disabled' : ''}`}
-                onClick={handlePrevious}
-                style={{ cursor: startIndex === 0 ? 'not-allowed' : 'pointer' }}
-            />
-
-            {allProduct.slice(startIndex, startIndex + productsPerPage).map((item, index) => (
-                <ProductCard key={index} item={item} />
-            ))}
- 
-            <i
-                className={`fas fa-chevron-right arrow ${startIndex + productsPerPage >= allProduct.length ? 'disabled' : ''}`}
-                onClick={handleNext}
-                style={{ cursor: startIndex + productsPerPage >= allProduct.length ? 'not-allowed' : 'pointer' }}
-            />
-        </div>
-
+                    <i
+                        className={`fas fa-chevron-left arrow ${startIndex === 0 ? 'disabled' : ''}`}
+                        onClick={handlePrevious}
+                        style={{ cursor: startIndex === 0 ? 'not-allowed' : 'pointer' }}
+                    />
+                    {allProduct.slice(startIndex, startIndex + productsPerPage).map((item, index) => (
+                        <ProductCard key={index} item={item} />
+                    ))}
+                    <i
+                        className={`fas fa-chevron-right arrow ${startIndex + productsPerPage >= allProduct.length ? 'disabled' : ''}`}
+                        onClick={handleNext}
+                        style={{ cursor: startIndex + productsPerPage >= allProduct.length ? 'not-allowed' : 'pointer' }}
+                    />
+                </div>
             </div>
-
 
         </div>
     );

@@ -1,4 +1,5 @@
 import { DeleteProduct, Products } from "../common/types/Product";
+/* eslint-disable no-useless-catch */
 import instance from "../config/axios";
 
 

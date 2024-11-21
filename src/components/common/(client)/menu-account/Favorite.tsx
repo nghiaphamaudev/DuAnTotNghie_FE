@@ -1,8 +1,8 @@
 import { Typography } from "antd";
 import { Eye, ShoppingBag } from "lucide-react";
 import { useState } from "react";
-import AddToCart from "../../../components/common/(client)/AddToCart";
-import ao from "../../../assets/images/ao.png";
+import AddToCart from "../AddToCart";
+import ao from "../../../../assets/images/ao.png";
 
 const Favorite = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -44,15 +44,15 @@ const Favorite = () => {
           {products.length === 0 ? (
             <div className="col-span-3 flex justify-center items-center">
               <div className=" flex col-span-3 flex-col justify-center items-center">
-              <img
-                src={ao} // Thay bằng đường dẫn đến hình ảnh của bạn
-                alt="Không có sản phẩm"
-                className="w-[300px] h-auto"
-              />
-              <Typography.Text className="text-gray-500 text-center">
-                Hiện không có sản phẩm nào đã xem gần đây.
-              </Typography.Text>
-            </div>
+                <img
+                  src={ao} // Thay bằng đường dẫn đến hình ảnh của bạn
+                  alt="Không có sản phẩm"
+                  className="w-[300px] h-auto"
+                />
+                <Typography.Text className="text-gray-500 text-center">
+                  Hiện không có sản phẩm nào đã xem gần đây.
+                </Typography.Text>
+              </div>
             </div>
           ) : (
             products.map((product, index) => (
