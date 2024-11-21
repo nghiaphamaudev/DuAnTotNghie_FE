@@ -27,7 +27,7 @@ export type Products = {
   category: string;
   ratingAverage: number;
   ratingQuantity: number;
-  status: boolean;
+  isActive: boolean;
 };
 
 export type ProductResponse = {

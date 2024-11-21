@@ -55,7 +55,7 @@ export default function Category() {
       align: "center" as const,
       width: "2%",
       render: (record: ICategory) => (
-        <Link to={`/admin/category/${record._id}`}>
+        <Link to={`/admin/category/${record.id}`}>
           <EditOutlined />
         </Link>
       ),

@@ -151,7 +151,7 @@ const ProductAdd: React.FC = () => {
       <Form.Item label="Category" name="category" rules={[{ required: true, message: 'Please select a category!' }]}>
         <Select>
           {categories.map((category) => (
-            <Select.Option key={category._id} value={category._id}>
+            <Select.Option key={category.id} value={category.id}>
               {category.name}
             </Select.Option>
           ))}
