@@ -19,7 +19,6 @@ const ShoppingCart: React.FC = () => {
   // context
   const { cartData, deleteItemCart, updateQuantityItem } = useCart();
   const cartItems = cartData?.items;
-  const totalAmount = cartData?.totalCartPrice;
 
   // state để lưu danh sách sản phẩm đã chọn
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -31,6 +30,13 @@ const ShoppingCart: React.FC = () => {
     } else {
       setSelectedItems((prev) => prev.filter((itemId) => itemId !== id)); // Xóa ID khỏi danh sách đã chọn
     }
+  };
+
+  // Hàm tính tổng tiền cho các sản phẩm được chọn
+  const calculateSelectedTotal = () => {
+    return cartItems
+      ?.filter((item) => selectedItems.includes(item.id)) // Lọc sản phẩm được chọn
+      .reduce((total, item) => total + item.price * item.quantity, 0); // Tính tổng tiền
   };
 
   const handleDeleteItemCart = async (id: string) => {
@@ -70,7 +76,7 @@ const ShoppingCart: React.FC = () => {
               <Row gutter={[16, 16]} align="top">
                 <Col xs={6} md={4}>
                   <img
-                    className="w-full h-[150px] max-h-fit object-cover rounded-md" // Làm ảnh nhỏ lại
+                    className="w-full h-[150px] max-h-fit object-cover rounded-md"
                     src={item?.images}
                     alt={item?.name}
                   />
@@ -85,7 +91,7 @@ const ShoppingCart: React.FC = () => {
                   <p className="text-red-500 font-bold">
                     {item.price.toLocaleString()}₫
                   </p>
-                  <div className="flex  items-start justify-end mt-2 ">
+                  <div className="flex items-start justify-end mt-2">
                     <Button
                       icon={<Minus size={16} />}
                       onClick={() =>
@@ -143,7 +149,7 @@ const ShoppingCart: React.FC = () => {
               <p className="text-gray-700 flex justify-between items-center">
                 <span>Tổng tiền:</span>{" "}
                 <span className="text-lg font-semibold text-red-500">
-                  {totalAmount?.toLocaleString()}₫
+                  {calculateSelectedTotal()?.toLocaleString("vi-VN")}₫
                 </span>
               </p>
               <Button

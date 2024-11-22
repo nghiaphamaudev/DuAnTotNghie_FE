@@ -38,3 +38,20 @@ export interface OrderDetail {
   products: Product[];
   totalPrice: number;
 }
+
+export interface CheckoutFormData {
+  orderItems: {
+    productId: string;
+    variantId: string;
+    sizeId: string;
+    quantity: number;
+    price: number;
+  }[];
+  receiver: string;
+  phoneNumber: string;
+  address: string;
+  paymentMethod: string;
+  discountCode?: string;
+  discountVoucher?: number;
+  shippingCost: number;
+}
