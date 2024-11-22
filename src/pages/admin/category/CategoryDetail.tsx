@@ -66,7 +66,7 @@ export default function CategoryDetail() {
             if (productData && productData.data) {
                 setProducts((prevProducts) =>
                     prevProducts.map((product) =>
-                        product.id === productData.data.id ? { ...product, status: productData.data.status } : product
+                        product.id === productData.data.id ? { ...product, isActive: productData.data.isActive } : product
                     )
                 );
             }
@@ -113,13 +113,13 @@ export default function CategoryDetail() {
         },
         {
             title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
+            dataIndex: 'isActive',
+            key: 'isActive',
             align: 'center',
             width: '10%',
-            render: (status, record) => (
+            render: (isActive, record) => (
                 <Switch
-                    checked={status === true}
+                    checked={isActive === true}
                     checkedChildren=""
                     unCheckedChildren=""
                     onChange={(checked) => handleStatusChange(checked, record.id)}
