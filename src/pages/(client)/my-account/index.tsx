@@ -14,12 +14,11 @@ import Address from "../../../components/common/(client)/menu-account/Address";
 import Favorite from "../../../components/common/(client)/menu-account/Favorite";
 import MyOrders from "../../../components/common/(client)/menu-account/MyOrders";
 import PromoCode from "../../../components/common/(client)/menu-account/PromoCode";
-import ResetPassword from "../../../components/common/(client)/menu-account/ResetPassword";
 import ViewHistoty from "../../../components/common/(client)/menu-account/ViewHistoty";
-
 import { useAuth } from "../../../contexts/AuthContext";
 import UserProfile from "../../../components/common/(client)/menu-account/UserProfile";
 import ImageUploader from "../../../components/common/(client)/menu-account/ImageUploader";
+import UpdatePassword from "../../../components/common/(client)/menu-account/UpdatePassword";
 
 type MenuItemKey = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
@@ -47,7 +46,7 @@ const MenuAccount = () => {
         setCurrentContent(<ViewHistoty />);
         break;
       case "6":
-        setCurrentContent(<ResetPassword />);
+        setCurrentContent(<UpdatePassword />);
         break;
       case "7":
         handleLogout();
@@ -63,18 +62,13 @@ const MenuAccount = () => {
   const handleImageUploadSuccess = () => {
     console.log("Hình ảnh đã được upload thành công.");
   };
-  // useEffect(() => {
-  //   if (!isLogin) {
-  //     navigate("/login"); // Chuyển hướng về trang đăng nhập sau khi đăng xuất
-  //   }
-  // }, [isLogin, navigate]);
-  
+
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center py-10">
       <div className="grid grid-cols-12 gap-4 w-full max-w-7xl">
         <div className="col-span-12 md:col-span-3 bg-white shadow-lg rounded-lg p-6">
           <div className="flex flex-col items-center mb-6">
-          <ImageUploader  onUploadSuccess={handleImageUploadSuccess} />
+            <ImageUploader onUploadSuccess={handleImageUploadSuccess} />
             <div className="flex items-center">
               <span className="text-lg font-semibold">
                 {userData && (

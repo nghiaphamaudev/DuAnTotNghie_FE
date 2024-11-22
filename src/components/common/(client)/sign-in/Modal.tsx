@@ -1,9 +1,6 @@
 import { Modal } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ForgotPasswordForm from "./ForgotPasswordForm";
-
-import ChangePasswordForm from "./ChangePasswordForm";
-import OtpForm from "./OtpForm";
 
 const ForgotPasswordModal = ({
   isModalOpen,
@@ -15,15 +12,14 @@ const ForgotPasswordModal = ({
   handleOk: () => void;
 }) => {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [isOTPVerified, setIsOTPVerified] = useState(false);
-  const [isChangePassword, setIsChangePassword] = useState(false);
   const [email, setEmail] = useState("");
 
-  const resetStates = () => {
-    setIsEmailVerified(false);
-    setIsOTPVerified(false);
-    setIsChangePassword(false);
-  };
+  useEffect(() => {
+    if (!isModalOpen) {
+      setIsEmailVerified(false);
+      setEmail("");
+    }
+  }, [isModalOpen]);
 
   return (
     <Modal
@@ -45,19 +41,14 @@ const ForgotPasswordModal = ({
           setEmail={setEmail}
           setIsEmailVerified={setIsEmailVerified}
         />
-      ) : !isOTPVerified ? (
-        <OtpForm
-          email={email}
-          setIsOTPVerified={setIsOTPVerified}
-          setIsChangePassword={setIsChangePassword}
-        />
-      ) : isChangePassword ? (
-        <ChangePasswordForm
-          handleCancel={handleCancel}
-          resetStates={resetStates} // Truyền hàm resetStates
-          setIsChangePassword={setIsChangePassword} // Truyền setIsChangePassword
-        />
-      ) : null}
+      ) : (
+        <div>
+          <p className="text-center text-green-500 font-semibold">
+            "Token đặt lại mật khẩu đã được gửi đến Email: {email} của bạn! Vui
+            lòng kiểm tra hộp thư.
+          </p>
+        </div>
+      )}
     </Modal>
   );
 };

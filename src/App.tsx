@@ -16,6 +16,7 @@ import AdminRouter from "./routers/AdminRouter";
 import CheckoutPage from "./pages/(client)/checkout";
 import MenuAccount from "./pages/(client)/my-account";
 import { ScrollToTop } from "./ultils/client";
+import ResetPassword from "./components/common/(client)/sign-in/ResetPassword";
 
 const routeConfig = [
   {
@@ -57,7 +58,11 @@ const routeConfig = [
       {
         path: "my-account",
         element: <MenuAccount />
-      }
+      },
+      {
+        path: "resetPassword/:resetToken",
+        element: <ResetPassword />
+      },
     ]
   },
   {

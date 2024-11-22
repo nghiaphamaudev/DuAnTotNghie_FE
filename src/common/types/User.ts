@@ -1,4 +1,3 @@
-import { AddressRequest } from "./Address";
 
 export type User = {
   email: string;
@@ -34,5 +33,30 @@ export type UserRegisterRequest = {
   confirmPassword?: string;
   fullName?: string;
 };
+
+export type UpdatePasswordRequest = {
+  passwordCurrent: string;
+  password: string;
+  passwordConfirm: string;
+}
+
+export type ResetPasswordRequest = {
+  password: string;
+  passwordConfirm: string;
+}
+
+
+export type ForgotPasswordRequest = {
+  email: string;
+}
+export type ApiError = {
+  response?: {
+    data: {
+      message: string;
+    };
+  };
+  message: string;
+}
+
 
 

@@ -2,24 +2,16 @@ import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { z } from "zod";
-import { useAuth } from "../../../contexts/AuthContext";
 import { RegisterSchema } from "../../../components/common/(client)/sign-in/zod";
-import { notification } from "antd";
-import { AxiosError } from "axios";
+import { useAuth } from "../../../contexts/AuthContext";
 
 type LoginForm = z.infer<typeof RegisterSchema>;
-interface ErrorResponse {
-  message?: string;
-}
 
 const RegisterPage = () => {
-  // context
   const { register: registerAccount } = useAuth();
-  const navigate = useNavigate();
 
-  // state
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -31,77 +23,12 @@ const RegisterPage = () => {
     mode: "onBlur",
   });
 
-  //function
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   const onSubmit = async (data: LoginForm) => {
-    try {
-      await registerAccount(data);
-
-      notification.success({
-        message: "Đăng ký thành công",
-        description: "Tài khoản của bạn đã được tạo thành công!",
-        placement: "topRight",
-      });
-
-      navigate("/login");
-    } catch (error) {
-      if (isAxiosError(error)) {
-        // In ra cấu trúc của error.response.data để kiểm tra
-        console.error("Register error response:", error.response);
-
-        // Kiểm tra xem response.data có cấu trúc mà bạn mong đợi không
-        const errorData = error.response?.data as ErrorResponse;
-
-        if (
-          error.response?.status === 400 &&
-          errorData.message &&
-          errorData.message.includes("Số điện thoại đã tồn tại")
-        ) {
-          notification.error({
-            message: "Đăng ký thất bại",
-            description: "Số điện thoại đã tồn tại, vui lòng sử dụng số khác!",
-            placement: "topRight",
-          });
-        } else if (
-          error.response?.status === 400 &&
-          errorData.message &&
-          errorData.message.includes("Email đã tồn tại")
-        ) {
-          notification.error({
-            message: "Đăng ký thất bại",
-            description: "Email đã tồn tại, vui lòng sử dụng email khác!",
-            placement: "topRight",
-          });
-        } else {
-          notification.error({
-            message: "Đăng ký thất bại",
-            description: "Đã xảy ra sự cố. Vui lòng thử lại sau!",
-            placement: "topRight",
-          });
-        }
-      } else {
-        notification.error({
-          message: "Đăng ký thất bại",
-          description: "Đã xảy ra sự cố. Vui lòng thử lại sau!",
-          placement: "topRight",
-        });
-      }
-
-      console.error("Register error:", error);
-    }
-  };
-
-  // Hàm kiểm tra kiểu
-  const isAxiosError = (error: unknown): error is AxiosError => {
-    // Kiểm tra xem error có phải là một đối tượng không
-    if (typeof error === "object" && error !== null) {
-      // Kiểm tra xem đối tượng đó có thuộc tính `isAxiosError`
-      return (error as AxiosError).isAxiosError === true;
-    }
-    return false;
+    await registerAccount(data);
   };
 
   return (
@@ -166,6 +93,7 @@ const RegisterPage = () => {
                   errors.phoneNumber ? "border-red-500" : "border-gray-300"
                 }`}
                 id="phoneNumber"
+                max={10}
                 placeholder="Nhập số điện thoại"
                 {...register("phoneNumber")}
               />
