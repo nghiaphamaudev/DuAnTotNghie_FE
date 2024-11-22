@@ -45,6 +45,7 @@ export default function CategoryDetail() {
                     total: response.products.length,
                 });
             }
+            console.log(response);
         } catch (error) {
             console.error('Error fetching category data:', error);
         }

@@ -42,8 +42,11 @@ export default function AdminMenu({ small }: Props) {
   };
 
   const handleCategorySelect = (id: string) => {
-    console.log("Selected category ID:", id);
-    navigate(`/admin/category/detail/${id}`);
+    if (id) {
+      navigate(`/admin/category/detail/${id}`);
+    } else {
+      console.error("Invalid category ID");
+    }
   };
 
   const menuItems = [

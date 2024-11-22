@@ -9,7 +9,7 @@ import './css.css';
 const DetailProduct = () => {
     const { id } = useParams();
     const [price, setPrice] = useState(0);
-
+    const [selectedTab, setSelectedTab] = useState<number>(0);
     const { product, getDataProductById } = useProduct();
     const { addItemToCart } = useCart();
     const { allProduct, getAllDataProduct } = useProduct();
@@ -38,22 +38,25 @@ const DetailProduct = () => {
     useEffect(() => {
         if (product?.data?.variants?.length > 0) {
             const defaultVariant = product.data.variants[0];
+            const defaultSize = defaultVariant.sizes?.[0];
             setSelectedColor(defaultVariant.color || '');
-            setSelectedSize(defaultVariant.sizes[0]?.nameSize || '');
-            setSelectedPrice(defaultVariant.sizes[0]?.price || 0);
+            setSelectedSize(defaultSize?.nameSize || '');
+            setSelectedPrice(defaultSize?.price || 0);
             setMainImage(defaultVariant.images[0] || '');
             setSelectedThumbnail(0);
+            setPrice(defaultSize?.price || 0);
         }
     }, [product]);
 
-    const handleArrowClick = (direction) => {
-        const images = product?.data?.variants.find(variant => variant.color === selectedColor)?.images;
+
+    const handleArrowClick = (direction: any) => {
+        const images = product?.data?.variants.find((variant: any) => variant.color === selectedColor)?.images;
         const newIndex = (selectedThumbnail + direction + images.length) % images.length;
         setSelectedThumbnail(newIndex);
         setMainImage(images[newIndex]);
     };
 
-    const handleThumbnailClick = (index, image) => {
+    const handleThumbnailClick = (index: any, image: string) => {
         setMainImage(image);
         setSelectedThumbnail(index);
     };
@@ -64,8 +67,8 @@ const DetailProduct = () => {
         setSelectedThumbnail(0);
 
         if (variant.sizes.length > 0) {
-            setSelectedSize(variant.sizes[0].nameSize);  // Cập nhật kích thước đầu tiên của màu này
-            setPrice(variant.sizes[0].price);             // Cập nhật giá của kích thước đầu tiên
+            setSelectedSize(variant.sizes[0].nameSize);
+            setPrice(variant.sizes[0].price);
         }
     };
 
@@ -79,7 +82,7 @@ const DetailProduct = () => {
         }
     };
 
-    const handleQuantityChange = (change) => {
+    const handleQuantityChange = (change: any) => {
         setQuantity(prevQuantity => Math.max(1, prevQuantity + change));
     };
 
@@ -153,8 +156,6 @@ const DetailProduct = () => {
             setIsModalVisible(false)
         }
     };
-
-    console.log(product)
     return (
         <div className="container">
             <div className="left-column">

@@ -48,6 +48,11 @@ export default function Category() {
       key: "name",
       align: "center" as const,
       width: "20%",
+      render: (text: string, record: any) => (
+        <Link to={`/admin/category/detail/${record.id}`} style={{ color: 'blue', textDecoration: 'underline' }}>
+          {text}
+        </Link>
+      )
     },
     {
       title: "Cập nhật",
