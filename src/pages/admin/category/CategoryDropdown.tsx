@@ -33,7 +33,7 @@ const CategoryDropdown = ({ onSelect }: { onSelect: (value: string) => void }) =
             allowClear
         >
             {categories.map((category: any) => (
-                <Option key={category._id} value={category._id}>
+                <Option key={category.id} value={category.id}>
                     {category.name}
                 </Option>
             ))}
