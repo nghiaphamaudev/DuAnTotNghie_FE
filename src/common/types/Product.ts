@@ -5,6 +5,7 @@ export type ProductSize = {
   price: number; // Giá tương ứng với kích thước
   inventory: number; // Số lượng sản phẩm còn lại trong kho
   id: string; // Một ID nữa (có thể giống _id hoặc khác nếu schema yêu cầu)
+  status?: boolean
 };
 
 // Định nghĩa type cho biến thể sản phẩm (variant)
@@ -17,17 +18,39 @@ export type ProductVariant = {
 };
 
 // Định nghĩa type cho sản phẩm chính (product)
-export type Product = {
-  id: string; // ID của sản phẩm
-  name: string; // Tên sản phẩm
-  description: string; // Mô tả sản phẩm
-  coverImg: string; // Ảnh bìa chính của sản phẩm
-  variants: ProductVariant[]; // Các biến thể của sản phẩm (màu sắc, kích thước)
-  discount?: number; // Tùy chọn: giảm giá cho sản phẩm (nếu có)
-  colorsAvailable: number; // Số lượng màu sắc có sẵn
-  sizesAvailable: number; // Số lượng kích thước có sẵn
-  category: string; // Danh mục sản phẩm (liên kết với ID danh mục)
-  ratingAverage: number; // Điểm đánh giá trung bình của sản phẩm
-  ratingQuantity: number; // Số lượng đánh giá của sản phẩm
-  status: string; // Trạng thái sản phẩm (Ví dụ: "Available", "Out of stock")
+export type Products = {
+  id: string;
+  name: string;
+  description: string;
+  coverImage: string;
+  variants: ProductVariant[];
+  discount?: number;
+  category: string;
+  ratingAverage: number;
+  ratingQuantity: number;
+  isActive: boolean;
 };
+
+export type ProductResponse = {
+  data: Products[];
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  };
+};
+
+export type ProductsResponse = {
+  data: Products[];
+  pagination: {
+    currentPage: number;
+    totalItems: number;
+  };
+}
+
+export type DeleteProduct = {
+  id: string;
+  status: boolean;
+}
+

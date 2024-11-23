@@ -2,7 +2,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { ShoppingCartOutlined } from "@ant-design/icons";
-import { Button, InputNumber, Modal, notification, Radio, RadioChangeEvent } from "antd";
+import { Button, Image, InputNumber, Modal, notification, Radio, RadioChangeEvent } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import {
@@ -85,7 +85,7 @@ const AddToCart = ({
       swiperRef.current.slideTo(index);
     }
   }
-  
+
   const onChangeQuantity = (value: number | null) => {
     if (value !== null) {
       setQuantity(value);
@@ -101,24 +101,28 @@ const AddToCart = ({
   };
 
   const handleAddItemToCart = async (id: string) => {
-    try {
-      const payload = {
-        productId: id,
-        variantId: color,
-        sizeId: size,
-        quantity: quantity,
-      }
-      const res = await addItemToCart(payload);
-      if (res && res?.status) {
-        notification.success({
-          message: "Thêm sản phẩm thành công",
-          placement: "topRight",
-          duration: 2,
-        });
-        setIsModalVisible(false)
-      }
-    } catch (error) {
-      console.log(error);
+    const payload = {
+      productId: id,
+      variantId: color,
+      sizeId: size,
+      quantity: quantity,
+    }
+    const res = await addItemToCart(payload);
+
+    if (res && res?.status) {
+      notification.success({
+        message: "Thêm sản phẩm thành công",
+        placement: "topRight",
+        duration: 2,
+      });
+      setIsModalVisible(false)
+    } else {
+      notification.error({
+        message: res.message,
+        placement: "topRight",
+        duration: 2,
+      });
+      setIsModalVisible(false)
     }
   }
 
@@ -141,7 +145,7 @@ const AddToCart = ({
         <div className="col-span-12 md:col-span-5">
           {/* Swiper for the cover image */}
           <div className="relative">
-            <button
+            {/* <button
               disabled={activeIndex === 0}
               className="hidden disabled:opacity-25 sm:block custom-swiper-button-prev">
               <ChevronLeft />
@@ -150,7 +154,7 @@ const AddToCart = ({
               disabled={activeIndex === (selectedVariant?.images?.length ?? 0) - 1}
               className="hidden disabled:opacity-25 sm:block custom-swiper-button-next">
               <ChevronRight />
-            </button>
+            </button> */}
             <Swiper
               onSwiper={(swiper) => {
                 swiperRef.current = swiper;
@@ -171,11 +175,15 @@ const AddToCart = ({
             >
               {selectedVariant?.images.map((image: string, index: number) => (
                 <SwiperSlide className="w-[400px] h-[300px]" key={index}>
-                  <img
-                    src={image}
-                    alt={`Product variant ${color} image ${index + 1}`}
-                    className="w-full h-full md:h-[400px] object-cover mb-4" // Fixed height with responsive adjustments
-                  />
+                  <div className="w-[400px] h-[300px]">
+                    <Image
+                      width={400}
+                      height={300}
+                      src={image}
+                      alt={`Product variant ${color} image ${index + 1}`}
+                      className="w-full h-full md:h-[400px] object-cover mb-4" // Fixed height with responsive adjustments
+                    />
+                  </div>
                 </SwiperSlide>
               ))}
             </Swiper>

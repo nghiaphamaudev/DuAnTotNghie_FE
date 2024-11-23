@@ -1,12 +1,11 @@
-import {
-  EditOutlined,
-  PlusCircleFilled,
-} from "@ant-design/icons";
-import { Button, Card, Col, Row, Table } from "antd";
-import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
-import { Link } from "react-router-dom";
-import Search from "antd/es/input/Search";
-import { ICategory } from "../../../interface/Categories";
+import { useQuery } from '@tanstack/react-query';
+import { Button, Card, Col, Row, Table } from 'antd';
+import { EditOutlined, PlusCircleFilled } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
+import { ICategory } from '../../../interface/Categories';
+import { getAllCategory } from "../../../services/categoryServices"; // Import hàm getAllCategory
+import BreadcrumbsCustom from '../../../components/common/(admin)/BreadcrumbsCustom';
+import { Search } from 'lucide-react';
 
 const customTableHeaderCellStyle: React.CSSProperties = {
   color: "black",
@@ -23,19 +22,16 @@ const CustomHeaderCell: React.FC<CustomTableHeaderCellProps> = (props) => (
 );
 
 export default function Category() {
-  const data = [
-    {
-      key: '1',
-      stt: 1,
-      loai: 'Áo thu đông',
-    },
-    {
-      key: '2',
-      stt: 2,
-      loai: 'Áo hè',
-    }
-  ];
+  // Sử dụng useQuery để gọi API lấy tất cả danh mục
+  const { data, isError } = useQuery<{ status: string, data: ICategory[] }, Error>({
+    queryKey: ["categories"], // Khóa duy nhất cho truy vấn
+    queryFn: getAllCategory, // Hàm gọi API từ service getAllCategory
+  });
 
+  console.log('Fetched data:', data);  // In dữ liệu để kiểm tra
+
+  // Kiểm tra nếu dữ liệu trả về có dạng mảng hay không
+  const dataSource = Array.isArray(data?.data) ? data.data : [];
 
   const columns = [
     {
@@ -44,14 +40,19 @@ export default function Category() {
       key: "stt",
       align: "center" as const,
       width: "5%",
-
+      render: (_: any, __: any, index: number) => index + 1, // Tạo STT tự động
     },
     {
       title: "Tên danh mục",
-      dataIndex: "loai",
-      key: "loai",
+      dataIndex: "name", // Chỉnh lại để phù hợp với cấu trúc dữ liệu trả về
+      key: "name",
       align: "center" as const,
       width: "20%",
+      render: (text: string, record: any) => (
+        <Link to={`/admin/category/detail/${record.id}`} style={{ color: 'blue', textDecoration: 'underline' }}>
+          {text}
+        </Link>
+      )
     },
     {
       title: "Cập nhật",
@@ -59,25 +60,25 @@ export default function Category() {
       align: "center" as const,
       width: "2%",
       render: (record: ICategory) => (
-        <Link to={`/admin/category/${record._id}`}>
+        <Link to={`/admin/category/${record.id}`}>
           <EditOutlined />
         </Link>
       ),
     },
-  ]
+  ];
+
+  // Kiểm tra nếu có lỗi
+  if (isError) {
+    return <div>Error fetching data</div>;
+  }
+
   return (
     <div>
       <BreadcrumbsCustom nameHere={"Danh mục"} listLink={[]} />
       <Card bordered={false}>
         <Row gutter={16}>
           <Col span={12}>
-            <Search
-              placeholder="input search text"
-              allowClear
-              enterButton="Search"
-              size="large"
-            //  onSearch={onSearch}
-            />
+            <Search />
           </Col>
           <Col span={12}>
             <Button
@@ -99,10 +100,9 @@ export default function Category() {
               cell: CustomHeaderCell,
             },
           }}
-          dataSource={data}
+          dataSource={dataSource}
           columns={columns}
           rowKey="_id"
-
         />
       </Card>
     </div>

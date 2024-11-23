@@ -9,7 +9,7 @@ import './css.css';
 const DetailProduct = () => {
     const { id } = useParams();
     const [price, setPrice] = useState(0);
-
+    const [selectedTab, setSelectedTab] = useState<number>(0);
     const { product, getDataProductById } = useProduct();
     const { addItemToCart } = useCart();
     const { allProduct, getAllDataProduct } = useProduct();
@@ -34,25 +34,29 @@ const DetailProduct = () => {
     useEffect(() => {
         getAllDataProduct();
     }, []);
+
     useEffect(() => {
         if (product?.data?.variants?.length > 0) {
             const defaultVariant = product.data.variants[0];
+            const defaultSize = defaultVariant.sizes?.[0];
             setSelectedColor(defaultVariant.color || '');
-            setSelectedSize(defaultVariant.sizes[0]?.nameSize || '');
-            setSelectedPrice(defaultVariant.sizes[0]?.price || 0);
+            setSelectedSize(defaultSize?.nameSize || '');
+            setSelectedPrice(defaultSize?.price || 0);
             setMainImage(defaultVariant.images[0] || '');
             setSelectedThumbnail(0);
+            setPrice(defaultSize?.price || 0);
         }
     }, [product]);
 
-    const handleArrowClick = (direction) => {
-        const images = product?.data?.variants.find(variant => variant.color === selectedColor)?.images;
+
+    const handleArrowClick = (direction: any) => {
+        const images = product?.data?.variants.find((variant: any) => variant.color === selectedColor)?.images;
         const newIndex = (selectedThumbnail + direction + images.length) % images.length;
         setSelectedThumbnail(newIndex);
         setMainImage(images[newIndex]);
     };
 
-    const handleThumbnailClick = (index, image) => {
+    const handleThumbnailClick = (index: any, image: string) => {
         setMainImage(image);
         setSelectedThumbnail(index);
     };
@@ -63,8 +67,8 @@ const DetailProduct = () => {
         setSelectedThumbnail(0);
 
         if (variant.sizes.length > 0) {
-            setSelectedSize(variant.sizes[0].nameSize);  // Cập nhật kích thước đầu tiên của màu này
-            setPrice(variant.sizes[0].price);             // Cập nhật giá của kích thước đầu tiên
+            setSelectedSize(variant.sizes[0].nameSize);
+            setPrice(variant.sizes[0].price);
         }
     };
 
@@ -78,7 +82,7 @@ const DetailProduct = () => {
         }
     };
 
-    const handleQuantityChange = (change) => {
+    const handleQuantityChange = (change: any) => {
         setQuantity(prevQuantity => Math.max(1, prevQuantity + change));
     };
 
@@ -138,14 +142,20 @@ const DetailProduct = () => {
         const res = await addItemToCart(productData);
         if (res && res?.status) {
             notification.success({
-              message: "Thêm sản phẩm thành công",
-              placement: "topRight",
-              duration: 2,
+                message: "Thêm sản phẩm thành công",
+                placement: "topRight",
+                duration: 2,
             });
-          }
+            setIsModalVisible(false)
+        } else {
+            notification.error({
+                message: res.message,
+                placement: "topRight",
+                duration: 2,
+            });
+            setIsModalVisible(false)
+        }
     };
-
-
     return (
         <div className="container">
             <div className="left-column">
@@ -153,7 +163,7 @@ const DetailProduct = () => {
                     <i className="fas fa-home"></i>
                     <a href="#">Trang chủ</a>
                     <span>|</span>
-                    <a href="#">Danh mục {product?.data?.category}</a>
+                    <a href="#">Danh mục {product?.data?.category?.name}</a>
                     <span>|</span>
                     <a href="#">{product?.data?.name}</a>
                 </div>
@@ -205,7 +215,7 @@ const DetailProduct = () => {
 
             <div className="right-column">
                 <h1 className="product-title">{product?.data?.name}</h1>
-                <span>{product?.data?.status ? "Còn hàng" : "Hết hàng"}</span>
+                <span>{product?.data?.isActive ? "Còn hàng" : "Hết hàng"}</span>
                 <hr />
                 <div className="product-price">
                     {price.toLocaleString()}₫
@@ -301,43 +311,6 @@ const DetailProduct = () => {
                 <div className="title11">
                     <h1 >Những cửa hàng còn mặt hàng này</h1>
 
-                </div>
-                <div className="store-availability">
-                    <div className="store-box">
-                        <select id="province-select" className="select-placeholder">
-                            <option value="" disabled selected hidden>--Tỉnh Thành--</option>
-                            <option value="HN">Hà Nội</option>
-                            <option value="HCM">Hồ Chí Minh</option>
-                        </select>
-                    </div>
-
-                    <div className="store-list">
-                        {[
-                            { name: "110 Phố Nhổn", phone: "0968959050", address: "Chi nhánh 1: 110 Phố Nhổn, Bắc Từ Liêm - HN", available: true },
-                            { name: "154 Quang Trung Hà Đông", phone: "0968959050", address: "Chi nhánh 6: 154 Quang Trung, Hà Đông, HN", available: true },
-                            { name: "326 Cầu Giấy", phone: "0968959050", address: "Chi nhánh 2: 326 Cầu Giấy, HN", available: false },
-                            { name: "110 Phố Nhổn", phone: "0968959050", address: "Chi nhánh 1: 110 Phố Nhổn, Bắc Từ Liêm - HN", available: true },
-                            { name: "154 Quang Trung Hà Đông", phone: "0968959050", address: "Chi nhánh 6: 154 Quang Trung, Hà Đông, HN", available: true },
-                            { name: "326 Cầu Giấy", phone: "0968959050", address: "Chi nhánh 2: 326 Cầu Giấy, HN", available: false },
-                        ].map(store => (
-                            <div className="store" key={store.name}>
-                                <p className="store-name">
-                                    <strong><i className="fa fa-map-marker-alt"></i> {store.name}</strong>
-                                </p>
-                                <p className="store-details">
-                                    {store.phone} <br />
-                                    <div className="store-andress">
-                                        {store.address}
-                                    </div>
-                                    <span className={store.available ? "available" : "unavailable"}>
-                                        ({store.available ? "Còn hàng" : "Hết hàng"})
-                                    </span>
-                                </p>
-
-                            </div>
-
-                        ))}
-                    </div>
                 </div>
                 <div className="infor">
                     <div className="accordion">

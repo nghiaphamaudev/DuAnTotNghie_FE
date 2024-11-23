@@ -19,6 +19,10 @@ import Voucher from "../pages/admin/voucher/voucher";
 import VoucherAdd from "../pages/admin/voucher/voucherAdd";
 import HeaderAdmin from "../components/common/(admin)/HeaderAdmin";
 import Product from "../pages/admin/product/Product";
+import ProductDetail from "../pages/admin/product/ProductDetail";
+import CategoryDetail from "../pages/admin/category/CategoryDetail";
+
+
 
 
 export default function AdminRouter() {
@@ -27,15 +31,14 @@ export default function AdminRouter() {
       <Routes>
         <Route path="/" element={<Navigate to="/admin/dashboard" />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        {/* <Route path="/bill" element={<Bill />} />
-        <Route path="/bill/detail/:id" element={<BillDetail />} />*/}
-        <Route path="/product" element={<Product />} /> 
-        {/* <Route path="/product/detail/:id" element={<ProductDetailAndEdit />} /> */}
+        <Route path="/product" element={<Product />} />
+        <Route path="/product/detail/:id" element={<ProductDetail />} />
         <Route path="/product/add" element={<ProductAdd />} />
         <Route path="/product/:id" element={<ProductEdit />} />
         <Route path="/category" element={<Category />} />
         <Route path="/category/add" element={<CategoryAdd />} />
         <Route path="/category/:id" element={<CategoryEdit />} />
+        <Route path="/category/detail/:id" element={<CategoryDetail />} />
         <Route path="/size" element={<Size />} />
         {/* <Route path="/staff" element={<Staff />} /> */}
         <Route path="/users" element={<Users />} />

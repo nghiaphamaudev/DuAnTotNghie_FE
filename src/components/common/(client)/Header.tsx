@@ -1,4 +1,4 @@
-import { Drawer, Dropdown, MenuProps, Space } from "antd";
+import { Badge, Drawer, Dropdown, MenuProps, Space } from "antd";
 import {
   AlignJustify,
   ChevronDown,
@@ -20,10 +20,10 @@ const HeaderClient = () => {
   // state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
-  
+
 
   // context
-  const { cartData } = useCart();
+  const { cartData, countItemCart } = useCart();
   const { isLogin, handleLogout, user } = useAuth()
 
 
@@ -50,11 +50,6 @@ const HeaderClient = () => {
 
   const items: MenuProps["items"] = isLogin
     ? [
-      {
-        key: "1",
-        label: "My Account",
-        disabled: true,
-      },
       {
         key: "2",
         label: <Link to="/my-account">Thông tin cá nhân</Link>,
@@ -153,23 +148,25 @@ const HeaderClient = () => {
                   Xin chào, {user.fullName}
                 </span>
               )}
-              <button className="bg-transparent text-large flex items-center space-x-1">
-                <CircleUserRound size={18} />
-                <Dropdown menu={{ items }}>
+              <Dropdown menu={{ items }} trigger={['click']}>
+                <button className="bg-transparent text-large flex items-center space-x-1">
+                  <CircleUserRound size={18} />
                   <a onClick={(e) => e.preventDefault()}>
                     <Space className="font-semibold text-sm">
                       <ChevronDown size={16} />
                     </Space>
                   </a>
-                </Dropdown>
-              </button>
+                </button>
+              </Dropdown>
 
               {/* Cart */}
               <button
                 className="bg-transparent flex items-center"
                 onClick={toggleCartDrawer}
               >
-                <ShoppingBag size={22} />
+                <Badge count={countItemCart}>
+                  <ShoppingBag size={22} />
+                </Badge>
               </button>
             </div>
           </div>

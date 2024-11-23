@@ -1,5 +1,4 @@
-import React from "react"; // Thêm import React
-import { useState } from "react";
+import React, { useState } from "react";
 import { Menu } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -12,6 +11,7 @@ import {
   FontSizeOutlined,
   GiftOutlined,
 } from "@ant-design/icons";
+import CategoryDropdown from "../../../pages/admin/category/CategoryDropdown";
 
 type Props = {
   small: boolean;
@@ -19,12 +19,11 @@ type Props = {
 
 export default function AdminMenu({ small }: Props) {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
-  const navigate = useNavigate(); // Sử dụng hook navigate của react-router-dom
+  const navigate = useNavigate();
 
   const handleClickMenu = (e: { key: string }) => {
     const key = e.key;
 
-    // Tìm kiếm đường link tương ứng từ menuItems
     const menuItem = menuItems.find((item) => item.key === key);
     if (menuItem && React.isValidElement(menuItem.label)) {
       const link = (menuItem.label as React.ReactElement).props.to;
@@ -32,7 +31,7 @@ export default function AdminMenu({ small }: Props) {
         if (small) {
           setOpenKeys((prevKeys) => [...prevKeys, key]);
         } else {
-          navigate(link.toString()); // Điều hướng đến đường dẫn tương ứng
+          navigate(link.toString());
         }
       }
     }
@@ -40,6 +39,14 @@ export default function AdminMenu({ small }: Props) {
 
   const handleOpenChange = (keys: string[]) => {
     setOpenKeys(keys);
+  };
+
+  const handleCategorySelect = (id: string) => {
+    if (id) {
+      navigate(`/admin/category/detail/${id}`);
+    } else {
+      console.error("Invalid category ID");
+    }
   };
 
   const menuItems = [
@@ -53,7 +60,6 @@ export default function AdminMenu({ small }: Props) {
       icon: <FileDoneOutlined />,
       label: <Link to="/admin/bill">Đơn hàng</Link>,
     },
-
     {
       key: "product",
       icon: <ProductOutlined />,
@@ -63,6 +69,16 @@ export default function AdminMenu({ small }: Props) {
       key: "category",
       icon: <UnorderedListOutlined />,
       label: <Link to="/admin/category">Danh mục</Link>,
+      children: [
+        {
+          key: "category-dropdown",
+          label: (
+            <div style={{ padding: "0 16px" }}>
+              <CategoryDropdown onSelect={handleCategorySelect} />
+            </div>
+          ),
+        },
+      ],
     },
     {
       key: "size",
@@ -74,7 +90,6 @@ export default function AdminMenu({ small }: Props) {
       icon: <GiftOutlined />,
       label: <Link to="/admin/voucher">Mã giảm giá</Link>,
     },
- 
     {
       key: "users",
       icon: <UserOutlined />,
@@ -91,15 +106,14 @@ export default function AdminMenu({ small }: Props) {
     <Menu
       className="admin-menu"
       mode="inline"
-      defaultSelectedKeys={['1']}
+      defaultSelectedKeys={["dashboard"]}
       defaultOpenKeys={openKeys}
       selectedKeys={[]}
       onClick={handleClickMenu}
       onOpenChange={handleOpenChange}
       items={menuItems}
       style={{
-        fontSize: '20px',
-        
+        fontSize: "20px",
       }}
     />
   );
