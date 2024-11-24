@@ -1,6 +1,7 @@
 export interface ICategory {
-  _id: string;
+  id: string;
   loai: string;
+  name: string
   status: string;
   optionList: optionData[];
 }
