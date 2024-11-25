@@ -10,6 +10,12 @@ import CategoryAdd from "../pages/admin/category/CategoryAdd";
 import CategoryEdit from "../pages/admin/category/CategoryEdit";
 import Users from "../pages/admin/users/Users";
 import PrivateRoute from "../components/common/(client)/sign-in/PrivateRouter";
+import ProductEdit from "../pages/admin/product/ProductEdit";
+import Size from "../pages/admin/size/Size";
+import CategoryDetail from "../pages/admin/category/CategoryDetail";
+import PageComment from "../pages/admin/comment/PageComment";
+import Voucher from "../pages/admin/voucher/voucher";
+import VoucherAdd from "../pages/admin/voucher/voucherAdd";
 
 export default function AdminRouter() {
   return (
@@ -19,12 +25,20 @@ export default function AdminRouter() {
           <Route path="/" element={<Navigate to="/admin/dashboard" />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/product" element={<Product />} />
-          <Route path="/product/add" element={<ProductAdd />} />
           <Route path="/product/detail/:id" element={<ProductDetail />} />
+          <Route path="/product/add" element={<ProductAdd />} />
+          <Route path="/product/:id" element={<ProductEdit />} />
           <Route path="/category" element={<Category />} />
           <Route path="/category/add" element={<CategoryAdd />} />
           <Route path="/category/:id" element={<CategoryEdit />} />
+          <Route path="/category/detail/:id" element={<CategoryDetail />} />
+          <Route path="/size" element={<Size />} />
+          {/* <Route path="/staff" element={<Staff />} /> */}
           <Route path="/users" element={<Users />} />
+          <Route path="/comments" element={<PageComment />} />
+          {/* <Route path="/change-password" element={<ChangePassword />} /> */}
+          <Route path="/voucher" element={<Voucher />} />
+          <Route path="/voucher/add" element={<VoucherAdd />} />
         </Routes>
       </HeaderAdmin>
     </PrivateRoute>
