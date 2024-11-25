@@ -137,3 +137,37 @@ export const uploadImage = async (formData: FormData) => {
   });
   return data;
 };
+
+export const getAllUser = async () => {
+  try {
+    const { data } = await instance.get("/users/admin");
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const toggleBlockUser = async (payload: { userId: string; shouldBlock: boolean }) => {
+  try {
+    const { data } = await instance.patch(
+      `/users/admin/${payload.userId}/toggle-block`, // Đây là endpoint chung
+      { shouldBlock: payload.shouldBlock } // Truyền thông tin cần thiết
+    );
+    console.log(payload.userId);
+    return data;
+    
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateRoleUser = async (userId: string, role: string) => {
+  try {
+    const { data } = await instance.patch(`/users/admin/${userId}/change-user-role`, {
+      role, // Dữ liệu cần gửi để thay đổi vai trò
+    });
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { notification } from "antd";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AddressRequest } from "../common/types/Address";
 import {
   ApiError,
   ForgotPasswordRequest,
@@ -10,7 +11,7 @@ import {
   User,
   UserLoginRequest,
   UserRegisterRequest,
-  UserResponse,
+  UserResponse
 } from "../common/types/User";
 import {
   addAddress,
@@ -20,12 +21,13 @@ import {
   loginAccount,
   registerAccount,
   resetPassword,
+  toggleBlockUser,
   updateAddress,
   updatePassword,
   updateProfile,
+  updateRoleUser,
   updateStatusAddress,
 } from "../services/authServices";
-import { AddressRequest } from "../common/types/Address";
 
 type AuthContextProps = {
   isLogin: boolean;
@@ -50,6 +52,8 @@ type AuthContextProps = {
   updatestatusAddress: (formData: AddressRequest) => void;
   forgotMyPassword: (formData: ForgotPasswordRequest) => void;
   resetMyPassword: (params: { formData: ResetPasswordRequest; resetToken: string }) => Promise<void>;
+  IblockUser: (id : string) => void
+  updateroleUser: (data: { userId: string; role: string }) => Promise<void>;
 };
 
 const AuthContext = createContext({} as AuthContextProps);
@@ -168,7 +172,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Vui lòng đăng nhập lại để tiếp tục.",
         placement: "topRight",
       });
+      setIsLogin(false);
+      setUser(null);
+      localStorage.clear()
+      handleLogout();
       nav("/login")
+      
     },
     onError: (error: ApiError) => {
       const errorMessage = error?.response?.data?.message || error?.message;
@@ -185,7 +194,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const {
     data: userData,
     refetch: refetchUserData,
-    isFetching,
+    isFetching:isFetching,
   } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
@@ -334,6 +343,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     },
   });
 
+
   const showDeleteModal = async (addressId: string) => {
     try {
       await deleteMyAddress(addressId);
@@ -341,6 +351,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("Error deleting address:", error);
     }
   };
+
+  //mutation block user
+  const { mutateAsync: IblockUser } = useMutation({
+    mutationFn: async (userId: string) => {
+      const data = await toggleBlockUser({
+        userId,
+        shouldBlock: false
+      });
+      console.log(userId);  // Gọi hàm BlockUser từ authServices
+      return data;
+      
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] }); // Invalidates query để làm mới dữ liệu
+      notification.success({
+        message: "Chặn người dùng thành công!",
+      });
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Có lỗi khi chặn người dùng",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
+    
+  });
+  
+  //
+  const { mutateAsync: updateroleUser } = useMutation({
+    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+      return await updateRoleUser(userId, role);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["usersAdmin"] }); // Làm mới dữ liệu
+      notification.success({
+        message: "Vai trò đã được cập nhật!",
+      });
+      
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Có lỗi xảy ra khi cập nhật vai trò",
+        description: errorMessage,
+      });
+    },
+
+  });
+  
 
   const handleLogout = () => {
     try {
@@ -386,10 +447,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isPendingAddAddress,
         isPendingUpdateAddress,
         isPendingUpdateStatusAddress,
+        updateroleUser,
         showDeleteModal,
         updateMyPassword,
         forgotMyPassword,
         resetMyPassword,
+        IblockUser,
         token,
       }}
     >
