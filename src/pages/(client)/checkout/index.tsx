@@ -1,9 +1,11 @@
 import {
+  Button,
   Card,
   Col,
   Form,
   Image,
   Input,
+  Modal,
   Radio,
   Row,
   Space,
@@ -12,16 +14,20 @@ import {
 } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import codpay from "../../../assets/images/codpay.png";
 import vnpay from "../../../assets/images/vnpay.png";
-import zalopay from "../../../assets/images/zalopay.png";
+import { AddressRequest } from "../../../common/types/Address";
+import { useCart } from "../../../contexts/CartContext";
 import { CartItem } from "../../../interface/Cart";
+import { getProfile } from "../../../services/authServices";
 import { getCartForUserServices } from "../../../services/cartServices";
-import { createOrderService } from "../../../services/orderService";
-import { deleteItemFromCartServices } from "../../../services/cartServices"; // Import delete service
+import {
+  createOrderService,
+  initiateVNPayPayment
+} from "../../../services/orderService";
 
 const { Text } = Typography;
-
 const validateCoupon = async (couponCode: string) => {
   return new Promise<{ amount: number }>((resolve, reject) => {
     setTimeout(() => {
@@ -33,8 +39,8 @@ const validateCoupon = async (couponCode: string) => {
     }, 1000);
   });
 };
-
 const CheckoutPage: React.FC = () => {
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [couponCode, setCouponCode] = useState<string>("");
@@ -44,7 +50,10 @@ const CheckoutPage: React.FC = () => {
     totalCartPrice: number;
   } | null>(null);
   const [totalPrice, setTotalPrice] = useState<number>(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [addresses, setAddresses] = useState<AddressRequest[] | undefined>([]);
   const shippingFee: number = totalPrice >= 500000 ? 0 : 30000;
+  const { setCartData } = useCart();
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -58,7 +67,18 @@ const CheckoutPage: React.FC = () => {
         }
       }
     };
+
+    const fetchAddresses = async () => {
+      try {
+        const profile = await getProfile();
+        setAddresses(profile.data.addresses);
+      } catch (error) {
+        message.error("Lỗi khi lấy thông tin địa chỉ!");
+      }
+    };
+
     fetchCart();
+    fetchAddresses();
   }, []);
 
   const handleFinish = async (values: any) => {
@@ -67,47 +87,50 @@ const CheckoutPage: React.FC = () => {
         ...values,
         paymentMethod,
         orderItems: cart?.items.map((item) => ({
-          productId: item.id,
+          productId: item.productId,
           variantId: item.variantId,
           sizeId: item.sizeId,
           quantity: item.quantity,
           price: item.price
         })),
         totalPrice: totalPrice + shippingFee,
-        shippingCost: shippingFee, // Thêm phí vận chuyển
-        discountVoucher: isCouponApplied
-          ? totalPrice - cart?.data.totalCartPrice
-          : 0
+        shippingCost: shippingFee,
+        discountVoucher: isCouponApplied ? totalPrice - cart?.totalCartPrice : 0
       };
 
-      console.log("orderData in checkout: ", orderData);
-
-      // Create the order
-      const orderResponse = await createOrderService(orderData);
-
-      // Check if order creation was successful
-      if (orderResponse.success) {
-        // Delete each item from the cart after order is placed
-        for (const item of cart?.items ?? []) {
-          await deleteItemFromCartServices(item.id);
+      if (paymentMethod === "VNPAY") {
+        const response = await initiateVNPayPayment(orderData);
+        if (response?.data?.paymentUrl) {
+          window.location.href = response.data.paymentUrl;
+        } else {
+          message.error("Không thể khởi tạo thanh toán VNPay!");
         }
-
-        // Clear the cart in state
-        setCart(null);
-
-        // Notify the user and reset form
+      } else {
+        await createOrderService(orderData);
         message.success("Đặt hàng thành công!");
         form.resetFields();
-      } else {
-        message.error("Đặt hàng thất bại!");
+        // Gọi API để làm mới giỏ hàng
+        const updatedCart = await getCartForUserServices();
+        setCart(updatedCart.data);
+        setTotalPrice(updatedCart.data.totalCartPrice);
+        if (!updatedCart.data.items || updatedCart.data.items.length === 0) {
+          navigate("/home");
+        }
       }
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         message.error(error.response?.data || "Đặt hàng thất bại!");
-      } else {
-        message.error("Đã có lỗi xảy ra khi đặt hàng.");
       }
     }
+  };
+
+  const handleSelectAddress = (address: AddressRequest) => {
+    form.setFieldsValue({
+      receiver: address.nameReceiver,
+      phoneNumber: address.phoneNumberReceiver,
+      address: `${address.detailAddressReceiver}, ${address.addressReceiver.ward.name}, ${address.addressReceiver.district.name}, ${address.addressReceiver.province.name}`
+    });
+    setModalVisible(false);
   };
 
   const handleApplyCoupon = async () => {
@@ -142,20 +165,16 @@ const CheckoutPage: React.FC = () => {
             onFinish={handleFinish}
             initialValues={{ paymentMethod }}
           >
+            <Button
+              style={{ marginBottom: "10px" }}
+              onClick={() => setModalVisible(true)}
+            >
+              Sử dụng địa chỉ có sẵn
+            </Button>
             <Form.Item
               label="Họ và tên"
               name="receiver"
               rules={[{ required: true, message: "Vui lòng nhập họ và tên!" }]}
-            >
-              <Input className="rounded-none" />
-            </Form.Item>
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[
-                { required: true, message: "Vui lòng nhập email!" },
-                { type: "email", message: "Email không hợp lệ!" }
-              ]}
             >
               <Input className="rounded-none" />
             </Form.Item>
@@ -198,14 +217,6 @@ const CheckoutPage: React.FC = () => {
                   />
                   Thanh toán khi giao hàng (COD)
                 </Radio>
-                <Radio value="zalopay">
-                  <img
-                    src={zalopay}
-                    alt="ZaloPay"
-                    className="w-6 h-6 object-contain"
-                  />
-                  Ví điện tử ZaloPay
-                </Radio>
                 <Radio value="VNPAY">
                   <img
                     src={vnpay}
@@ -221,14 +232,13 @@ const CheckoutPage: React.FC = () => {
                 type="submit"
                 className="w-full bg-black text-white px-5 py-2"
               >
-                {paymentMethod === "vnpay"
+                {paymentMethod === "VNPAY"
                   ? "Thanh toán bằng VNPay"
                   : "Hoàn tất đơn hàng"}
               </button>
             </Form.Item>
           </Form>
         </div>
-
         <div className="bg-gray-50 p-6 rounded-lg">
           <h4 className="text-xl font-semibold">Tóm tắt đơn hàng</h4>
           {cart ? (
@@ -275,7 +285,6 @@ const CheckoutPage: React.FC = () => {
                   </Row>
                 </Card>
               ))}
-
               <div className="mt-6 p-4 bg-white shadow">
                 <Row justify="space-between">
                   <Text>Phí vận chuyển:</Text>
@@ -285,34 +294,55 @@ const CheckoutPage: React.FC = () => {
                       : `${shippingFee.toLocaleString()}₫`}
                   </Text>
                 </Row>
-
-                <Row justify="space-between" className="mt-2">
-                  <Text>Tổng tiền:</Text>
-                  <Text>{(totalPrice + shippingFee).toLocaleString()}₫</Text>
+                <Row justify="space-between">
+                  <Text>Thành tiền:</Text>
+                  <Text strong>{totalPrice.toLocaleString()}₫</Text>
                 </Row>
-
-                <div className="mt-4">
+                <div className="mt-4 flex justify-center items-center gap-1">
                   <input
                     type="text"
                     placeholder="Mã giảm giá"
-                    className="w-full px-4 py-2 border border-gray-300 rounded"
+                    className="px-5 py-2 rounded-sm w-full border border-gray-300"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
                   />
                   <button
                     onClick={handleApplyCoupon}
-                    className="mt-2 w-full bg-green-500 text-white px-4 py-2 rounded"
+                    className="px-5 py-2 rounded-sm bg-black text-white text-sm w-1/3 whitespace-nowrap border border-gray-300"
                   >
-                    Áp dụng mã giảm giá
+                    Áp dụng mã
                   </button>
                 </div>
               </div>
             </>
           ) : (
-            <Text>Không có sản phẩm trong giỏ hàng!</Text>
+            <Text>Giỏ hàng rỗng</Text>
           )}
         </div>
       </div>
+      <Modal
+        title="Danh sách địa chỉ"
+        open={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+      >
+        {addresses?.map((address) => (
+          <Card
+            key={address.id}
+            onClick={() => handleSelectAddress(address)}
+            hoverable
+            className="mb-4"
+          >
+            <Space direction="vertical">
+              <Text strong>{address.nameReceiver}</Text>
+              <Text>{address.phoneNumberReceiver}</Text>
+              <Text>
+                {`${address.detailAddressReceiver}, ${address.addressReceiver.ward.name}, ${address.addressReceiver.district.name}, ${address.addressReceiver.province.name}`}
+              </Text>
+            </Space>
+          </Card>
+        ))}
+      </Modal>
     </div>
   );
 };
