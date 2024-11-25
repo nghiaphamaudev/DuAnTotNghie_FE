@@ -3,34 +3,15 @@ import { DeleteProduct, Products } from "../common/types/Product";
 import instance from "../config/axios";
 
 
-export const getAllProduct = async ({
-    page = 1,
-    limit = 10,
-    name = '',
-    status
-}: {
-    page: number;
-    limit: number;
-    name: string;
-    status?: number;
-}): Promise<Products[]> => {
+export const getAllProduct = async () => {
     try {
-        const params: any = {
-            page,
-            limit,
-            name,
-            status
-        };
-        Object.keys(params).forEach(key => params[key] == null && delete params[key]);
-
-        const { data } = await instance.get('/products', { params });
-
-        return data;
+        const { data } = await instance.get('/products');
+        return data
     } catch (error) {
-        console.error("Error in API request:", error);
-        throw error;
+        throw error
     }
-};
+}
+
 
 
 
