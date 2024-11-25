@@ -14,8 +14,13 @@ import RegisterPage from "./pages/(client)/sign-up";
 import ProductPage from "./pages/(client)/product";
 import AdminRouter from "./routers/AdminRouter";
 import CheckoutPage from "./pages/(client)/checkout";
-// import AuthGuard from "./pages/(client)/sign-in/PrivateRouter";
+import VNPayReturn from "./pages/(client)/checkout/nvpayReturn";
 import MenuAccount from "./pages/(client)/my-account";
+import { ScrollToTop } from "./ultils/client";
+import OrderDetail, {
+  mockOrderDetail
+} from "./components/common/(client)/menu-account/OrderDetail";
+import ResetPassword from "./components/common/(client)/sign-in/ResetPassword";
 
 const routeConfig = [
   {
@@ -57,6 +62,18 @@ const routeConfig = [
       {
         path: "my-account",
         element: <MenuAccount />
+      },
+      {
+        path: "order-detail/:orderId",
+        element: <OrderDetail data={mockOrderDetail} />
+      },
+      {
+        path: "/vnpay_return",
+        element: <VNPayReturn />
+      },
+      {
+        path: "resetPassword/:resetToken",
+        element: <ResetPassword />
       }
     ]
   },
@@ -68,7 +85,12 @@ const routeConfig = [
 
 const App = () => {
   const routers = useRoutes(routeConfig);
-  return <main>{routers}</main>;
+  return (
+    <main>
+      <ScrollToTop />
+      {routers}
+    </main>
+  );
 };
 
 export default App;

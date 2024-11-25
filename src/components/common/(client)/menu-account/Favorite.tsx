@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import AddToCart from "../../../components/common/(client)/AddToCart";
-import { Eye, ShoppingBag } from "lucide-react";
 import { Typography } from "antd";
-import ao from "../../../assets/images/ao.png";
+import { Eye, ShoppingBag } from "lucide-react";
+import { useState } from "react";
+import AddToCart from "../AddToCart";
+import ao from "../../../../assets/images/ao.png";
 
-const ViewHistoty = () => {
+const Favorite = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState(false);
 
@@ -38,19 +38,21 @@ const ViewHistoty = () => {
   return (
     <>
       <div className="p-6">
-        <Typography.Title level={3}>Đã xem gần đây</Typography.Title>
+        <Typography.Title level={3}>Sản phẩm yêu thích</Typography.Title>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Kiểm tra nếu không có sản phẩm */}
           {products.length === 0 ? (
-            <div className=" flex col-span-3 flex-col justify-center items-center">
-              <img
-                src={ao} // Thay bằng đường dẫn đến hình ảnh của bạn
-                alt="Không có sản phẩm"
-                className="w-[300px] h-auto"
-              />
-              <Typography.Text className="text-gray-500 text-center">
-                Hiện không có sản phẩm nào đã xem gần đây.
-              </Typography.Text>
+            <div className="col-span-3 flex justify-center items-center">
+              <div className=" flex col-span-3 flex-col justify-center items-center">
+                <img
+                  src={ao} // Thay bằng đường dẫn đến hình ảnh của bạn
+                  alt="Không có sản phẩm"
+                  className="w-[300px] h-auto"
+                />
+                <Typography.Text className="text-gray-500 text-center">
+                  Hiện không có sản phẩm nào đã xem gần đây.
+                </Typography.Text>
+              </div>
             </div>
           ) : (
             products.map((product, index) => (
@@ -116,4 +118,4 @@ const ViewHistoty = () => {
   );
 };
 
-export default ViewHistoty;
+export default Favorite;

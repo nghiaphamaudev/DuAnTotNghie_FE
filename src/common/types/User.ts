@@ -1,3 +1,4 @@
+
 export type User = {
   email: string;
   fullName: string;
@@ -12,39 +13,59 @@ export type User = {
   createdAt: string;
   updatedAt: string;
   id: string;
+  gender: boolean;
+  birthday: Date;
 };
 export type UserResponse = {
   accessToken: string;
   data: User; // Thông tin người dùng
 };
 
-export type UserRequest = {
+export type UserLoginRequest = {
   email: string;
   password: string;
+};
+
+export type UserRegisterRequest = {
+  email: string;
+  password: string;
+  phoneNumber?: string;
+  confirmPassword?: string;
+  fullName?: string;
+};
+
+export type UpdatePasswordRequest = {
+  passwordCurrent: string;
+  password: string;
+  passwordConfirm: string;
 }
-export type Address = {
-  address?: string;
-  name: string;
-  phone: string;
-  city?: string;
-  district?: string;
-  ward?: string;
-  detailedAddress?: string;
-  addressType?: string;
-  defaultAddress?: boolean;
+
+export type ResetPasswordRequest = {
+  password: string;
+  passwordConfirm: string;
+}
+
+
+export type ForgotPasswordRequest = {
+  email: string;
+}
+export type ApiError = {
+  response?: {
+    data: {
+      message: string;
+    };
+  };
+  message: string;
+}
+
+export type UserAdmin = {
+  key: string;
+  id: string;
+  email: string;
+  fullName: string;
+  role: 'admin' | 'user';
+  createdAt: string;
+  active: boolean;
 };
 
-export type Province = {
-  code: string;
-  name: string;
-};
 
-export type District = {
-  code: string;
-  name: string;
-};
-
-export type Ward = {
-  code: string;
-  name: string;
-};

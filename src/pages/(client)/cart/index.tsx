@@ -1,78 +1,69 @@
+import {
+  Button,
+  Col,
+  Divider,
+  Input,
+  notification,
+  Popconfirm,
+  Row,
+  Checkbox
+} from "antd";
+import { Minus, Plus, Trash } from "lucide-react";
 import React, { useState } from "react";
-import { Row, Col, Button, Input, Divider, message, Popconfirm } from "antd";
-import { Swiper, SwiperSlide } from "swiper/react";
+import { Link } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/pagination";
-import { Link } from "react-router-dom";
-import { Trash, Minus, Plus } from "lucide-react";
-
-type CartItem = {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  color: string;
-  size: string;
-  quantity: number;
-};
-
-type Voucher = string;
+import { useCart } from "../../../contexts/CartContext";
 
 const ShoppingCart: React.FC = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: "Áo Polo dài tay basic FWTP065",
-      price: 299000,
-      image:
-        "https://product.hstatic.net/200000690725/product/thiet_ke_chua_co_ten__1__9074b85ed0384a0a9360158a2d908bbd_medium.png",
-      color: "Xanh dương",
-      size: "S",
-      quantity: 1
-    },
-    {
-      id: 2,
-      name: "Áo Polo dài tay basic FWTP065",
-      price: 299000,
-      image:
-        "https://product.hstatic.net/200000690725/product/avt_web_1150_x_1475_px__4173548a343d4291a95efb537d93de4c_master.png",
-      color: "Nâu nhạt",
-      size: "S",
-      quantity: 1
+  // context
+  const { cartData, deleteItemCart, updateQuantityItem } = useCart();
+  const cartItems = cartData?.items;
+
+  // state để lưu danh sách sản phẩm đã chọn
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  // Hàm xử lý khi checkbox thay đổi
+  const handleCheckboxChange = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedItems((prev) => [...prev, id]); // Thêm ID vào danh sách đã chọn
+    } else {
+      setSelectedItems((prev) => prev.filter((itemId) => itemId !== id)); // Xóa ID khỏi danh sách đã chọn
     }
-  ]);
-
-  const vouchers: Voucher[] = [
-    "GIAM30K1A2",
-    "GIAM30K3B4",
-    "GIAM30K5C6",
-    "GIAM30K7D8",
-    "GIAM30K9E0"
-  ];
-
-  const totalAmount = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
-
-  const handleVoucherClick = (): void => {
-    const voucherMessage = `Các mã giảm giá hiện có: ${vouchers.join(", ")}`;
-    message.success(voucherMessage, 5);
   };
 
-  const handleDelete = (id: number): void => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-    message.success(`Đã xóa sản phẩm có ID: ${id}`);
+  // Hàm tính tổng tiền cho các sản phẩm được chọn
+  const calculateSelectedTotal = () => {
+    return cartItems
+      ?.filter((item) => selectedItems.includes(item.id)) // Lọc sản phẩm được chọn
+      .reduce((total, item) => total + item.price * item.quantity, 0); // Tính tổng tiền
   };
 
-  const handleQuantityChange = (id: number, newQuantity: number): void => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id
-          ? { ...item, quantity: newQuantity > 0 ? newQuantity : 1 }
-          : item
-      )
-    );
+  const handleDeleteItemCart = async (id: string) => {
+    try {
+      await deleteItemCart(id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleQuantityChange = async (
+    id: string,
+    value: number,
+    option: string
+  ) => {
+    const payload = {
+      cartItemId: id,
+      option: option
+    };
+    const res = await updateQuantityItem(payload);
+    if (!res.status) {
+      notification.error({
+        message: res.message,
+        placement: "topRight",
+        duration: 2
+      });
+    }
   };
 
   return (
@@ -80,39 +71,36 @@ const ShoppingCart: React.FC = () => {
       <Row gutter={[16, 16]} className="shopping-cart">
         <Col xs={24} lg={16}>
           <h2 className="text-xl font-bold mb-5">Giỏ hàng của bạn</h2>
-          {cartItems.map((item) => (
+          {cartItems?.map((item) => (
             <div key={item.id} className="p-4 border mb-4">
               <Row gutter={[16, 16]} align="top">
                 <Col xs={6} md={4}>
                   <img
-                    className="w-full h-auto max-h-fit object-cover rounded-md"
-                    src={item.image}
-                    alt={item.name}
+                    className="w-full h-[150px] max-h-fit object-cover rounded-md"
+                    src={item?.images}
+                    alt={item?.name}
                   />
                 </Col>
                 <Col xs={12} md={14} className="mt-3">
-                  <h3 className="font-semibold text-lg">{item.name}</h3>
+                  <h3 className="font-semibold text-lg">{item?.name}</h3>
                   <p>
-                    Màu: {item.color} / Kích thước: {item.size}
+                    Màu: {item.color} / Kích thước: {item?.size}
                   </p>
                 </Col>
                 <Col xs={6} md={6} className="text-right">
                   <p className="text-red-500 font-bold">
                     {item.price.toLocaleString()}₫
                   </p>
-                  <div className="flex items-center justify-end mt-2">
+                  <div className="flex items-start justify-end mt-2">
                     <Button
                       icon={<Minus size={16} />}
                       onClick={() =>
-                        handleQuantityChange(item.id, item.quantity - 1)
+                        handleQuantityChange(item?.id, -1, "increase")
                       }
                       disabled={item.quantity <= 1}
                     />
                     <Input
                       value={item.quantity}
-                      onChange={(e) =>
-                        handleQuantityChange(item.id, parseInt(e.target.value))
-                      }
                       type="number"
                       min={1}
                       className="w-16 mx-2 text-center"
@@ -120,48 +108,38 @@ const ShoppingCart: React.FC = () => {
                     <Button
                       icon={<Plus size={16} />}
                       onClick={() =>
-                        handleQuantityChange(item.id, item.quantity + 1)
+                        handleQuantityChange(item?.id, 1, "decrease")
                       }
                     />
                   </div>
-                  <Popconfirm
-                    title="Bạn sẽ xóa sản phẩm ra khỏi giỏ hàng chứ?"
-                    onConfirm={() => handleDelete(item.id)}
-                    okText="Có"
-                    cancelText="Không"
-                  >
-                    <Button
-                      type="text"
-                      icon={<Trash size={20} />}
-                      className="text-red-500 hover:bg-red-100"
-                    />
-                  </Popconfirm>
+                  <div className="flex justify-end items-center mt-5">
+                    {/* Checkbox cho việc chọn sản phẩm */}
+                    <Checkbox
+                      checked={selectedItems.includes(item.id)}
+                      onChange={(e) =>
+                        handleCheckboxChange(item.id, e.target.checked)
+                      }
+                    >
+                      Chọn sản phẩm
+                    </Checkbox>
+                    <Popconfirm
+                      title="Bạn sẽ xóa sản phẩm ra khỏi giỏ hàng chứ?"
+                      onConfirm={() => handleDeleteItemCart(item.id)}
+                      okText="Có"
+                      cancelText="Không"
+                    >
+                      <Button
+                        type="text"
+                        icon={<Trash size={20} />}
+                        className="text-red-500 hover:bg-red-100"
+                      />
+                    </Popconfirm>
+                  </div>
                 </Col>
               </Row>
             </div>
           ))}
           <Divider />
-          <Row className="mt-8">
-            <Col>
-              <h2 className="text-xl font-bold mb-5">
-                Sản phẩm bạn có thể quan tâm
-              </h2>
-              <Swiper
-                spaceBetween={16}
-                slidesPerView={2}
-                breakpoints={{
-                  640: { slidesPerView: 2 },
-                  768: { slidesPerView: 3 },
-                  1024: { slidesPerView: 4 }
-                }}
-                pagination={{ clickable: true }}
-              >
-                {[1, 2, 3, 4, 5, 6].map((product) => (
-                  <SwiperSlide key={product}>ProductCard</SwiperSlide>
-                ))}
-              </Swiper>
-            </Col>
-          </Row>
         </Col>
 
         <Col xs={24} lg={8}>
@@ -171,13 +149,14 @@ const ShoppingCart: React.FC = () => {
               <p className="text-gray-700 flex justify-between items-center">
                 <span>Tổng tiền:</span>{" "}
                 <span className="text-lg font-semibold text-red-500">
-                  {totalAmount.toLocaleString()}₫
+                  {calculateSelectedTotal()?.toLocaleString("vi-VN")}₫
                 </span>
               </p>
               <Button
                 type="primary"
                 danger
                 className="w-full mt-4 py-5 rounded-none text-[16px] font-bold"
+                disabled={selectedItems.length === 0} // Disable nếu không có sản phẩm được chọn
               >
                 <Link to="/checkout"> Thanh Toán</Link>
               </Button>
@@ -191,14 +170,6 @@ const ShoppingCart: React.FC = () => {
                 Hiện chúng tôi chỉ áp dụng thanh toán với đơn hàng có giá trị từ
                 <span className="font-bold"> 0₫</span> trở lên!
               </p>
-            </div>
-            <div className="vorcher w-full mt-3 mx-auto py-5 px-3 border-[1px]">
-              <button
-                className="text-medium font-bold"
-                onClick={handleVoucherClick}
-              >
-                Nhấn để nhận vorcher giảm giá
-              </button>
             </div>
           </div>
         </Col>

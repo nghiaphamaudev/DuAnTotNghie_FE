@@ -1,23 +1,24 @@
 import { createContext, useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { getAllProduct, getProductById } from "../services/productServices";
 import { useMutation } from "@tanstack/react-query";
-import { Product } from "../common/types/Product";
+import { Products } from "../common/types/Product";
+import { message } from "antd";
+import { useNavigate } from "react-router-dom";
 
 type ProductContextProps = {
-  allProduct: Product[];
-  product: Product | null;
-  setAllProduct: React.Dispatch<React.SetStateAction<Product[]>>;
+  allProduct: Products[];
+  product: Products | null;
+  setAllProduct: React.Dispatch<React.SetStateAction<Products[]>>;
   getAllDataProduct: () => void;
-  getDataProductById: (id: string) => void;
+  getDataProductById: (id: string) => void
 };
 
-const ProductContext = createContext({} as ProductContextProps);
-// eslint-disable-next-line react-refresh/only-export-components
+const ProductContext = createContext<ProductContextProps | undefined>(undefined);
+
 export const useProduct = () => {
   const context = useContext(ProductContext);
   if (!context) {
-    throw new Error("useProduct must be used within an AuthProvider");
+    throw new Error("useProduct must be used within a ProductProvider");
   }
   return context;
 };
@@ -29,15 +30,21 @@ export const ProductProvider = ({
 }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const nav = useNavigate();
-  const [allProduct, setAllProduct] = useState<Product[]>([]);
-  const [product, setProduct] = useState<Product | null>(null);
+  const [allProduct, setAllProduct] = useState<Products[]>([]);
+  const [product, setProduct] = useState<Products | null>(null);
 
   const { mutateAsync: getAllDataProduct } = useMutation({
     mutationFn: async () => {
-      const data = await getAllProduct();
+      const params = {
+        page: 1,
+        limit: 5,
+        name: "",
+        status: 1,
+      };
+      const data = await getAllProduct(params);
       setAllProduct(data.data);
       return data;
-    }
+    },
   });
 
   const { mutateAsync: getDataProductById } = useMutation({
@@ -47,6 +54,9 @@ export const ProductProvider = ({
       return data;
     }
   });
+
+
+
 
   return (
     <ProductContext.Provider

@@ -1,129 +1,168 @@
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, Button, InputNumber, Row, Col, Upload, UploadFile, message } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { uploadImage } from '../../../services/upload/upload';
-import { FormProps } from 'antd/lib';
-import { IProduct } from '../../../interface/Products';
-import Category from '../category/Category';
+import { getAllCategory } from '../../../services/categoryServices';
 
 const { Option } = Select;
 
-const ProductAdd = () => {
+const ProductAdd: React.FC = () => {
   const [form] = Form.useForm();
   const [showSubForm, setShowSubForm] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [addedSizes, setAddedSizes] = useState<Record<string, string[]>>({}); // Track added sizes for each color
-  const [addedColors, setAddedColors] = useState<string[]>([]);
-  const categories = [
-    { id: 1, name: 'áo mùa hè' },
-    { id: 2, name: 'áo mùa đông' }
-  ];
+  const [categories, setCategories] = useState<any[]>([]);
+
+
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await getAllCategory();
+        console.log('Dữ liệu từ API:', response);
+        if (response && Array.isArray(response.data)) {
+          setCategories(response.data);
+        } else {
+          console.error('Dữ liệu danh mục không phải là mảng:', response.data);
+        }
+      } catch (error) {
+        console.error('Lỗi khi tải danh mục:', error);
+        message.error('Không thể tải danh mục');
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+
+
 
   const handleProductTypeClick = () => {
     setShowSubForm(!showSubForm);
   };
 
   const onFinish = async (values: any) => {
-    const formattedData = {
-      name: values.name,
-      category: values.category,
-      description: values.description,
-      coverImage: values.coverImage[0], // nếu có trường ảnh bìa
-      variants: values.variants?.map((variant: any) => ({
-        color: variant.color,
-        sizes: variant.sizes?.map((size: any) => ({
-          nameSize: size.nameSize,
-          price: size.price,
-          inventory: size.inventory,
-        })),
-        images: variant.images.map((file) => file.originFileObj || file.url || file.thumbUrl), // Lấy URL ảnh từ các thuộc tính phù hợp
-      })),
-    };
-    console.log("Formatted Data: ", formattedData);
+    console.log('Received form values:', values);
+    if (!values.discount || values.discount === 'undefined') {
+      values.discount = 0;
+    }
+    if (values.status === undefined) {
+      values.status = true;
+    }
+
+    // Tạo FormData object
+    const formData = new FormData();
+    formData.append('name', values.name);
+    formData.append('category', values.category);
+    formData.append('description', values.description);
+    formData.append('discount', values.discount.toString());
+    formData.append('ratingAverage', '0');
+    formData.append('ratingQuantity', '0');
+    formData.append('status', values.status);
+
+    if (values.coverImage && values.coverImage.length > 0) {
+      formData.append('coverImage', values.coverImage[0].originFileObj);
+    } else {
+      message.error('Cover image is required.');
+      return;
+    }
+
+    if (values.variants && values.variants.length > 0) {
+      values.variants.forEach((variant: any, index: number) => {
+        if (!variant.color || !variant.sizes || !variant.images || variant.images.length === 0) {
+          message.error('Each variant must have a color, sizes, and images.');
+          return;
+        }
+
+        formData.append(`variants[${index}][color]`, variant.color);
+        variant.sizes.forEach((size: any, sizeIndex: number) => {
+          formData.append(`variants[${index}][sizes][${sizeIndex}][nameSize]`, size.nameSize);
+          formData.append(`variants[${index}][sizes][${sizeIndex}][price]`, size.price);
+          formData.append(`variants[${index}][sizes][${sizeIndex}][inventory]`, size.inventory);
+        });
+        variant.images.forEach((image: any) => {
+          formData.append(`variants[${index}][images]`, image.originFileObj);
+        });
+      });
+    } else {
+      message.error('At least one variant is required.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/v1/products', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        console.log('Sản phẩm đã được thêm thành công:', data);
+        message.success('Thêm sản phẩm thành công!');
+
+
+        form.resetFields();
+        setFileList([]);
+      } else {
+        console.error('Lỗi khi thêm sản phẩm:', data);
+        message.error(`Lỗi khi thêm sản phẩm: ${data.message || 'Có lỗi xảy ra'}`);
+      }
+    } catch (error) {
+      console.error('Lỗi khi gửi yêu cầu:', error);
+      message.error(`Lỗi khi thêm sản phẩm`);
+    }
   };
 
-  // const onFinishFailed: FormProps<IProduct>['onFinishFailed'] = (errorInfo) => {
-  //   console.log('Failed:', errorInfo);
-  // };
+  const handleFileListChange = (info: any) => {
+    setFileList(info.fileList);
+  };
 
-  // const handleUploadChange = ({ fileList }: { fileList: UploadFile[] }) => {
-  //   setFileList(fileList);
-  // };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const validateProductType = (value: any) => {
-    if (showSubForm && (!value || value.length === 0)) {
-      return Promise.reject(new Error('Vui lòng chọn ít nhất một loại sản phẩm!'));
+  const validateUniqueColor = (_: any, value: string) => {
+    const variants = form.getFieldValue('variants') || [];
+    const colors = variants.map((variant: any) => variant?.color).filter(Boolean);
+    if (colors.filter((color: string) => color === value).length > 1) {
+      return Promise.reject(new Error('Màu sắc đã tồn tại! Vui lòng chọn màu khác.'));
     }
     return Promise.resolve();
   };
-  // Hàm kiểm tra nếu size đã tồn tại cho màu đó
-  const handleSizeCheck = (sizes: string[], currentSize: string) => {
-    if (sizes.includes(currentSize)) {
-      return true;
+
+  const validateUniqueSize = (variantIndex: number) => (_: any, value: string) => {
+    const variants = form.getFieldValue('variants') || [];
+    const sizes = variants[variantIndex]?.sizes || [];
+    const sizeNames = sizes.map((size: any) => size?.nameSize).filter(Boolean);
+    if (sizeNames.filter((size: string) => size === value).length > 1) {
+      return Promise.reject(new Error('Size này đã tồn tại trong biến thể! Vui lòng chọn size khác.'));
     }
-    return false;
+    return Promise.resolve();
   };
 
-  // Hàm thêm size vào danh sách addedSizes
-  const addSizeForColor = (color: string, size: string) => {
-    setAddedSizes((prev) => {
-      const updatedSizes = { ...prev };
-      if (!updatedSizes[color]) {
-        updatedSizes[color] = [];
-      }
-      updatedSizes[color].push(size);
-      return updatedSizes;
-    });
-  };
-  // Hàm kiểm tra nếu màu đã tồn tại
-  const handleColorCheck = (color: string) => {
-    if (addedColors.includes(color)) {
-      message.error('Màu này đã được thêm trước đó!');
-      return false;
-    }
-    return true;
-  };
-
-  // Hàm thêm màu vào danh sách addedColors
-  const addColor = (color: string) => {
-    setAddedColors((prevColors) => [...prevColors, color]);
-  };
   return (
     <Form
       layout="vertical"
       form={form}
       style={{ maxWidth: '800px', margin: '0 auto' }}
       onFinish={onFinish}
-    // onFinishFailed={onFinishFailed}
     >
       <Form.Item
         label="Tên sản phẩm"
         name="name"
-        rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]}
-      >
+        rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]} >
         <Input placeholder="Nhập tên sản phẩm" />
       </Form.Item>
 
-      <Form.Item
-        label="Danh mục"
-        name="category"
-        rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
-      >
-        <Select placeholder="Chọn danh mục">
+      <Form.Item label="Category" name="category" rules={[{ required: true, message: 'Please select a category!' }]}>
+        <Select>
           {categories.map((category) => (
-            <Option key={category.id} value={category.id}>
+            <Select.Option key={category.id} value={category.id}>
               {category.name}
-            </Option>
+            </Select.Option>
           ))}
         </Select>
       </Form.Item>
 
+
       <Form.Item
         label="Mô tả sản phẩm"
         name="description"
-        rules={[{ required: true, message: 'Vui lòng nhập mô tả sản phẩm!' }]}
-      >
+        rules={[{ required: true, message: 'Vui lòng nhập mô tả sản phẩm!' }]} >
         <Input.TextArea rows={4} placeholder="Nhập mô tả sản phẩm" />
       </Form.Item>
 
@@ -131,16 +170,14 @@ const ProductAdd = () => {
         label="Ảnh bìa"
         name="coverImage"
         valuePropName="file"
-        getValueFromEvent={(e) => Array.isArray(e) ? e : e && e.fileList}
-        rules={[{ required: true, message: 'Vui lòng tải lên ảnh bìa!' }]}
-      >
+        getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+        rules={[{ required: true, message: 'Vui lòng tải lên ảnh bìa!' }]}>
         <Upload
           name="coverImage"
           listType="picture-card"
           beforeUpload={() => false}
           maxCount={1}
-          accept=".jpg,.png,.jpeg"
-        >
+          accept=".jpg,.png,.jpeg">
           <div>
             <PlusOutlined />
             <div style={{ marginTop: 8 }}>Tải ảnh</div>
@@ -155,48 +192,37 @@ const ProductAdd = () => {
       </Form.Item>
 
       {showSubForm && (
-        <Form.Item name="variants" rules={[{ validator: validateProductType }]}>
+        <Form.Item name="variants">
           <Form.List name="variants">
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
-                  <div
-                    key={key}
-                    style={{
-                      border: '1px solid #f0f0f0',
-                      padding: '16px',
-                      marginBottom: '24px',
-                      borderRadius: '8px',
-                    }}
-                  >
+                  <div key={key} style={{ border: '1px solid #f0f0f0', padding: '16px', marginBottom: '24px', borderRadius: '8px' }}>
                     <Row gutter={16}>
                       <Col span={6}>
                         <Form.Item
                           {...restField}
                           name={[name, 'color']}
-                          label="Nhập màu sắc"
-                          rules={[{ required: true, message: 'Vui lòng nhập màu sắc' }]}
-                        >
+                          label="Màu sắc"
+                          rules={[{ required: true, message: 'Nhập màu sắc' }, { validator: validateUniqueColor }]}>
                           <Input placeholder="Nhập màu sắc" />
                         </Form.Item>
                       </Col>
                       <Col span={18}>
                         <Form.Item
                           {...restField}
-                          name={[name, 'images']}  // Đảm bảo sử dụng name={[name, 'images']}
-                          label="Ảnh bìa"
+                          name={[name, 'images']}
+                          label="Ảnh màu"
                           valuePropName="fileList"
                           getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-                          rules={[{ required: true, message: 'Vui lòng tải lên ảnh bìa!' }]}
-                        >
+                          rules={[{ required: true, message: 'Vui lòng tải lên ảnh màu!' }]}>
                           <Upload
                             name="images"
                             listType="picture-card"
-                            beforeUpload={() => false} // Để tránh tải lên tự động
+                            beforeUpload={() => false}
                             maxCount={3}
                             multiple
-                            accept=".jpg,.png,.jpeg"
-                          >
+                            accept=".jpg,.png,.jpeg">
                             <div>
                               <PlusOutlined />
                               <div style={{ marginTop: 8 }}>Tải ảnh</div>
@@ -216,8 +242,10 @@ const ProductAdd = () => {
                                   {...sizeRestField}
                                   name={[sizeName, 'nameSize']}
                                   label="Size"
-                                  rules={[{ required: true, message: 'Chọn size' }]}
-                                >
+                                  rules={[
+                                    { required: true, message: 'Chọn size' },
+                                    { validator: validateUniqueSize(name) },
+                                  ]}>
                                   <Select placeholder="Chọn size">
                                     <Option value="S">S</Option>
                                     <Option value="M">M</Option>
@@ -232,8 +260,7 @@ const ProductAdd = () => {
                                   {...sizeRestField}
                                   name={[sizeName, 'price']}
                                   label="Giá"
-                                  rules={[{ required: true, message: 'Nhập giá' }]}
-                                >
+                                  rules={[{ required: true, message: 'Nhập giá' }]}>
                                   <InputNumber min={0} placeholder="Giá" style={{ width: '100%' }} />
                                 </Form.Item>
                               </Col>
@@ -242,25 +269,27 @@ const ProductAdd = () => {
                                   {...sizeRestField}
                                   name={[sizeName, 'inventory']}
                                   label="Số lượng"
-                                  rules={[{ required: true, message: 'Nhập số lượng' }]}
-                                >
+                                  rules={[{ required: true, message: 'Nhập số lượng' }]}>
                                   <InputNumber min={0} placeholder="Số lượng" style={{ width: '100%' }} />
                                 </Form.Item>
                               </Col>
                               <Col span={6} style={{ textAlign: 'right' }}>
                                 <Button
-                                  type="primary"
-                                  danger
                                   icon={<DeleteOutlined />}
                                   onClick={() => removeSize(sizeName)}
-                                >
-                                  Xóa
-                                </Button>
+                                  type="link"
+                                  danger
+                                />
                               </Col>
                             </Row>
                           ))}
                           <Form.Item>
-                            <Button type="dashed" onClick={() => addSize()}>
+                            <Button
+                              type="dashed"
+                              icon={<PlusOutlined />}
+                              onClick={() => addSize()}
+                              block
+                            >
                               Thêm Size
                             </Button>
                           </Form.Item>
@@ -268,33 +297,40 @@ const ProductAdd = () => {
                       )}
                     </Form.List>
 
-                    <Col span={24}>
-                      <Button type="primary" danger onClick={() => remove(name)}>
-                        Xóa màu
-                      </Button>
-                    </Col>
+                    <Button
+                      icon={<DeleteOutlined />}
+                      onClick={() => remove(name)}
+                      type="link"
+                      danger
+                      style={{ marginBottom: '16px' }}
+                    >
+                      Xóa biến thể
+                    </Button>
                   </div>
                 ))}
                 <Form.Item>
-                  <Button type="dashed" onClick={() => add()}>
-                    Thêm màu
+                  <Button
+                    type="dashed"
+                    icon={<PlusOutlined />}
+                    onClick={() => add()}
+                    block
+                  >
+                    Thêm Biến thể
                   </Button>
                 </Form.Item>
               </>
             )}
           </Form.List>
         </Form.Item>
-
       )}
 
       <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Lưu
+        <Button type="primary" htmlType="submit" block>
+          Thêm Sản Phẩm
         </Button>
       </Form.Item>
     </Form>
-
   );
 };
-export default ProductAdd;
 
+export default ProductAdd;

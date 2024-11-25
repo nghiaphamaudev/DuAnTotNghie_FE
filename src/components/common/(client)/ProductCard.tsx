@@ -6,6 +6,7 @@ import { Product } from "../../../common/types/Product";
 
 type ProductCardProps = {
   item: Product;
+  setIsModalVisible?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const ProductCard = ({ item }: ProductCardProps) => {
@@ -46,12 +47,11 @@ const ProductCard = ({ item }: ProductCardProps) => {
               <ShoppingBag size={20} className="text-gray-800" />
               <span className="hidden md:block text-base">Thêm giỏ hàng</span>
             </button>
-            <Link
-              to={`/home/product/${item.id}`}
-              className="bg-white p-2 rounded-full shadow-md"
-            >
-              <Eye size={20} className="text-gray-800" />
+            {/* Nút Xem chi tiết sản phẩm */}
+            <Link to={`/home/product/${item?.id}`} className="bg-white p-2 rounded-full shadow-md">
+              <Eye size={20} className="text-gray-800" /> {/* Icon Xem */}
             </Link>
+
           </div>
         )}
       </div>
@@ -73,6 +73,7 @@ const ProductCard = ({ item }: ProductCardProps) => {
         handleOk={handleOk}
         handleCancel={handleCancel}
         item={item}
+        setIsModalVisible={setIsModalVisible}
       />
     </div>
   );
