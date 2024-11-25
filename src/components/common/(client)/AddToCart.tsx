@@ -23,6 +23,7 @@ import {
 import { useCart } from "../../../contexts/CartContext";
 // import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Navigation, Pagination } from "swiper/modules";
+import { useAuth } from "../../../contexts/AuthContext";
 
 interface AddToCartProps {
   isModalVisible: boolean;
@@ -40,6 +41,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
 }: AddToCartProps) => {
   //context
   const { addItemToCart } = useCart();
+  const { isLogin, token } = useAuth();
   //state
 
   const [color, setColor] = useState<string>(item?.variants[0]?.id);
@@ -109,6 +111,15 @@ const AddToCart: React.FC<AddToCartProps> = ({
   };
 
   const handleAddItemToCart = async (id: string) => {
+    if(!token || !isLogin) {
+      notification.error({
+        message: "Vui lòng đăng nhập để tiếp tục",
+        placement: "topRight",
+        duration: 2
+      });
+      setIsModalVisible(false);
+      return
+    }
     const payload = {
       productId: id,
       variantId: color,
@@ -202,9 +213,8 @@ const AddToCart: React.FC<AddToCartProps> = ({
               <div
                 onClick={() => handleThumbnailClick(index)}
                 key={index}
-                className={`w-1/4 aspect-w-1 aspect-h-1 cursor-pointer ${
-                  index === activeIndex ? "border border-blue-500" : ""
-                }`}
+                className={`w-1/4 aspect-w-1 aspect-h-1 cursor-pointer ${index === activeIndex ? "border border-blue-500" : ""
+                  }`}
               >
                 <img
                   src={image}
