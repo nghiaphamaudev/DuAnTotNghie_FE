@@ -14,6 +14,7 @@ import RegisterPage from "./pages/(client)/sign-up";
 import ProductPage from "./pages/(client)/product";
 import AdminRouter from "./routers/AdminRouter";
 import CheckoutPage from "./pages/(client)/checkout";
+import VNPayReturn from "./pages/(client)/checkout/nvpayReturn";
 import MenuAccount from "./pages/(client)/my-account";
 import { ScrollToTop } from "./ultils/client";
 import OrderDetail, {
@@ -64,6 +65,10 @@ const routeConfig = [
       {
         path: "order-detail/:orderId",
         element: <OrderDetail data={mockOrderDetail} />
+      },
+      {
+        path: "/vnpay_return",
+        element: <VNPayReturn />
       }
     ]
   },
