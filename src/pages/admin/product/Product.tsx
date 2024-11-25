@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Col, Row, Switch, Table, Radio, Input, Pagination } from "antd";
+import { Button, Card, Col, Row, Switch, Table, Radio, Input } from "antd";
 import { DownloadOutlined, EditOutlined, EyeOutlined, PlusCircleFilled } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { debounce } from 'lodash';
@@ -8,6 +8,7 @@ import { Products, ProductVariant } from '../../../common/types/Product';
 import { ColumnType } from 'antd/es/table';
 import BreadcrumbsCustom from '../../../components/common/(admin)/BreadcrumbsCustom';
 import * as XLSX from 'xlsx';
+import { useQuery } from '@tanstack/react-query';
 
 const customTableHeaderCellStyle: React.CSSProperties = {
   fontWeight: "bold",
@@ -21,51 +22,24 @@ const CustomHeaderCell: React.FC<React.ComponentProps<"th">> = (props) => (
 
 export default function Product() {
   const [dataSource, setDataSource] = useState<Products[]>([]);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
   const [statusFilter, setStatusFilter] = useState(1);
-  const [searchValue, setSearchValue] = useState('');
-  const fetchProducts = async (page = 1, pageSize = 10) => {
-    try {
-      const response = await getAllProduct({
-        page,
-        limit: pageSize,
-        status: statusFilter,
-        name: searchValue,
-      });
-      if (response && response.pagination) {
-        setDataSource(response.data);
-        setPagination((prev) => ({
-          ...prev,
-          current: response.pagination.currentPage,
-          pageSize: pageSize,
-          total: response.pagination.totalItems,
-        }));
-      } else {
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
-        setDataSource([]);
-        setPagination((prev) => ({
-          ...prev,
-          total: 0,
-        }));
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
-
-
+  // Fetch products function
+  const { data, isError, isLoading } = useQuery<{ status: string; data: Products[] }, Error>({
+    queryKey: ["products"],
+    queryFn: getAllProduct
+  });
 
   useEffect(() => {
-    fetchProducts(pagination.current, pagination.pageSize);
-  }, [pagination.current, pagination.pageSize]);
+    if (data && Array.isArray(data.data)) {
+      setDataSource(data.data);
+    }
+  }, [data]);
 
-  const handleSearch = debounce((value: string) => {
-    setSearchValue(value);
-  }, 500);
+  const filteredData = dataSource.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleStatusChange = async (checked: boolean, id: string) => {
     try {
@@ -84,8 +58,15 @@ export default function Product() {
   };
 
   const handleStatusFilterChange = (e: any) => {
-    setStatusFilter(e.target.value);
+    setStatusFilter(e.target.value); // Update status filter
   };
+  if (isLoading) {
+    <div>...Loading</div>;
+  };
+  if (isError) {
+    return <div>Error fetching data</div>;
+  };
+
 
   const columns: ColumnType<Products>[] = [
     {
@@ -100,6 +81,9 @@ export default function Product() {
       key: "name",
       width: "20%",
       align: "center",
+      onFilter: (value: any, record: any) => {
+        return record.name.toLowerCase().includes(searchTerm.toLowerCase());
+      },
     },
     {
       title: 'Ảnh đại diện',
@@ -141,9 +125,7 @@ export default function Product() {
 
         return totalQuantity;
       },
-    }
-    ,
-
+    },
     {
       title: "Trạng thái",
       dataIndex: "isActive",
@@ -173,7 +155,7 @@ export default function Product() {
           <Link to={`/admin/product/detail/${record.id}`}>< EyeOutlined /></Link>
         </div>
       ),
-    }
+    },
   ];
 
   const handleExportExcel = () => {
@@ -190,11 +172,9 @@ export default function Product() {
         <Row gutter={16}>
           <Col span={12}>
             <Input.Search
-              placeholder="Nhập tên sản phẩm"
-              allowClear
-              enterButton="Tìm kiếm"
-              size="large"
-              onSearch={handleSearch}
+              placeholder="Tìm kiếm theo tên danh mục"
+              onSearch={(value) => setSearchTerm(value)}
+              enterButton
             />
           </Col>
           <Col span={12}>
@@ -240,25 +220,11 @@ export default function Product() {
               cell: CustomHeaderCell,
             },
           }}
-          dataSource={dataSource}
+          dataSource={filteredData}
           columns={columns}
           rowKey="id"
-          pagination={false}
+          pagination={false} // Disable pagination
         />
-        <Pagination
-          current={pagination.current}
-          pageSize={pagination.pageSize}
-          total={pagination.total}
-          onChange={(page, pageSize) => {
-            setPagination({
-              ...pagination,
-              current: page,
-              pageSize: pageSize,
-            });
-          }}
-        />
-
-
       </Card>
     </div>
   );

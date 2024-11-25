@@ -53,11 +53,12 @@ const AddressModal: React.FC<AddressModalProps> = ({
 
   const fetchData = async () => {
     try {
-      const [provincesResponse, districtsResponse, wardsResponse] = await Promise.all([
-        handleCityChange(""), // API lấy danh sách tỉnh/thành phố
-        handleDistrictChange(""), // API lấy danh sách quận/huyện
-        handleWardChange(""), // API lấy danh sách phường/xã
-      ]);
+      const [provincesResponse, districtsResponse, wardsResponse] =
+        await Promise.all([
+          handleCityChange(""), // API lấy danh sách tỉnh/thành phố
+          handleDistrictChange(""), // API lấy danh sách quận/huyện
+          handleWardChange(""), // API lấy danh sách phường/xã
+        ]);
 
       // Cập nhật state
       if (provincesResponse) {
@@ -85,7 +86,9 @@ const AddressModal: React.FC<AddressModalProps> = ({
       }
 
       if (editingAddress.addressReceiver?.district?.code) {
-        await handleDistrictChange(editingAddress.addressReceiver.district.code);
+        await handleDistrictChange(
+          editingAddress.addressReceiver.district.code
+        );
       }
 
       // Finally set the ward
@@ -100,7 +103,7 @@ const AddressModal: React.FC<AddressModalProps> = ({
         district: editingAddress.addressReceiver?.district?.code,
         ward: editingAddress.addressReceiver?.ward?.code,
         detailAddressReceiver: editingAddress.detailAddressReceiver,
-        defaultAddress: editingAddress.isDefault,
+        defaultAddress: editingAddress?.isDefault || false,
       });
     } else {
       form.resetFields();
@@ -120,7 +123,7 @@ const AddressModal: React.FC<AddressModalProps> = ({
         ward: undefined,
         provinceName: response.data.name,
       });
-      return response
+      return response;
     } catch (error) {
       console.error("Error fetching districts:", error);
       notification.error({
@@ -141,7 +144,7 @@ const AddressModal: React.FC<AddressModalProps> = ({
         ward: undefined,
         districtName: response.data.name,
       });
-      return response
+      return response;
     } catch (error) {
       console.error("Error fetching wards:", error);
       notification.error({
@@ -159,7 +162,7 @@ const AddressModal: React.FC<AddressModalProps> = ({
       form.setFieldsValue({
         wardName: response.data.name,
       });
-      return response
+      return response;
     } catch (error) {
       console.error("Error fetching ward:", error);
       notification.error({
@@ -172,20 +175,21 @@ const AddressModal: React.FC<AddressModalProps> = ({
   const onSubmit = async () => {
     try {
       const values = await form.validateFields();
+      console.log(values);
       const newAddress: AddressRequest = {
         nameReceiver: values.name,
         phoneNumberReceiver: values.phone,
         addressReceiver: {
           province: {
-            code: String(values.province ?? ''),
+            code: String(values.province ?? ""),
             name: values.provinceName || undefined,
           },
           district: {
-            code: String(values.district ?? ''),
+            code: String(values.district ?? ""),
             name: values.districtName || undefined,
           },
           ward: {
-            code: String(values.ward ?? ''),
+            code: String(values.ward ?? ""),
             name: values.wardName || undefined,
           },
         },
@@ -194,6 +198,7 @@ const AddressModal: React.FC<AddressModalProps> = ({
       };
 
       await onSave(newAddress);
+      console.log(newAddress);
       form.resetFields();
       onClose();
     } catch (error) {
@@ -203,128 +208,152 @@ const AddressModal: React.FC<AddressModalProps> = ({
 
   return (
     <>
-      {
-        isFetching ? (
-          <>
-            <Flex align="center" gap="middle">
-              <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
-            </Flex>
-          </>
-
-        ) : (
-          <Modal
-            title={editingAddress ? "Cập nhật địa chỉ" : "Thêm địa chỉ mới"}
-            open={isModalVisible}
-            onCancel={onClose}
-            footer={null}
-          >
-            <Form form={form} layout="vertical">
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="name"
-                    label="Họ tên"
-                    rules={[{ required: true, message: "Tên là bắt buộc" }]}
+      {isFetching ? (
+        <>
+          <Flex align="center" gap="middle">
+            <Spin
+              indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />}
+            />
+          </Flex>
+        </>
+      ) : (
+        <Modal
+          title={editingAddress ? "Cập nhật địa chỉ" : "Thêm địa chỉ mới"}
+          open={isModalVisible}
+          onCancel={onClose}
+          footer={null}
+        >
+          <Form form={form} layout="vertical">
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="name"
+                  label="Họ tên"
+                  rules={[{ required: true, message: "Tên là bắt buộc" }]}
+                >
+                  <Input placeholder="Nhập họ và tên" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="phone"
+                  label="Số điện thoại"
+                  rules={[
+                    { required: true, message: "Số điện thoại là bắt buộc" },
+                    {
+                      min: 10,
+                      max: 10,
+                      message: "Số điện thoại phải có 10 chữ số",
+                    },
+                    {
+                      pattern: /^0/,
+                      message: "Số điện thoại phải bắt đầu bằng số 0",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Nhập số điện thoại" maxLength={10} />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="province"
+                  label="Tỉnh / Thành phố"
+                  rules={[
+                    { required: true, message: "Tỉnh/Thành phố là bắt buộc" },
+                  ]}
+                >
+                  <Select
+                    placeholder="Chọn tỉnh/thành phố"
+                    onChange={handleCityChange}
                   >
-                    <Input placeholder="Nhập họ và tên" />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="phone"
-                    label="Số điện thoại"
-                    rules={[{ required: true, message: "Số điện thoại là bắt buộc" }]}
+                    {provinces?.map((province) => (
+                      <Option
+                        key={province.code}
+                        value={province.code.toString()}
+                      >
+                        {province.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="district"
+                  label="Quận / Huyện"
+                  rules={[
+                    { required: true, message: "Quận/Huyện là bắt buộc" },
+                  ]}
+                >
+                  <Select
+                    placeholder="Chọn quận/huyện"
+                    onChange={handleDistrictChange}
                   >
-                    <Input placeholder="Nhập số điện thoại" maxLength={11} />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="province"
-                    label="Tỉnh / Thành phố"
-                    rules={[{ required: true, message: "Tỉnh/Thành phố là bắt buộc" }]}
+                    {districts?.map((district) => (
+                      <Option
+                        key={district.code}
+                        value={district.code.toString()}
+                      >
+                        {district.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="ward"
+                  label="Phường / Xã"
+                  rules={[{ required: true, message: "Phường/Xã là bắt buộc" }]}
+                >
+                  <Select
+                    placeholder="Chọn phường/xã"
+                    onChange={handleWardChange}
                   >
-                    <Select
-                      placeholder="Chọn tỉnh/thành phố"
-                      onChange={handleCityChange}
-                    >
-                      {provinces?.map((province) => (
-                        <Option key={province.code} value={province.code.toString()}>
-                          {province.name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="district"
-                    label="Quận / Huyện"
-                    rules={[{ required: true, message: "Quận/Huyện là bắt buộc" }]}
-                  >
-                    <Select
-                      placeholder="Chọn quận/huyện"
-                      onChange={handleDistrictChange}
-                    >
-                      {districts?.map((district) => (
-                        <Option key={district.code} value={district.code.toString()}>
-                          {district.name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="ward"
-                    label="Phường / Xã"
-                    rules={[{ required: true, message: "Phường/Xã là bắt buộc" }]}
-                  >
-                    <Select
-                      placeholder="Chọn phường/xã"
-                      onChange={handleWardChange}
-                    >
-                      {wards?.map((ward) => (
-                        <Option key={ward.code} value={ward.code.toString()}>
-                          {ward.name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="detailAddressReceiver"
-                    label="Địa chỉ chi tiết"
-                    rules={[{ required: true, message: "Địa chỉ chi tiết là bắt buộc" }]}
-                  >
-                    <Input placeholder="Tòa nhà, số nhà, tên đường" />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Form.Item name="defaultAddress" valuePropName="checked">
-                <Checkbox>Đặt làm địa chỉ mặc định</Checkbox>
-              </Form.Item>
-              <Button
-                disabled={isPendingAddAddress || isPendingUpdateAddress}
-                type="primary"
-                onClick={onSubmit}
-                className="w-full"
-                style={{ backgroundColor: "#2AB573", borderColor: "#2AB573" }}
-              >
-                Lưu địa chỉ
-              </Button>
-            </Form>
-          </Modal>
-        )
-      }
-
+                    {wards?.map((ward) => (
+                      <Option key={ward.code} value={ward.code.toString()}>
+                        {ward.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="detailAddressReceiver"
+                  label="Địa chỉ chi tiết"
+                  rules={[
+                    { required: true, message: "Địa chỉ chi tiết là bắt buộc" },
+                    {
+                      min: 9,
+                      message: "Địa chỉ chi tiết phải có ít nhất 9 ký tự",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Tòa nhà, số nhà, tên đường" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Form.Item name="defaultAddress" valuePropName="checked">
+              <Checkbox>Đặt làm địa chỉ mặc định</Checkbox>
+            </Form.Item>
+            <Button
+              disabled={isPendingAddAddress || isPendingUpdateAddress}
+              type="primary"
+              onClick={onSubmit}
+              className="w-full"
+              style={{ backgroundColor: "#2AB573", borderColor: "#2AB573" }}
+            >
+              Lưu địa chỉ
+            </Button>
+          </Form>
+        </Modal>
+      )}
     </>
-
   );
 };
 

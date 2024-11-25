@@ -1,23 +1,33 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Modal, notification } from "antd";
+import { notification } from "antd";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AddressRequest } from "../common/types/Address";
 import {
+  ApiError,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  UpdatePasswordRequest,
   User,
   UserLoginRequest,
   UserRegisterRequest,
-  UserResponse,
+  UserResponse
 } from "../common/types/User";
 import {
   addAddress,
   deleteAddress,
+  forgotPassword,
   getProfile,
   loginAccount,
   registerAccount,
+  resetPassword,
+  toggleBlockUser,
   updateAddress,
+  updatePassword,
   updateProfile,
+  updateRoleUser,
+  updateStatusAddress,
 } from "../services/authServices";
-import { AddressRequest } from "../common/types/Address";
 
 type AuthContextProps = {
   isLogin: boolean;
@@ -32,10 +42,18 @@ type AuthContextProps = {
   deleteMyAddress: (id: string) => void;
   userData: User;
   handleRefetchUser: () => void;
-  isFetching : boolean;
+  isFetching: boolean;
   isPendingAddAddress: boolean;
   isPendingUpdateAddress: boolean;
+  isPendingUpdateStatusAddress: boolean;
   token: string | null;
+  showDeleteModal: (addressId: string) => void;
+  updateMyPassword: (formData: UpdatePasswordRequest) => void;
+  updatestatusAddress: (formData: AddressRequest) => void;
+  forgotMyPassword: (formData: ForgotPasswordRequest) => void;
+  resetMyPassword: (params: { formData: ResetPasswordRequest; resetToken: string }) => Promise<void>;
+  IblockUser: (id : string) => void
+  updateroleUser: (data: { userId: string; role: string }) => Promise<void>;
 };
 
 const AuthContext = createContext({} as AuthContextProps);
@@ -75,6 +93,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const data = await registerAccount(formData);
       return data;
     },
+    onSuccess: () => {
+      notification.success({
+        message: "Đăng ký thành công",
+        description: "Tài khoản của bạn đã được tạo thành công!",
+        placement: "topRight",
+      });
+      nav("/login");
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Đăng ký thất bại",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
   });
 
   // mutation login
@@ -87,11 +121,81 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("user", JSON.stringify(data.data));
       setUser(data.data);
+      notification.success({
+        message: "Đăng nhập thành công",
+        description: "Chào mừng bạn quay trở lại!",
+        placement: "topRight",
+      });
+      nav("/home");
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Đăng nhập thất bại",
+        description: errorMessage,
+        placement: "topRight",
+      });
     },
   });
 
+  // mutation forgotPassword
+  const { mutateAsync: forgotMyPassword } = useMutation({
+    mutationFn: async (formData: ForgotPasswordRequest) => {
+      const data = await forgotPassword(formData);
+      return data;
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Gửi Email thất bại",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
+  });
+
+  // mutation resetPassword
+  const { mutateAsync: resetMyPassword } = useMutation({
+    mutationFn: async ({
+      formData,
+      resetToken,
+    }: {
+      formData: ResetPasswordRequest;
+      resetToken: string;
+    }) => {
+      const data = await resetPassword(formData, resetToken);
+      return data;
+    },
+    onSuccess:() => {
+      notification.success({
+        message: "Đặt lại mật khẩu thành công",
+        description: "Vui lòng đăng nhập lại để tiếp tục.",
+        placement: "topRight",
+      });
+      setIsLogin(false);
+      setUser(null);
+      localStorage.clear()
+      handleLogout();
+      nav("/login")
+      
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Đặt lại mật khẩu thất bại",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
+  });
+  
+  
   // mutation get profile
-  const { data: userData, refetch: refetchUserData, isFetching  } = useQuery({
+  const {
+    data: userData,
+    refetch: refetchUserData,
+    isFetching:isFetching,
+  } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       const res = await getProfile();
@@ -110,50 +214,114 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       queryClient.invalidateQueries({
         queryKey: ["users"],
       });
-
-      localStorage.setItem("user", JSON.stringify(data)); // Cập nhật thông tin người dùng trong localStorage
-      notification.success({ message: "Cập nhật thông tin thành công!" });
+      localStorage.setItem("user", JSON.stringify(data));
+      notification.success({ message: "Cập nhật thông tin thành công!",placement: "topRight", });
     },
-    onError: (error) => {
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
       notification.error({
         message: "Cập nhật thông tin tài khoản thất bại",
-        description: "Vui lòng kiểm tra lại dữ liệu và thử lại.",
+        description: errorMessage,
+        placement: "topRight",
       });
-      console.error("Update profile error:", error); // Ghi log lỗi nếu có
     },
   });
 
+  //mutation update password
+  const { mutateAsync: updateMyPassword } = useMutation({
+    mutationFn: async (formData: UpdatePasswordRequest) => {
+      const data = await updatePassword(formData);
+      return data;
+    },
+    onSuccess: () => {
+      notification.success({
+        message: "Đổi mật khẩu thành công!",
+        description: "Vui lòng đăng nhập lại để tiếp tục.",
+        placement: "topRight",
+      });
+      handleLogout();
+      nav("login");
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Đổi mật khẩu thất bại",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
+  });
+  
   //mutation update address
-  const { mutateAsync: updateMyAddress, isPending: isPendingUpdateAddress } = useMutation({
+  const { mutateAsync: updateMyAddress, isPending: isPendingUpdateAddress } =
+    useMutation({
+      mutationFn: async (formData: AddressRequest) => {
+        const data = await updateAddress(formData);
+        return data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["users"],
+        });
+        notification.success({ message: "Cập nhật địa chỉ thành công!" });
+      },
+      onError: (error: ApiError) => {
+        const errorMessage = error?.response?.data?.message || error?.message;
+        notification.error({
+          message: "Cập nhật địa chỉ thất bại",
+          description: errorMessage,
+          placement: "topRight",
+        });
+      },
+    });
+
+  //mutation update status address
+  const {
+    mutateAsync: updatestatusAddress,
+    isPending: isPendingUpdateStatusAddress,
+  } = useMutation({
     mutationFn: async (formData: AddressRequest) => {
-      const data = await updateAddress(formData);
+      const data = await updateStatusAddress(formData);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["users"],
       });
-      notification.success({ message: "Cập nhật địa chỉ thành công!" });
+      notification.success({
+        message: "Cập nhật địa chỉ mặc định thành công!",
+      });
     },
-    onError: () => {
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
       notification.error({
-        message: "Cập nhật địa chỉ thất bại",
-        description: "Vui lòng kiểm tra lại dữ liệu và thử lại.",
+        message: "Cập nhật địa chỉ mặc định thất bại",
+        description: errorMessage,
+        placement: "topRight",
       });
     },
   });
 
   // mutation add address
-  const { mutateAsync: addMyAddress, isPending: isPendingAddAddress } = useMutation({
-    mutationFn: async (formData: AddressRequest) => {
-      const data = await addAddress(formData);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      notification.success({ message: "Thêm địa chỉ thành công"})
-    },
-  });
+  const { mutateAsync: addMyAddress, isPending: isPendingAddAddress } =
+    useMutation({
+      mutationFn: async (formData: AddressRequest) => {
+        const data = await addAddress(formData);
+        return data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["users"] });
+        notification.success({ message: "Thêm địa chỉ thành công" });
+      },
+      onError: (error: ApiError) => {
+        const errorMessage = error?.response?.data?.message || error?.message;
+        notification.error({
+          message: "Thêm địa chỉ thất bại",
+          description: errorMessage,
+          placement: "topRight",
+        });
+      },
+    });
 
   //mutation delete address
   const { mutateAsync: deleteMyAddress } = useMutation({
@@ -162,22 +330,78 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return data;
     },
     onSuccess: () => {
-      Modal.confirm({
-        title: "Xóa địa chỉ",
-        content: "Bạn có chắc chắn muốn xóa địa chỉ này?",
-        onOk: () => {
-          queryClient.invalidateQueries({ queryKey: ["users"] });
-          notification.success({ message: "Xóa địa chỉ thành công" });  
-        },
-      });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      notification.success({ message: "Xóa địa chỉ thành công" });
     },
-    onError: () => {
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
       notification.error({
         message: "Xóa địa chỉ thất bại",
-        description: "Vui lòng thử lại sau.",
+        description: errorMessage,
+        placement: "topRight",
       });
     },
   });
+
+
+  const showDeleteModal = async (addressId: string) => {
+    try {
+      await deleteMyAddress(addressId);
+    } catch (error) {
+      console.error("Error deleting address:", error);
+    }
+  };
+
+  //mutation block user
+  const { mutateAsync: IblockUser } = useMutation({
+    mutationFn: async (userId: string) => {
+      const data = await toggleBlockUser({
+        userId,
+        shouldBlock: false
+      });
+      console.log(userId);  // Gọi hàm BlockUser từ authServices
+      return data;
+      
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] }); // Invalidates query để làm mới dữ liệu
+      notification.success({
+        message: "Chặn người dùng thành công!",
+      });
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Có lỗi khi chặn người dùng",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
+    
+  });
+  
+  //
+  const { mutateAsync: updateroleUser } = useMutation({
+    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+      return await updateRoleUser(userId, role);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["usersAdmin"] }); // Làm mới dữ liệu
+      notification.success({
+        message: "Vai trò đã được cập nhật!",
+      });
+      
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Có lỗi xảy ra khi cập nhật vai trò",
+        description: errorMessage,
+      });
+    },
+
+  });
+  
 
   const handleLogout = () => {
     try {
@@ -200,7 +424,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const handleRefetchUser = () => {
-    refetchUserData (); // Tái thực hiện lại request để lấy thông tin mới
+    refetchUserData(); // Tái thực hiện lại request để lấy thông tin mới
   };
 
   return (
@@ -216,12 +440,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         updateUser,
         userData,
         updateMyAddress,
+        updatestatusAddress,
         deleteMyAddress,
         handleRefetchUser,
-        isFetching ,
+        isFetching,
         isPendingAddAddress,
         isPendingUpdateAddress,
-        token
+        isPendingUpdateStatusAddress,
+        updateroleUser,
+        showDeleteModal,
+        updateMyPassword,
+        forgotMyPassword,
+        resetMyPassword,
+        IblockUser,
+        token,
       }}
     >
       {children}

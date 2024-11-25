@@ -20,6 +20,7 @@ import { ScrollToTop } from "./ultils/client";
 import OrderDetail, {
   mockOrderDetail
 } from "./components/common/(client)/menu-account/OrderDetail";
+import ResetPassword from "./components/common/(client)/sign-in/ResetPassword";
 
 const routeConfig = [
   {
@@ -69,6 +70,10 @@ const routeConfig = [
       {
         path: "/vnpay_return",
         element: <VNPayReturn />
+      },
+      {
+        path: "resetPassword/:resetToken",
+        element: <ResetPassword />
       }
     ]
   },
