@@ -2,28 +2,37 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { ShoppingCartOutlined } from "@ant-design/icons";
-import { Button, Image, InputNumber, Modal, notification, Radio, RadioChangeEvent } from "antd";
+import {
+  Button,
+  Image,
+  InputNumber,
+  Modal,
+  notification,
+  Radio,
+  RadioChangeEvent
+} from "antd";
 import { useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper as SwiperType } from "swiper";
+
 import {
   Product,
   ProductSize,
   ProductVariant
 } from "../../../common/types/Product";
 import { useCart } from "../../../contexts/CartContext";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+// import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Navigation, Pagination } from "swiper/modules";
-
 
 interface AddToCartProps {
   isModalVisible: boolean;
   handleOk: (quantity: number) => void;
   handleCancel: () => void;
   item: Product; // Nhận dữ liệu sản phẩm từ ProductCard
-  setIsModalVisible: React.Dispatch<React.SetStateAction<boolean>>
+  setIsModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const AddToCart = ({
+const AddToCart: React.FC<AddToCartProps> = ({
   isModalVisible,
   handleCancel,
   item,
@@ -34,18 +43,17 @@ const AddToCart = ({
   //state
 
   const [color, setColor] = useState<string>(item?.variants[0]?.id);
-  const [size, setSize] = useState<string>(
-    item?.variants[0]?.sizes[0]?.id
-  );
+  const [size, setSize] = useState<string>(item?.variants[0]?.sizes[0]?.id);
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     item?.variants[0] || null
   );
-  const [price, setPrice] = useState<number>(item?.variants[0]?.sizes[0]?.price);
+  const [price, setPrice] = useState<number>(
+    item?.variants[0]?.sizes[0]?.price
+  );
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const swiperRef = useRef<any>(null);
-
+  const swiperRef = useRef<SwiperType | null>(null);
 
   //lifecycle
   useEffect(() => {
@@ -84,7 +92,7 @@ const AddToCart = ({
     if (swiperRef.current) {
       swiperRef.current.slideTo(index);
     }
-  }
+  };
 
   const onChangeQuantity = (value: number | null) => {
     if (value !== null) {
@@ -105,27 +113,26 @@ const AddToCart = ({
       productId: id,
       variantId: color,
       sizeId: size,
-      quantity: quantity,
-    }
+      quantity: quantity
+    };
     const res = await addItemToCart(payload);
 
     if (res && res?.status) {
       notification.success({
         message: "Thêm sản phẩm thành công",
         placement: "topRight",
-        duration: 2,
+        duration: 2
       });
-      setIsModalVisible(false)
+      setIsModalVisible(false);
     } else {
       notification.error({
         message: res.message,
         placement: "topRight",
-        duration: 2,
+        duration: 2
       });
-      setIsModalVisible(false)
+      setIsModalVisible(false);
     }
-  }
-
+  };
 
   return (
     <Modal
@@ -195,8 +202,9 @@ const AddToCart = ({
               <div
                 onClick={() => handleThumbnailClick(index)}
                 key={index}
-                className={`w-1/4 aspect-w-1 aspect-h-1 cursor-pointer ${index === activeIndex ? "border border-blue-500" : ""
-                  }`}
+                className={`w-1/4 aspect-w-1 aspect-h-1 cursor-pointer ${
+                  index === activeIndex ? "border border-blue-500" : ""
+                }`}
               >
                 <img
                   src={image}
@@ -216,7 +224,8 @@ const AddToCart = ({
           {/* Rating section */}
           <div className="flex items-center mb-4">
             <span className="text-yellow-500 text-lg">
-              {"★".repeat(Math.round(item?.ratingAverage))} {/* Display stars */}
+              {"★".repeat(Math.round(item?.ratingAverage))}{" "}
+              {/* Display stars */}
               {"☆".repeat(5 - Math.round(item?.ratingAverage))}{" "}
               {/* Empty stars */}
             </span>
@@ -227,7 +236,10 @@ const AddToCart = ({
 
           <div className="flex items-center mb-4">
             <span className="text-red-500 text-xl font-semibold">
-              {price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+              {price.toLocaleString("vi-VN", {
+                style: "currency",
+                currency: "VND"
+              })}
             </span>
             <span className="text-gray-400 text-lg line-through ml-4">
               850,000 đ
@@ -281,7 +293,10 @@ const AddToCart = ({
           </div>
 
           {/* Add to cart button */}
-          <button onClick={() => handleAddItemToCart(item.id)} className="bg-red-500 flex items-center justify-center gap-2 w-full text-white text-base font-semibold uppercase py-3">
+          <button
+            onClick={() => handleAddItemToCart(item.id)}
+            className="bg-red-500 flex items-center justify-center gap-2 w-full text-white text-base font-semibold uppercase py-3"
+          >
             <ShoppingCartOutlined className="text-2xl" />
             <span>Thêm vào giỏ</span>
           </button>
