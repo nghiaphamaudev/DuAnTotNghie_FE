@@ -1,22 +1,27 @@
-// AuthGuard.jsx
-import { ReactNode, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { ReactNode } from "react";
+import { Navigate } from "react-router-dom";
 
-interface AuthGuardProps {
-    children: ReactNode; // Chỉ định kiểu cho children là ReactNode
+interface PrivateRouteProps {
+  children: ReactNode;
+  requireAdmin?: boolean;
+}
+
+const PrivateRoute = ({
+  children,
+  requireAdmin = false
+}: PrivateRouteProps) => {
+  const userData = localStorage.getItem("user");
+  const user = userData ? JSON.parse(userData) : null;
+
+  if (!user) {
+    return <Navigate to="/login" />;
   }
 
-const AuthGuard = ({ children }: AuthGuardProps) => {
-  const navigate = useNavigate();
+  if (requireAdmin && user.role !== "admin") {
+    return <Navigate to="/home" />;
+  }
 
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      navigate("/home"); // Chuyển hướng đến trang chính nếu đã đăng nhập
-    }
-  }, [navigate]);
-
-  return children; // Trả về các component con nếu chưa đăng nhập
+  return <>{children}</>;
 };
 
-export default AuthGuard;
+export default PrivateRoute;
