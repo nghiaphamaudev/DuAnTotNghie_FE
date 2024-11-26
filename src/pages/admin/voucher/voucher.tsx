@@ -1,105 +1,74 @@
-import { PlusCircleFilled } from "@ant-design/icons";
-import {
-  Button,
-  Card,
-  Col,
-  Input,
-  Radio,
-  Row,
-  Table,
-
-} from "antd";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from "react";
+import { LoadingOutlined, PlusCircleFilled } from "@ant-design/icons";
+import { Button, Card, Col, Input, Radio, Row, Switch, Table, message } from "antd";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
-
 import { Link } from "react-router-dom";
-
-
-
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchVouchers, updateVoucherStatus } from "../../../services/voucher";
+import { ColumnsType } from "antd/es/table";
 export default function Voucher() {
   const { Search } = Input;
-  const data = [
-    {
-      key: '1',
-      stt: 1,
-      code: 'DISCOUNT10',
-      description: 'Giảm 10% cho đơn hàng trên 500K',
-      quantity: 100,
-      usedCount: 20,
-      discountType: '10%',
-      startDate: '2024-01-01',
-      expirationDate: '2024-12-31',
-      status: 'Hoạt động',
+  const queryClient = useQueryClient();
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["vouchers"],
+    queryFn: async () => await fetchVouchers(),
+  });
+  const [filterStatus, setFilterStatus] = useState<number>(1);
+  const [searchKeyword, setSearchKeyword] = useState<string>(""); 
+  const mutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) =>
+      await updateVoucherStatus(id, status),
+    onSuccess: () => {
+      message.success("Cập nhật trạng thái thành công!");
+      queryClient.invalidateQueries({
+        queryKey: ["vouchers"],
+      }); 
     },
-    {
-      key: '2',
-      stt: 2,
-      code: 'DISCOUNT20',
-      description: 'Giảm 20% cho đơn hàng trên 1 triệu',
-      quantity: 50,
-      usedCount: 10,
-      discountType: '20%',
-      startDate: '2024-02-01',
-      expirationDate: '2024-10-31',
-      status: 'Hoạt động',
+    onError: () => {
+      message.error("Cập nhật trạng thái thất bại!");
     },
-    {
-      key: '3',
-      stt: 3,
-      code: 'FREESHIP50',
-      description: 'Miễn phí vận chuyển cho đơn hàng trên 50K',
-      quantity: 200,
-      usedCount: 80,
-      discountType: 'Miễn phí vận chuyển',
-      startDate: '2024-03-15',
-      expirationDate: '2024-09-30',
-      status: 'Ngưng hoạt động',
-    },
-    {
-      key: '4',
-      stt: 4,
-      code: 'NEWYEAR30',
-      description: 'Giảm 30% cho đơn hàng dịp Tết',
-      quantity: 150,
-      usedCount: 70,
-      discountType: '30%',
-      startDate: '2024-01-25',
-      expirationDate: '2024-02-10',
-      status: 'Hoạt động',
-    },
-    {
-      key: '5',
-      stt: 5,
-      code: 'HALFPRICE50',
-      description: 'Giảm 50% cho sản phẩm thứ 2',
-      quantity: 300,
-      usedCount: 150,
-      discountType: '50%',
-      startDate: '2024-06-01',
-      expirationDate: '2024-08-31',
-      status: 'Hoạt động',
-    },
-    {
-      key: '6',
-      stt: 6,
-      code: 'SUMMER15',
-      description: 'Giảm 15% cho các sản phẩm mùa hè',
-      quantity: 120,
-      usedCount: 50,
-      discountType: '15%',
-      startDate: '2024-05-01',
-      expirationDate: '2024-07-30',
-      status: 'Ngưng hoạt động',
-    },
-  ];
+  });
+  const handleStatusChange = (e: any) => {
+    setFilterStatus(e.target.value);
+  };
 
-  const columns = [
+  const handleSearch = (value: string) => {
+    setSearchKeyword(value.toLowerCase().trim());
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // Hàm thay đổi trạng thái
+  const onSwitchChange = (checked: boolean, record: any) => {
+    const newStatus = checked ? "active" : "inactive";
+    mutation.mutate({ id: record._id, status: newStatus });
+    console.log(record._id);
+    
+  };
+  const filteredData = data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ?.filter((voucher: any) => {
+      if (filterStatus === 2) return voucher.status === "active"; 
+      if (filterStatus === 3) return voucher.status === "inactive"; 
+      return true; 
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((voucher: any) => {
+      if (!searchKeyword) return true; 
+      return (
+        voucher.code.toLowerCase().includes(searchKeyword) || 
+        voucher.description?.toLowerCase().includes(searchKeyword) 
+      );
+    });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const columns: ColumnsType<any> =[
     {
       title: "STT",
       dataIndex: "stt",
       key: "stt",
       align: "center" as const,
       width: "5%",
-
+      render: (_text: any, _record: any, index: number) => index + 1,
     },
     {
       title: "Mã giảm giá",
@@ -135,7 +104,10 @@ export default function Voucher() {
       key: "discountType",
       align: "center" as const,
       width: "10%",
-
+      render: (_text: string, record: any) =>
+        record.discountType === "percentage"
+          ? `${record.discountPercentage}%`
+          : `${record.discountAmount} VNĐ`,
     },
     {
       title: "Ngày bắt đầu",
@@ -143,7 +115,6 @@ export default function Voucher() {
       key: "startDate",
       align: "center" as const,
       width: "10%",
-
     },
     {
       title: "Ngày kết thúc",
@@ -151,32 +122,43 @@ export default function Voucher() {
       key: "expirationDate",
       align: "center" as const,
       width: "10%",
-
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      align: "center" as const,
+      align: "center",
       width: "10%",
-
+      render: (status: string, record: any) => (
+        <Switch
+          checked={status === "active"}
+          onChange={(checked) => onSwitchChange(checked, record)}
+        />
+      ),
     },
-
   ];
+
+  if (isLoading)
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <LoadingOutlined />
+      </div>
+    );
+  if (isError) return <div>Error</div>;
 
   return (
     <div>
       <BreadcrumbsCustom nameHere={"Mã giảm giá"} listLink={[]} />
-      {/* filter */}
+      {/* Filter */}
       <Card bordered={false}>
         <Row gutter={16}>
           <Col span={12}>
             <Search
-              placeholder="input search text"
+              placeholder="Tìm kiếm theo mã hoặc mô tả"
               allowClear
               enterButton="Search"
               size="large"
-            //  onSearch={onSearch}
+              onSearch={handleSearch}
             />
           </Col>
           <Col span={12}>
@@ -194,7 +176,7 @@ export default function Voucher() {
         <Row gutter={16} style={{ marginTop: "12px" }}>
           <Col span={12}>
             <span>Trạng thái: </span>
-            <Radio.Group value={1}>
+            <Radio.Group onChange={handleStatusChange} value={filterStatus}>
               <Radio value={1}>Tất cả</Radio>
               <Radio value={2}>Hoạt động</Radio>
               <Radio value={3}>Ngưng hoạt động</Radio>
@@ -203,11 +185,7 @@ export default function Voucher() {
         </Row>
       </Card>
       <Card style={{ marginTop: "12px" }}>
-        <Table
-
-          dataSource={data}
-          columns={columns}
-        />
+        <Table dataSource={filteredData.slice().reverse()} columns={columns} rowKey="id" />
       </Card>
     </div>
   );
