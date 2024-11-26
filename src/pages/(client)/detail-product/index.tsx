@@ -17,7 +17,7 @@ const DetailProduct = () => {
     const [selectedTab, setSelectedTab] = useState<number>(0);
     const { product, getDataProductById } = useProduct();
     const { addItemToCart } = useCart();
-    const { allProduct, getAllDataProduct } = useProduct();
+    const { allProduct } = useProduct();
     const [selectedThumbnail, setSelectedThumbnail] = useState(0);
     const [mainImage, setMainImage] = useState('');
     const [selectedColor, setSelectedColor] = useState('');
@@ -36,9 +36,6 @@ const DetailProduct = () => {
         }
     }, [id]);
 
-    useEffect(() => {
-        getAllDataProduct();
-    }, []);
 
     useEffect(() => {
         if (product?.data?.variants?.length > 0) {

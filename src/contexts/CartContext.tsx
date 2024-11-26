@@ -2,14 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useState } from "react";
 import { addItemToCartServices, deleteItemFromCartServices, getCartForUserServices, updateQuantityItemCartServices } from "../services/cartServices";
 import { useAuth } from "./AuthContext";
-import { AdđToCartRequest, Cart, UpdateQuantityCartRequest } from "../interface/Cart";
+import {  AddToCartRequest, Cart, UpdateQuantityCartRequest } from "../interface/Cart";
 import { ResponseData } from "../interface/http";
 
 type CartContextProps = {
     cartData: Cart | null,
     setCartData: React.Dispatch<React.SetStateAction<Cart | null>>,
     deleteItemCart: (id: string) => void,
-    addItemToCart: (payload: AdđToCartRequest) => Promise<ResponseData>,
+    addItemToCart: (payload: AddToCartRequest) => Promise<ResponseData>,
     countItemCart: number,
     updateQuantityItem: (payload: UpdateQuantityCartRequest) => Promise<ResponseData>,
 };
@@ -57,7 +57,7 @@ export const CartProvider = ({
 
     // thêm sản phẩm vào cart
     const { mutateAsync: addItemToCart } = useMutation({
-        mutationFn: async (payload: AdđToCartRequest) => {
+        mutationFn: async (payload: AddToCartRequest) => {
             const res = await addItemToCartServices(payload);
             return res;
         },

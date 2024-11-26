@@ -49,7 +49,6 @@ const ShoppingCart: React.FC = () => {
 
   const handleQuantityChange = async (
     id: string,
-    value: number,
     option: string
   ) => {
     const payload = {
@@ -95,7 +94,7 @@ const ShoppingCart: React.FC = () => {
                     <Button
                       icon={<Minus size={16} />}
                       onClick={() =>
-                        handleQuantityChange(item?.id, -1, "increase")
+                        handleQuantityChange(item?.id, "increase")
                       }
                       disabled={item.quantity <= 1}
                     />
@@ -106,9 +105,10 @@ const ShoppingCart: React.FC = () => {
                       className="w-16 mx-2 text-center"
                     />
                     <Button
+                      disabled={item.quantity === item?.inventory}
                       icon={<Plus size={16} />}
                       onClick={() =>
-                        handleQuantityChange(item?.id, 1, "decrease")
+                        handleQuantityChange(item?.id, "decrease")
                       }
                     />
                   </div>
