@@ -1,22 +1,14 @@
-import {
-  DownloadOutlined,
-  UserSwitchOutlined,
-  StopOutlined,
-  CheckOutlined,
-} from "@ant-design/icons";
-import {
-  Button,
-  Card,
-  Col,
-  Row,
-  Table,
-  Tag,
-  Modal,
-} from "antd";
-import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
-import dayjs from "dayjs";
+import { CheckOutlined, DownloadOutlined, StopOutlined, } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
+import { Button, Card, Col, Row, Select, Table } from "antd";
 import Search from "antd/es/input/Search";
-import { useState } from "react"; 
+import dayjs from "dayjs";
+import { UserAdmin } from "../../../common/types/User";
+import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
+import { useAuth } from "../../../contexts/AuthContext";
+import { getAllUser } from "../../../services/authServices";
+
+const { Option } = Select;
 
 const customTableHeaderCellStyle: React.CSSProperties = {
   color: "black",
@@ -25,60 +17,33 @@ const customTableHeaderCellStyle: React.CSSProperties = {
 };
 
 export default function Users() {
-  
-  const data = [
-    {
-      key: '1',
-      stt: 1,
-      name: 'Nguyễn Văn A',
-      email: 'nguyenvana@gmail.com',
-      role: 'user', 
-      createdAt: '2023-10-14T12:00:00Z',
-      status: 'active',
-    },
-    {
-      key: '2',
-      stt: 2,
-      name: 'Trần Thị B',
-      email: 'tranthib@gmail.com',
-      role: 'admin',
-      createdAt: '2023-10-14T12:00:00Z',
-      status: 'active', 
-    },
-    {
-      key: '3',
-      stt: 3,
-      name: 'Lê Hoàng C',
-      email: 'lehoangc@gmail.com',
-      role: 'user', 
-      createdAt: '2023-10-14T12:00:00Z',
-      status: 'blocked', 
-    },
-    {
-      key: '4',
-      stt: 4,
-      name: 'Phạm Quốc D',
-      email: 'phamquocd@gmail.com',
-      role: 'user', 
-      createdAt: '2023-10-14T12:00:00Z',
-      status: 'active', 
-    }
-  ];
 
-  const [modalVisible, setModalVisible] = useState(false); // Quản lý hiển thị modal
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedUser, setSelectedUser] = useState<any>(null); // Quản lý người dùng đang được chọn
+  const { IblockUser, updateroleUser } = useAuth();
+
+  
+  // Lấy dữ liệu người dùng từ API
+  const { data: users = []} = useQuery<UserAdmin[]>({
+    queryKey: ["usersAdmin"],
+    queryFn: async () => {
+      const res = await getAllUser();
+      console.log(res.data.users);
+      return res.data.users;
+    },
+    enabled: true
+  });
+
   const columns = [
     {
       title: "STT",
       dataIndex: "stt",
       key: "stt",
       align: "center" as const,
+      render: (_: unknown, __: UserAdmin, index: number) => index + 1, 
     },
     {
       title: "Họ tên",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "fullName",
+      key: "fullName",
       align: "center" as const,
     },
     {
@@ -92,87 +57,72 @@ export default function Users() {
       dataIndex: "role",
       key: "role",
       align: "center" as const,
-      // Hiển thị vai trò dưới dạng thẻ Tag với màu sắc tùy thuộc vào vai trò
-      render: (role: string) => (
-        <Tag color={role === "admin" ? "green" : "blue"}>
-          {role === "admin" ? "Admin" : "User"}
-        </Tag>
+      render: (role: string, record: UserAdmin) => (
+        <Select
+          defaultValue={role}
+          style={{ width: 120,  color: role === "admin" ? "red" : "green", fontWeight: "bold" }}
+          onChange={(newRole) => handleRoleChange(record.id, newRole)}  // Gọi hàm khi thay đổi vai trò
+        >
+          <Option value="admin" >Admin</Option>
+          <Option value="user">User</Option>
+        </Select>
       ),
     },
     {
       title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
-      align: "center" as const,
-      render: (createdAt: string) => dayjs(createdAt).format("DD/MM/YYYY HH:mm:ss"),
+      align: "center",
+      render: (createdAt: string) =>
+        dayjs(createdAt).format("DD/MM/YYYY HH:mm:ss"),
     },
     {
       title: "Hành động",
       dataIndex: "key",
       key: "action",
       align: "center" as const,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (value: string, record: any) => (
+      render: (value: string, record: UserAdmin) => (
         <div>
-          {/* Nút chuyển vai trò (chỉnh sửa) */}
-          <Button
-            icon={<UserSwitchOutlined style={{ fontSize: "20px", color: "#1890ff" }} />}
-            onClick={() => openRoleModal(record)} // Mở modal để chỉnh sửa vai trò
-            style={{ border: "none" }}
-          />
-
-          {/* Nút Chặn hoặc Bỏ chặn */}
           <Button
             icon={
-              record.status === 'active' ? (
+              record.active === true ? (  // Kiểm tra trạng thái active của người dùng
                 <StopOutlined style={{ fontSize: "20px", color: "#ff4d4f" }} />
               ) : (
                 <CheckOutlined style={{ fontSize: "20px", color: "#52c41a" }} />
               )
             }
             onClick={() => {
-              if (record.status === 'active') {
-                blockUser(record.key); // Chặn người dùng nếu họ đang hoạt động
+              if (record.active === true) {
+                handleUnBlockId(record.id);  // Gọi hàm blockUser nếu người dùng đang active
               } else {
-                unBlockUser(record.key); // Bỏ chặn người dùng nếu họ bị chặn
+                handleBlockUser(record.id); // Gọi hàm unBlockUser nếu người dùng đang không active
               }
             }}
             style={{ border: "none", marginLeft: "10px" }}
           >
-            {record.status === 'active' ? "Chặn" : "Bỏ chặn"}
+            {record.active === true ? "Chặn" : "Bỏ chặn"}
           </Button>
         </div>
       ),
     }
   ];
 
-  // Hàm mở modal chỉnh sửa vai trò của người dùng
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const openRoleModal = (user: any) => {
-    setSelectedUser(user); // Lưu thông tin người dùng được chọn
-    setModalVisible(true); // Hiển thị modal
+  const handleRoleChange = async (userId: string, role: string) => {
+    try {
+      await updateroleUser({ userId, role });
+    } catch (error) {
+      console.error("Lỗi khi cập nhật vai trò:", error);
+    }
+  };
+  
+  const handleBlockUser = (id: string) => {
+    IblockUser(id); // Gọi hàm chặn người dùng
   };
 
-  // Hàm cập nhật vai trò của người dùng
-  const handleRoleUpdate = (role: string) => {
-    console.log(`Cập nhật người dùng ${selectedUser?.name} thành vai trò ${role}`);
-    // Logic cập nhật vai trò ở đây (có thể gọi API)
-    setModalVisible(false); // Đóng modal sau khi cập nhật
-  };
+  const handleUnBlockId = async (id: string) => {
+    IblockUser(id)
+  }
 
-  // Hàm chặn người dùng
-  const blockUser = (key: string) => {
-    console.log(`Chặn người dùng có key ${key}`);
-    // Logic chặn người dùng ở đây (có thể gọi API)
-  };
-
-  // Hàm bỏ chặn người dùng
-  const unBlockUser = (key: string) => {
-    console.log(`Bỏ chặn người dùng có key ${key}`);
-    // Logic bỏ chặn người dùng ở đây (có thể gọi API)
-  };
-
-  // Cấu hình custom header cell cho bảng
   const CustomHeaderCell: React.FC<React.ComponentProps<"th">> = (props) => (
     <th {...props} style={customTableHeaderCellStyle} />
   );
@@ -209,38 +159,13 @@ export default function Users() {
       </Card>
 
       <Card style={{ marginTop: "12px" }}>
-        {/* Bảng hiển thị dữ liệu */}
         <Table
           components={{ header: { cell: CustomHeaderCell } }}
-          dataSource={data}
+          dataSource={Array.isArray(users) ? users : []} // Sử dụng dữ liệu từ useQuery
           columns={columns}
-          rowKey="key"
+          rowKey="id"
         />
       </Card>
-
-      {/* Modal để chỉnh sửa vai trò người dùng */}
-      <Modal
-        title="Chỉnh sửa vai trò"
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={null}
-      >
-        {/* Nút để chỉ định vai trò cho người dùng */}
-        <Button
-          type="default"
-          style={{ margin: "5px" }}
-          onClick={() => handleRoleUpdate("admin")} // Cập nhật vai trò thành admin
-        >
-          Chỉ định làm Admin
-        </Button>
-        <Button
-          type="default"
-          style={{ margin: "5px" }}
-          onClick={() => handleRoleUpdate("user")} // Cập nhật vai trò thành user
-        >
-          Chỉ định làm User
-        </Button>
-      </Modal>
     </div>
   );
 }

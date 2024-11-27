@@ -1,34 +1,28 @@
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { z } from "zod";
 
-import { LoginSchema } from "../../../components/common/(client)/sign-in/zod";
 import ForgotPasswordModal from "../../../components/common/(client)/sign-in/Modal";
+import { LoginSchema } from "../../../components/common/(client)/sign-in/zod";
 import { useAuth } from "../../../contexts/AuthContext";
-import { notification } from "antd";
-// validate login
 
 type LoginForm = z.infer<typeof LoginSchema>;
 
 const LoginPage = () => {
-  // context
   const { login: loginAccount } = useAuth();
 
-  // state
   const [showPassword, setShowPassword] = useState(false);
 
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  //navigate
-  const navigate = useNavigate();
+  const [rememberMe, setRememberMe] = useState(false);
 
-  // function
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -42,43 +36,51 @@ const LoginPage = () => {
     setIsModalOpen(false);
   };
 
-  // validate Schema
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<LoginForm>({
     resolver: zodResolver(LoginSchema),
     mode: "onBlur",
   });
 
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    const savedPassword = localStorage.getItem("rememberedPassword");
+
+    if (savedEmail !== null) {
+      setValue("email", savedEmail);
+    }
+
+    if (savedPassword !== null) {
+      setValue("password", savedPassword);
+    }
+
+    if (savedEmail && savedPassword) {
+      setRememberMe(true);
+    }
+  }, [setValue]);
+
   const onSubmit = async (data: LoginForm) => {
     if (isForgotPasswordOpen) {
       return;
     }
-    try {
-      await loginAccount(data);
-
-      notification.success({
-        message: "Đăng nhập thành công",
-        description: "Chào mừng bạn quay trở lại!",
-        placement: "topRight",
-      });
-
-      navigate("/home");
-    } catch (error) {
-      // Hiển thị thông báo đăng nhập thất bại
-      notification.error({
-        message: "Đăng nhập thất bại",  
-        description: "Tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại!",
-        placement: "topRight",
-      });
-
-      console.error("Login error:", error);
+    if (rememberMe) {
+      localStorage.setItem("rememberedEmail", data.email);
+      localStorage.setItem("rememberedPassword", data.password);
+    } else {
+      localStorage.removeItem("rememberedEmail");
+      localStorage.removeItem("rememberedPassword");
     }
+    await loginAccount(data);
   };
 
-  // Form quên mật khẩu
+  const handleRememberMe = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRememberMe(e.target.checked);
+  };
+
   return (
     <>
       <div className="flex justify-center items-center min-h-[50vh] mt-[100px] lg:mt-[200px] px-4">
@@ -137,9 +139,11 @@ const LoginPage = () => {
             <div className="flex justify-between">
               <div className="flex items-center">
                 <input
-                  className="form-checkbox mr-2"
                   type="checkbox"
-                  id="remember"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={handleRememberMe}
+                  className="form-checkbox mr-2"
                 />
                 <label className="text-md" htmlFor="remember">
                   Nhớ tài khoản

@@ -5,8 +5,13 @@ import ProductCard from '../../../components/common/(client)/ProductCard';
 import { useCart } from '../../../contexts/CartContext';
 import { useProduct } from '../../../contexts/ProductContext';
 import './css.css';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const DetailProduct = () => {
+    //context
+    const { isLogin, token } = useAuth();
+
+    //state
     const { id } = useParams();
     const [price, setPrice] = useState(0);
     const [selectedTab, setSelectedTab] = useState<number>(0);
@@ -24,7 +29,7 @@ const DetailProduct = () => {
     const [startIndex, setStartIndex] = useState(0);
     const productsPerPage = 4;
 
-
+    //lifecycle
     useEffect(() => {
         if (id) {
             getDataProductById(id);
@@ -48,7 +53,7 @@ const DetailProduct = () => {
         }
     }, [product]);
 
-
+    // function
     const handleArrowClick = (direction: any) => {
         const images = product?.data?.variants.find((variant: any) => variant.color === selectedColor)?.images;
         const newIndex = (selectedThumbnail + direction + images.length) % images.length;
@@ -118,6 +123,15 @@ const DetailProduct = () => {
         setOpenAccordion(openAccordion === index ? null : index);
     };
     const handleAddToCart = async () => {
+        if(!token || !isLogin) {
+            notification.error({
+              message: "Vui lòng đăng nhập để tiếp tục",
+              placement: "topRight",
+              duration: 2
+            });
+            setIsModalVisible(false);
+            return
+          }
         if (!product?.data) {
             message.error('Không tìm thấy thông tin sản phẩm.');
             return;
