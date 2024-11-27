@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Table, Pagination, Button, Input, Row, Col, Radio, Switch } from 'antd';
-import { DownloadOutlined, EyeOutlined, PlusCircleFilled } from '@ant-design/icons';
+import { DownloadOutlined, EditOutlined, EyeOutlined, PlusCircleFilled } from '@ant-design/icons';
 import { Link, useParams } from 'react-router-dom';
 import { debounce } from 'lodash';
 import { getCategoryById } from '../../../services/categoryServices';
@@ -127,20 +127,22 @@ export default function CategoryDetail() {
             ),
         },
         {
-            title: 'Chi tiết',
-            align: 'center',
-            dataIndex: 'key',
-            key: 'key',
-            width: '20%',
+            title: "Chi tiết",
+            align: "center",
+            dataIndex: "key",
+            key: "key",
+            width: "20%",
             render: (_, record) => (
-                <div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                     <Link to={`/admin/product/${record.id}`}>
+                        <EditOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
+                    </Link>
+                    <Link to={`/admin/product/detail/${record.id}`}>
                         <EyeOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
                     </Link>
-                    <Link to={`/admin/product/detail/${record.id}`}>Chi tiết sản phẩm</Link>
                 </div>
             ),
-        },
+        }
     ];
 
     const handleExportExcel = () => {

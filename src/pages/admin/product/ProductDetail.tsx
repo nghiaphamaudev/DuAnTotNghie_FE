@@ -100,6 +100,12 @@ const ProductDetail: React.FC = () => {
                                                 {size.nameSize || "Không có kích thước"} - Giá: {size.price || 0} - Số lượng: {size.inventory || 0}
                                             </Text>
                                         ))}
+                                        <Text style={{ display: 'block', marginTop: '8px' }}>
+                                            Trạng thái:{" "}
+                                            <Tag color={variant.status ? 'green' : 'red'}>
+                                                {variant.status ? 'Còn hàng ' : 'hết hàng'}
+                                            </Tag>
+                                        </Text>
                                     </div>
                                 }
                             />

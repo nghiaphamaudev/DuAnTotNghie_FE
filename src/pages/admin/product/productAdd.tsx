@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Select, Button, InputNumber, Row, Col, Upload, UploadFile, message } from 'antd';
+import { Form, Input, Select, Button, InputNumber, Row, Col, Upload, UploadFile, message, Spin } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { getAllCategory } from '../../../services/categoryServices';
+import { useNavigate } from 'react-router-dom';
 
 const { Option } = Select;
 
@@ -10,6 +11,8 @@ const ProductAdd: React.FC = () => {
   const [showSubForm, setShowSubForm] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
 
 
@@ -50,6 +53,7 @@ const ProductAdd: React.FC = () => {
 
     // Tạo FormData object
     const formData = new FormData();
+    setLoading(true);
     formData.append('name', values.name);
     formData.append('category', values.category);
     formData.append('description', values.description);
@@ -100,6 +104,7 @@ const ProductAdd: React.FC = () => {
 
 
         form.resetFields();
+        navigate('/admin/product')
         setFileList([]);
       } else {
         console.error('Lỗi khi thêm sản phẩm:', data);
@@ -108,6 +113,8 @@ const ProductAdd: React.FC = () => {
     } catch (error) {
       console.error('Lỗi khi gửi yêu cầu:', error);
       message.error(`Lỗi khi thêm sản phẩm`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -135,201 +142,208 @@ const ProductAdd: React.FC = () => {
   };
 
   return (
-    <Form
-      layout="vertical"
-      form={form}
-      style={{ maxWidth: '800px', margin: '0 auto' }}
-      onFinish={onFinish}
-    >
-      <Form.Item
-        label="Tên sản phẩm"
-        name="name"
-        rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]} >
-        <Input placeholder="Nhập tên sản phẩm" />
-      </Form.Item>
-
-      <Form.Item label="Category" name="category" rules={[{ required: true, message: 'Please select a category!' }]}>
-        <Select>
-          {categories.map((category) => (
-            <Select.Option key={category.id} value={category.id}>
-              {category.name}
-            </Select.Option>
-          ))}
-        </Select>
-      </Form.Item>
-
-
-      <Form.Item
-        label="Mô tả sản phẩm"
-        name="description"
-        rules={[{ required: true, message: 'Vui lòng nhập mô tả sản phẩm!' }]} >
-        <Input.TextArea rows={4} placeholder="Nhập mô tả sản phẩm" />
-      </Form.Item>
-
-      <Form.Item
-        label="Ảnh bìa"
-        name="coverImage"
-        valuePropName="file"
-        getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
-        rules={[{ required: true, message: 'Vui lòng tải lên ảnh bìa!' }]}>
-        <Upload
-          name="coverImage"
-          listType="picture-card"
-          beforeUpload={() => false}
-          maxCount={1}
-          accept=".jpg,.png,.jpeg">
-          <div>
-            <PlusOutlined />
-            <div style={{ marginTop: 8 }}>Tải ảnh</div>
-          </div>
-        </Upload>
-      </Form.Item>
-
-      <Form.Item label="Loại sản phẩm">
-        <Button type="primary" onClick={handleProductTypeClick}>
-          {showSubForm ? 'Ẩn loại sản phẩm' : 'Chọn loại sản phẩm'}
-        </Button>
-      </Form.Item>
-
-      {showSubForm && (
-        <Form.Item name="variants">
-          <Form.List name="variants">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <div key={key} style={{ border: '1px solid #f0f0f0', padding: '16px', marginBottom: '24px', borderRadius: '8px' }}>
-                    <Row gutter={16}>
-                      <Col span={6}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'color']}
-                          label="Màu sắc"
-                          rules={[{ required: true, message: 'Nhập màu sắc' }, { validator: validateUniqueColor }]}>
-                          <Input placeholder="Nhập màu sắc" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={18}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'images']}
-                          label="Ảnh màu"
-                          valuePropName="fileList"
-                          getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-                          rules={[{ required: true, message: 'Vui lòng tải lên ảnh màu!' }]}>
-                          <Upload
-                            name="images"
-                            listType="picture-card"
-                            beforeUpload={() => false}
-                            maxCount={3}
-                            multiple
-                            accept=".jpg,.png,.jpeg">
-                            <div>
-                              <PlusOutlined />
-                              <div style={{ marginTop: 8 }}>Tải ảnh</div>
-                            </div>
-                          </Upload>
-                        </Form.Item>
-                      </Col>
-                    </Row>
-
-                    <Form.List name={[name, 'sizes']}>
-                      {(sizeFields, { add: addSize, remove: removeSize }) => (
-                        <>
-                          {sizeFields.map(({ key: sizeKey, name: sizeName, ...sizeRestField }) => (
-                            <Row gutter={16} key={sizeKey} style={{ alignItems: 'center' }}>
-                              <Col span={6}>
-                                <Form.Item
-                                  {...sizeRestField}
-                                  name={[sizeName, 'nameSize']}
-                                  label="Size"
-                                  rules={[
-                                    { required: true, message: 'Chọn size' },
-                                    { validator: validateUniqueSize(name) },
-                                  ]}>
-                                  <Select placeholder="Chọn size">
-                                    <Option value="S">S</Option>
-                                    <Option value="M">M</Option>
-                                    <Option value="L">L</Option>
-                                    <Option value="XL">XL</Option>
-                                    <Option value="XXL">XXL</Option>
-                                  </Select>
-                                </Form.Item>
-                              </Col>
-                              <Col span={6}>
-                                <Form.Item
-                                  {...sizeRestField}
-                                  name={[sizeName, 'price']}
-                                  label="Giá"
-                                  rules={[{ required: true, message: 'Nhập giá' }]}>
-                                  <InputNumber min={0} placeholder="Giá" style={{ width: '100%' }} />
-                                </Form.Item>
-                              </Col>
-                              <Col span={6}>
-                                <Form.Item
-                                  {...sizeRestField}
-                                  name={[sizeName, 'inventory']}
-                                  label="Số lượng"
-                                  rules={[{ required: true, message: 'Nhập số lượng' }]}>
-                                  <InputNumber min={0} placeholder="Số lượng" style={{ width: '100%' }} />
-                                </Form.Item>
-                              </Col>
-                              <Col span={6} style={{ textAlign: 'right' }}>
-                                <Button
-                                  icon={<DeleteOutlined />}
-                                  onClick={() => removeSize(sizeName)}
-                                  type="link"
-                                  danger
-                                />
-                              </Col>
-                            </Row>
-                          ))}
-                          <Form.Item>
-                            <Button
-                              type="dashed"
-                              icon={<PlusOutlined />}
-                              onClick={() => addSize()}
-                              block
-                            >
-                              Thêm Size
-                            </Button>
-                          </Form.Item>
-                        </>
-                      )}
-                    </Form.List>
-
-                    <Button
-                      icon={<DeleteOutlined />}
-                      onClick={() => remove(name)}
-                      type="link"
-                      danger
-                      style={{ marginBottom: '16px' }}
-                    >
-                      Xóa biến thể
-                    </Button>
-                  </div>
-                ))}
-                <Form.Item>
-                  <Button
-                    type="dashed"
-                    icon={<PlusOutlined />}
-                    onClick={() => add()}
-                    block
-                  >
-                    Thêm Biến thể
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
+    <Spin spinning={loading} tip="Đang xử lý...">
+      <Form
+        layout="vertical"
+        form={form}
+        style={{ maxWidth: '800px', margin: '0 auto' }}
+        onFinish={onFinish}
+        disabled={loading}
+      >
+        <Form.Item
+          label="Tên sản phẩm"
+          name="name"
+          rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]} >
+          <Input placeholder="Nhập tên sản phẩm" />
         </Form.Item>
-      )}
 
-      <Form.Item>
-        <Button type="primary" htmlType="submit" block>
-          Thêm Sản Phẩm
-        </Button>
-      </Form.Item>
-    </Form>
+        <Form.Item label="Category" name="category" rules={[{ required: true, message: 'Please select a category!' }]}>
+          <Select>
+            {categories.map((category) => (
+              <Select.Option key={category.id} value={category.id}>
+                {category.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+
+        <Form.Item
+          label="Mô tả sản phẩm"
+          name="description"
+          rules={[{ required: true, message: 'Vui lòng nhập mô tả sản phẩm!' }]} >
+          <Input.TextArea rows={4} placeholder="Nhập mô tả sản phẩm" />
+        </Form.Item>
+
+        <Form.Item
+          label="Ảnh bìa"
+          name="coverImage"
+          valuePropName="file"
+          getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+          rules={[{ required: true, message: 'Vui lòng tải lên ảnh bìa!' }]}>
+          <Upload
+            name="coverImage"
+            listType="picture-card"
+            beforeUpload={() => false}
+            maxCount={1}
+            accept=".jpg,.png,.jpeg">
+            <div>
+              <PlusOutlined />
+              <div style={{ marginTop: 8 }}>Tải ảnh</div>
+            </div>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item label="Loại sản phẩm">
+          <Button type="primary" onClick={handleProductTypeClick}>
+            {showSubForm ? 'Ẩn loại sản phẩm' : 'Chọn loại sản phẩm'}
+          </Button>
+        </Form.Item>
+
+        {
+          showSubForm && (
+            <Form.Item name="variants">
+              <Form.List name="variants">
+                {(fields, { add, remove }) => (
+                  <>
+                    {fields.map(({ key, name, ...restField }) => (
+                      <div key={key} style={{ border: '1px solid #f0f0f0', padding: '16px', marginBottom: '24px', borderRadius: '8px' }}>
+                        <Row gutter={16}>
+                          <Col span={6}>
+                            <Form.Item
+                              {...restField}
+                              name={[name, 'color']}
+                              label="Màu sắc"
+                              rules={[{ required: true, message: 'Nhập màu sắc' }, { validator: validateUniqueColor }]}>
+                              <Input placeholder="Nhập màu sắc" />
+                            </Form.Item>
+                          </Col>
+                          <Col span={18}>
+                            <Form.Item
+                              {...restField}
+                              name={[name, 'images']}
+                              label="Ảnh màu"
+                              valuePropName="fileList"
+                              getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+                              rules={[{ required: true, message: 'Vui lòng tải lên ảnh màu!' }]}>
+                              <Upload
+                                name="images"
+                                listType="picture-card"
+                                beforeUpload={() => false}
+                                maxCount={3}
+                                multiple
+                                accept=".jpg,.png,.jpeg">
+                                <div>
+                                  <PlusOutlined />
+                                  <div style={{ marginTop: 8 }}>Tải ảnh</div>
+                                </div>
+                              </Upload>
+                            </Form.Item>
+                          </Col>
+                        </Row>
+
+                        <Form.List name={[name, 'sizes']}>
+                          {(sizeFields, { add: addSize, remove: removeSize }) => (
+                            <>
+                              {sizeFields.map(({ key: sizeKey, name: sizeName, ...sizeRestField }) => (
+                                <Row gutter={16} key={sizeKey} style={{ alignItems: 'center' }}>
+                                  <Col span={6}>
+                                    <Form.Item
+                                      {...sizeRestField}
+                                      name={[sizeName, 'nameSize']}
+                                      label="Size"
+                                      rules={[
+                                        { required: true, message: 'Chọn size' },
+                                        { validator: validateUniqueSize(name) },
+                                      ]}>
+                                      <Select placeholder="Chọn size">
+                                        <Option value="S">S</Option>
+                                        <Option value="M">M</Option>
+                                        <Option value="L">L</Option>
+                                        <Option value="XL">XL</Option>
+                                        <Option value="XXL">XXL</Option>
+                                      </Select>
+                                    </Form.Item>
+                                  </Col>
+                                  <Col span={6}>
+                                    <Form.Item
+                                      {...sizeRestField}
+                                      name={[sizeName, 'price']}
+                                      label="Giá"
+                                      rules={[{ required: true, message: 'Nhập giá' }]}>
+                                      <InputNumber min={0} placeholder="Giá" style={{ width: '100%' }} />
+                                    </Form.Item>
+                                  </Col>
+                                  <Col span={6}>
+                                    <Form.Item
+                                      {...sizeRestField}
+                                      name={[sizeName, 'inventory']}
+                                      label="Số lượng"
+                                      rules={[{ required: true, message: 'Nhập số lượng' }]}>
+                                      <InputNumber min={0} placeholder="Số lượng" style={{ width: '100%' }} />
+                                    </Form.Item>
+                                  </Col>
+                                  <Col span={6} style={{ textAlign: 'right' }}>
+                                    <Button
+                                      icon={<DeleteOutlined />}
+                                      onClick={() => removeSize(sizeName)}
+                                      type="link"
+                                      danger
+                                    />
+                                  </Col>
+                                </Row>
+                              ))}
+                              <Form.Item>
+                                <Button
+                                  type="dashed"
+                                  icon={<PlusOutlined />}
+                                  onClick={() => addSize()}
+                                  block
+                                >
+                                  Thêm Size
+                                </Button>
+                              </Form.Item>
+                            </>
+                          )}
+                        </Form.List>
+
+                        <Button
+                          icon={<DeleteOutlined />}
+                          onClick={() => remove(name)}
+                          type="link"
+                          danger
+                          style={{ marginBottom: '16px' }}
+                        >
+                          Xóa biến thể
+                        </Button>
+                      </div>
+                    ))}
+                    <Form.Item>
+                      <Button
+                        type="dashed"
+                        icon={<PlusOutlined />}
+                        onClick={() => add()}
+                        block
+                      >
+                        Thêm Biến thể
+                      </Button>
+                    </Form.Item>
+                  </>
+                )}
+              </Form.List>
+            </Form.Item>
+          )
+        }
+
+        <Form.Item>
+          <Button type="primary" htmlType="submit" block>
+            Thêm Sản Phẩm
+          </Button>
+        </Form.Item>
+      </Form >
+
+    </Spin>
+
   );
 };
 

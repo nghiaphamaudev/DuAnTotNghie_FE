@@ -47,6 +47,8 @@ export const ProductProvider = ({
     },
   });
 
+
+
   const { mutateAsync: getDataProductById } = useMutation({
     mutationFn: async (id: string) => {
       const data = await getProductById(id);
