@@ -1,14 +1,27 @@
-import { CheckOutlined, DownloadOutlined, StopOutlined, } from "@ant-design/icons";
+import {
+  CheckOutlined,
+  DownloadOutlined,
+  StopOutlined,
+} from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, Col, Row, Select, Table } from "antd";
-import Search from "antd/es/input/Search";
+import {
+  Button,
+  Card,
+  Col,
+  Input,
+  Modal,
+  notification,
+  Row,
+  Table,
+} from "antd";
 import dayjs from "dayjs";
+import React, { useState, useMemo } from "react";
+import { JSX } from "react/jsx-runtime";
 import { UserAdmin } from "../../../common/types/User";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getAllUser } from "../../../services/authServices";
-
-const { Option } = Select;
+import * as XLSX from "xlsx";
 
 const customTableHeaderCellStyle: React.CSSProperties = {
   color: "black",
@@ -17,20 +30,62 @@ const customTableHeaderCellStyle: React.CSSProperties = {
 };
 
 export default function Users() {
+  const { IblockUser, UnblockUser } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState(""); // State để lưu trữ giá trị tìm kiếm
 
-  const { IblockUser, updateroleUser } = useAuth();
+  const showBlockModal = (userId: string) => {
+    setSelectedUserId(userId);
+    setIsModalOpen(true);
+  };
 
-  
-  // Lấy dữ liệu người dùng từ API
-  const { data: users = []} = useQuery<UserAdmin[]>({
+  const handleModalCancel = () => {
+    setReason("");
+    setIsModalOpen(false);
+  };
+
+  const handleConfirmBlock = async () => {
+    if (!reason) {
+      notification.warning({ message: "Vui lòng nhập lý do chặn." });
+      return;
+    }
+
+    if (!selectedUserId) return;
+    setIsLoading(true);
+
+    try {
+      await IblockUser({
+        userId: selectedUserId,
+        shouldBlock: false,
+        note: reason,
+      });
+      handleModalCancel();
+    } catch (error) {
+      console.error("Lỗi khi chặn người dùng:", error);
+      notification.error({ message: "Có lỗi xảy ra khi chặn người dùng." });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const { data: users = [] } = useQuery<UserAdmin[]>({
     queryKey: ["usersAdmin"],
     queryFn: async () => {
       const res = await getAllUser();
       console.log(res.data.users);
       return res.data.users;
     },
-    enabled: true
   });
+
+  // Lọc người dùng dựa trên tên
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) =>
+      user.fullName.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [users, searchText]);
 
   const columns = [
     {
@@ -38,7 +93,7 @@ export default function Users() {
       dataIndex: "stt",
       key: "stt",
       align: "center" as const,
-      render: (_: unknown, __: UserAdmin, index: number) => index + 1, 
+      render: (_: unknown, __: UserAdmin, index: number) => index + 1,
     },
     {
       title: "Họ tên",
@@ -57,15 +112,10 @@ export default function Users() {
       dataIndex: "role",
       key: "role",
       align: "center" as const,
-      render: (role: string, record: UserAdmin) => (
-        <Select
-          defaultValue={role}
-          style={{ width: 120,  color: role === "admin" ? "red" : "green", fontWeight: "bold" }}
-          onChange={(newRole) => handleRoleChange(record.id, newRole)}  // Gọi hàm khi thay đổi vai trò
-        >
-          <Option value="admin" >Admin</Option>
-          <Option value="user">User</Option>
-        </Select>
+      render: (role: string) => (
+        <span style={{ color: role === "admin" ? "black" : "green" }}>
+          {role === "admin" ? "Admin" : "User"}
+        </span>
       ),
     },
     {
@@ -81,51 +131,44 @@ export default function Users() {
       dataIndex: "key",
       key: "action",
       align: "center" as const,
-      render: (value: string, record: UserAdmin) => (
-        <div>
-          <Button
-            icon={
-              record.active === true ? (  // Kiểm tra trạng thái active của người dùng
-                <StopOutlined style={{ fontSize: "20px", color: "#ff4d4f" }} />
-              ) : (
-                <CheckOutlined style={{ fontSize: "20px", color: "#52c41a" }} />
-              )
+      render: (_: string, record: UserAdmin) => (
+        <Button
+          icon={
+            record.active ? (
+              <StopOutlined style={{ fontSize: "20px", color: "#ff4d4f" }} />
+            ) : (
+              <CheckOutlined style={{ fontSize: "20px", color: "#52c41a" }} />
+            )
+          }
+          onClick={() => {
+            if (record.active) {
+              showBlockModal(record.id);
+            } else {
+              handleUnBlockId(record.id);
             }
-            onClick={() => {
-              if (record.active === true) {
-                handleUnBlockId(record.id);  // Gọi hàm blockUser nếu người dùng đang active
-              } else {
-                handleBlockUser(record.id); // Gọi hàm unBlockUser nếu người dùng đang không active
-              }
-            }}
-            style={{ border: "none", marginLeft: "10px" }}
-          >
-            {record.active === true ? "Chặn" : "Bỏ chặn"}
-          </Button>
-        </div>
+          }}
+          style={{ border: "none", marginLeft: "10px" }}
+        >
+          {record.active ? "Chặn" : "Bỏ chặn"}
+        </Button>
       ),
-    }
+    },
   ];
 
-  const handleRoleChange = async (userId: string, role: string) => {
+  const handleUnBlockId = async (id: string) => {
     try {
-      await updateroleUser({ userId, role });
+      await UnblockUser(id);
     } catch (error) {
-      console.error("Lỗi khi cập nhật vai trò:", error);
+      console.error("Lỗi khi bỏ chặn người dùng:", error);
     }
   };
-  
-  const handleBlockUser = (id: string) => {
-    IblockUser(id); // Gọi hàm chặn người dùng
+
+  const handleExportExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(users); // Chuyển đổi dữ liệu thành sheet Excel
+    const wb = XLSX.utils.book_new(); // Tạo một workbook mới
+    XLSX.utils.book_append_sheet(wb, ws, "Users"); // Thêm sheet vào workbook
+    XLSX.writeFile(wb, "users.xlsx"); // Xuất file Excel
   };
-
-  const handleUnBlockId = async (id: string) => {
-    IblockUser(id)
-  }
-
-  const CustomHeaderCell: React.FC<React.ComponentProps<"th">> = (props) => (
-    <th {...props} style={customTableHeaderCellStyle} />
-  );
 
   return (
     <div>
@@ -133,11 +176,11 @@ export default function Users() {
       <Card bordered={false}>
         <Row gutter={16}>
           <Col span={12}>
-            <Search
-              placeholder="input search text"
-              allowClear
-              enterButton="Search"
+            <Input.Search
+              placeholder="Tìm kiếm người dùng"
               size="large"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
             />
           </Col>
           <Col span={12}>
@@ -151,21 +194,55 @@ export default function Users() {
                 borderColor: "green",
               }}
               type="default"
+              onClick={handleExportExcel}
             >
               Export Excel
             </Button>
           </Col>
         </Row>
       </Card>
-
       <Card style={{ marginTop: "12px" }}>
         <Table
-          components={{ header: { cell: CustomHeaderCell } }}
-          dataSource={Array.isArray(users) ? users : []} // Sử dụng dữ liệu từ useQuery
+          components={{
+            header: {
+              cell: (
+                props: JSX.IntrinsicAttributes &
+                  React.ClassAttributes<HTMLTableHeaderCellElement> &
+                  React.ThHTMLAttributes<HTMLTableHeaderCellElement>
+              ) => <th {...props} style={customTableHeaderCellStyle} />,
+            },
+          }}
+          dataSource={filteredUsers} // Sử dụng dữ liệu đã lọc
           columns={columns}
           rowKey="id"
+          scroll={{ x: "max-content" }}
+          pagination={false}
+          className="table-auto w-full"
+          size="middle"
         />
       </Card>
+      <Modal
+        title="Nhập lý do chặn người dùng"
+        visible={isModalOpen}
+        onOk={handleConfirmBlock}
+        onCancel={handleModalCancel}
+        okButtonProps={{
+          loading: isLoading,
+          disabled: isLoading,
+        }}
+        cancelButtonProps={{
+          disabled: isLoading,
+        }}
+        okText="Gửi"
+        cancelText="Hủy"
+      >
+        <Input.TextArea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          rows={4}
+          placeholder="Nhập lý do chặn"
+        />
+      </Modal>
     </div>
   );
 }
