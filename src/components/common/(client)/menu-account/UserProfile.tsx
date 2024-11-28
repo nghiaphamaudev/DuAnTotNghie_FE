@@ -33,7 +33,6 @@ const UserProfile = () => {
     };
 
     const onFinish = async (values: User) => {
-        console.log("Giá trị gender:", values.gender);
         const isValid = validateForm(values);
         if (isValid) {
             await updateUser({ ...userData, ...values });
@@ -61,46 +60,46 @@ const UserProfile = () => {
                     }}
                 >
                     <Form.Item
-                        label={<span className="text-black-500">Giới tính</span>}
+                        label={<span className="block text-md font-semibold text-black-500 mb-2">Giới tính</span>}
                         name="gender"
                         // Thay đổi trạng thái hiển thị
                     >
-                        <Radio.Group>
-                            <Radio className="text-black-400" value="Nam">Nam</Radio>
-                            <Radio className="text-black-400" value="Nữ">Nữ</Radio>
-                            <Radio className="text-black-400" value="Khác">Khác</Radio>
+                        <Radio.Group className="flex">
+                            <Radio className="block text-md font-semibold text-black-400 mb-2" value="Nam">Nam</Radio>
+                            <Radio className="block text-md font-semibold text-black-400 mb-2" value="Nữ">Nữ</Radio>
+                            <Radio className="block text-md font-semibold text-black-400 mb-2" value="Khác">Khác</Radio>
                         </Radio.Group>
                     </Form.Item>
 
                     <Form.Item
-                        label={<span className="text-black-500">Họ tên</span>}
+                        label={<span className="block text-md font-semibold text-black-500 mb-2">Họ tên</span>}
                         name="fullName"
                         help={formErrors.fullName} // Hiển thị thông báo lỗi nếu có
                         validateStatus={formErrors.fullName ? 'error' : undefined} // Thay đổi trạng thái hiển thị
                     >
                         <Input
                             placeholder="Nhập họ tên"
-                            className="h-12"
+                            className="h-12 block text-md font-semibold text-black-400 mb-2"
                         />
                     </Form.Item>
 
                     <Form.Item
-                        label={<span className="text-black-500">Số điện thoại</span>}
+                        label={<span className="block text-md font-semibold text-black-500 mb-2">Số điện thoại</span>}
                         name="phoneNumber"
                         help={formErrors.phoneNumber} // Hiển thị thông báo lỗi nếu có
                         validateStatus={formErrors.phoneNumber ? 'error' : undefined} // Thay đổi trạng thái hiển thị
                     >
                         <Input
                             placeholder="Nhập số điện thoại"
-                            className="h-12"
+                            className="h-12 block text-md font-semibold text-black-400 mb-2"
                         />
                     </Form.Item>
 
                     <Form.Item
-                        label={<span className="text-black-500">Email</span>}
+                        label={<span className="block text-md font-semibold text-black-500 mb-2">Email</span>}
                         name="email"
                     >
-                        <Input readOnly placeholder="Nhập email" className="h-12" />
+                        <Input readOnly placeholder="Nhập email" className="h-12 block text-md font-semibold text-black-400 mb-2" />
                     </Form.Item>
 
                     <Form.Item>
