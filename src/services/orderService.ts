@@ -36,7 +36,7 @@ export const initiateVNPayPayment = async (payload: CheckoutFormData) => {
 // Lấy danh sách đơn hàng theo người dùng
 export const getOrdersByUserService = async () => {
   try {
-    const { data } = await instance.get("/order/user-orders");
+    const { data } = await instance.get("/orders");
     return data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -50,10 +50,38 @@ export const getOrdersByUserService = async () => {
 // Lấy chi tiết đơn hàng theo ID
 export const getOrderDetailService = async (orderId: string) => {
   try {
-    const { data } = await instance.get(`/order/${orderId}`);
+    const { data } = await instance.get(`/orders/${orderId}`);
     return data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
+      return error.response?.data;
+    } else {
+      throw new Error("Something went wrong!");
+    }
+  }
+};
+
+// Cập nhật trạng thái đơn hàng
+export const updateOrderService = async (
+  orderId: string,
+  status: string,
+  note?: string
+) => {
+  try {
+    const payload = {
+      idOrder: orderId,
+      status,
+      note
+    };
+    const { data } = await instance.patch("/orders/update-order", payload);
+    console.log("Cập nhật trạng thái đơn hàng thành công: ", data);
+    return data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error(
+        "Lỗi khi cập nhật trạng thái đơn hàng: ",
+        error.response?.data
+      );
       return error.response?.data;
     } else {
       throw new Error("Something went wrong!");

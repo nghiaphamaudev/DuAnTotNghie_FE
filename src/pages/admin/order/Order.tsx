@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tag, Tabs } from "antd";
-import { getOrdersByUserService } from "../../../../services/orderService";
+import { Table, Button, Space, Tag, Tabs, Card, Row, Col } from "antd";
 import { Link } from "react-router-dom";
-import { View } from "lucide-react";
+import { Search, View } from "lucide-react";
+import { getOrdersByUserService } from "../../../services/orderService";
+import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 
-const MyOrders = () => {
+const Orders = () => {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
@@ -89,7 +90,7 @@ const MyOrders = () => {
       width: 150,
       render: (_, record) => (
         <Space>
-          <Link to={`/order-detail/${record.id}`}>
+          <Link to={`${record.id}`}>
             <Button icon={<View />} type="link">
               Chi tiết
             </Button>
@@ -117,23 +118,26 @@ const MyOrders = () => {
   ];
 
   return (
-    <Tabs
-      defaultActiveKey="Tất cả"
-      items={tabItems.map((tab) => ({
-        key: tab.key,
-        label: tab.label,
-        children: (
-          <Table
-            rowKey="id"
-            columns={columns}
-            dataSource={filterOrdersByStatus(tab.key)}
-            pagination={{ pageSize: 5 }}
-            bordered
-          />
-        )
-      }))}
-    />
+    <>
+      <BreadcrumbsCustom nameHere={"Đơn hàng"} listLink={[]} />
+      <Tabs
+        defaultActiveKey="Tất cả"
+        items={tabItems.map((tab) => ({
+          key: tab.key,
+          label: tab.label,
+          children: (
+            <Table
+              rowKey="id"
+              columns={columns}
+              dataSource={filterOrdersByStatus(tab.key)}
+              pagination={{ pageSize: 5 }}
+              bordered
+            />
+          )
+        }))}
+      />
+    </>
   );
 };
 
-export default MyOrders;
+export default Orders;

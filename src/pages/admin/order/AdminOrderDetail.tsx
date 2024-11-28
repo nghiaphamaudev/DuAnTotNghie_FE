@@ -14,14 +14,27 @@ import {
 import {
   getOrderDetailService,
   updateOrderService
-} from "../../../../services/orderService";
+} from "../../../services/orderService";
+import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 
-const OrderDetail = () => {
+const AdminOrderDetail = () => {
   const { orderId } = useParams();
   const [orderDetail, setOrderDetail] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false); // Trạng thái mở modal
-  const [cancelNote, setCancelNote] = useState(""); // Ghi chú hủy đơn hàng
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState("");
+  const [cancelOrReturnNote, setCancelOrReturnNote] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const statusOrder = [
+    "Đã xác nhận",
+    "Đóng gói chờ vận chuyển",
+    "Đang giao hàng",
+    "Đã giao hàng",
+    "Hoàn thành",
+    "Hoàn đơn",
+    "Đã hủy"
+  ];
 
   const statusColorMap = {
     "Chờ xác nhận": "blue",
@@ -35,39 +48,46 @@ const OrderDetail = () => {
   };
 
   useEffect(() => {
-    const fetchOrderDetail = async () => {
-      setLoading(true);
-      if (orderId) {
-        const { data } = await getOrderDetailService(orderId);
-        setOrderDetail(data);
-      }
-      setLoading(false);
-    };
     fetchOrderDetail();
   }, [orderId]);
+
+  const fetchOrderDetail = async () => {
+    setLoading(true);
+    if (orderId) {
+      const { data } = await getOrderDetailService(orderId);
+      setOrderDetail(data);
+    }
+    setLoading(false);
+  };
+
+  const handleStatusChange = async (status, note = "") => {
+    setIsProcessing(true);
+    try {
+      if (["Đã hủy", "Hoàn đơn"].includes(status) && !note.trim()) {
+        message.warning(
+          "Vui lòng nhập lý do trước khi thực hiện hành động này."
+        );
+        return;
+      }
+      const response = await updateOrderService(orderId, status, note);
+      if (response?.status) {
+        message.success(`Đơn hàng đã chuyển sang trạng thái "${status}"`);
+        await fetchOrderDetail();
+      } else {
+        message.error(response?.message || "Cập nhật trạng thái thất bại.");
+      }
+    } catch (error) {
+      message.error("Có lỗi xảy ra khi cập nhật trạng thái.");
+    } finally {
+      setIsModalOpen(false);
+      setCancelOrReturnNote(""); // Reset ghi chú
+      setIsProcessing(false);
+    }
+  };
 
   if (loading) {
     return <Spin size="large" style={{ display: "block", margin: "auto" }} />;
   }
-
-  const handleCancelOrder = async () => {
-    try {
-      const response = await updateOrderService(orderId, "Đã hủy", cancelNote);
-      if (response?.status) {
-        message.success("Đơn hàng đã được hủy thành công.");
-        setOrderDetail((prev) => ({
-          ...prev,
-          orderInfor: { ...prev.orderInfor, status: "Đã hủy" }
-        }));
-      } else {
-        message.error(response?.message || "Hủy đơn hàng thất bại.");
-      }
-    } catch (error) {
-      message.error("Có lỗi xảy ra khi hủy đơn hàng.");
-    } finally {
-      setIsCancelModalOpen(false);
-    }
-  };
 
   const {
     orderInfor,
@@ -79,16 +99,20 @@ const OrderDetail = () => {
     totalCost,
     createdAt
   } = orderDetail;
+  const currentStatusIndex = statusOrder.findIndex(
+    (status) => status === orderInfor?.status
+  );
 
   return (
     <div
       style={{
-        margin: "30px 20px",
+        margin: "20px",
         fontFamily: "'Arial', sans-serif",
         fontSize: "14px"
       }}
     >
-      <Link to={"/my-account"}>
+      <BreadcrumbsCustom nameHere={"Chi tiết đơn hàng"} listLink={[]} />
+      <Link to={"/admin/bill"}>
         <Button style={{ margin: "10px 0" }}>Quay về</Button>
       </Link>
 
@@ -119,80 +143,74 @@ const OrderDetail = () => {
                 <Tag color={statusColorMap[item.status]}>{item.status}</Tag>
               </p>
               {item.note && (
-                <p style={{ margin: "5px 0" }}>Ghi chú: {item.note}</p>
+                <p
+                  style={{
+                    margin: "5px 0",
+                    color: "#555",
+                    fontStyle: "italic"
+                  }}
+                >
+                  Ghi chú: {item.note}
+                </p>
               )}
             </Timeline.Item>
           ))}
         </Timeline>
       </Card>
 
+      {/* Các nút thay đổi trạng thái */}
       <Card>
         <div className="flex gap-2">
-          {orderInfor?.status === "Chờ xác nhận" && (
+          {statusOrder.map((status, index) => (
             <Button
-              danger
-              onClick={() => setIsCancelModalOpen(true)}
-              style={{ margin: "10px 0" }}
+              key={status}
+              variant="outlined"
+              loading={isProcessing && newStatus === status}
+              disabled={
+                ["Đã hủy", "Hoàn đơn"].includes(orderInfor?.status) || // Không cho phép nếu đã hủy hoặc hoàn
+                (index !== currentStatusIndex + 1 &&
+                  !["Hoàn đơn", "Đã hủy"].includes(status))
+              }
+              onClick={() => {
+                setNewStatus(status);
+                setIsModalOpen(true);
+              }}
             >
-              Hủy đơn hàng
+              {status}
             </Button>
-          )}
-          <Button style={{ margin: "10px 0" }}>
-            Xem chi tiết lịch sử đơn hàng
-          </Button>
+          ))}
         </div>
-      </Card>
 
-      {/* Modal hủy đơn hàng */}
-      <Modal
-        title="Xác nhận hủy đơn hàng"
-        visible={isCancelModalOpen}
-        onOk={handleCancelOrder}
-        onCancel={() => setIsCancelModalOpen(false)}
-        okText="Xác nhận"
-        cancelText="Hủy"
-        style={{
-          // Màu nền nhẹ nhàng
-          borderRadius: "8px", // Bo góc modal
-          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" // Đổ bóng nhẹ
-        }}
-        bodyStyle={{
-          padding: "20px" // Padding cho body modal
-        }}
-        titleStyle={{
-          backgroundColor: "#ff4d4f", // Màu nền đỏ cho tiêu đề
-          color: "white", // Màu chữ trắng
-          borderTopLeftRadius: "8px", // Bo góc cho tiêu đề
-          borderTopRightRadius: "8px", // Bo góc cho tiêu đề
-          fontSize: "16px", // Kích thước chữ tiêu đề
-          fontWeight: "bold" // In đậm tiêu đề
-        }}
-      >
-        <p
-          style={{
-            fontSize: "14px",
-            // color: "#555", // Màu chữ tối
-            marginBottom: "15px" // Khoảng cách dưới paragraph
-          }}
+        {/* Modal xác nhận */}
+        <Modal
+          title="Xác nhận cập nhật trạng thái"
+          visible={isModalOpen}
+          onOk={() => handleStatusChange(newStatus, cancelOrReturnNote)}
+          onCancel={() => setIsModalOpen(false)}
+          okText="Xác nhận"
+          cancelText="Hủy"
         >
-          Bạn có chắc chắn muốn hủy đơn hàng này?
-        </p>
-        <textarea
-          style={{
-            width: "100%",
-            height: "100px",
-            padding: "10px",
-            border: "1px solid #ccc",
-            borderRadius: "6px",
-            fontSize: "14px",
-            resize: "vertical", // Cho phép thay đổi chiều cao của textarea
-            outline: "none"
-          }}
-          placeholder="Nhập lý do hủy đơn hàng (không bắt buộc)"
-          value={cancelNote}
-          onChange={(e) => setCancelNote(e.target.value)}
-        />
-      </Modal>
+          <p>
+            Bạn có chắc muốn chuyển trạng thái đơn hàng sang "{newStatus}"
+            không?
+          </p>
+          {["Đã hủy", "Hoàn đơn"].includes(newStatus) && (
+            <textarea
+              style={{
+                width: "100%",
+                height: "80px",
+                padding: "8px",
+                borderRadius: "5px",
+                border: "1px solid #ccc",
+                marginTop: "10px"
+              }}
+              placeholder="Nhập lý do (bắt buộc)"
+              value={cancelOrReturnNote}
+              onChange={(e) => setCancelOrReturnNote(e.target.value)}
+            />
+          )}
+        </Modal>
+      </Card>
 
       {/* Thông tin đơn hàng */}
       <Card title="Thông tin đơn hàng" style={{ marginBottom: "20px" }}>
@@ -267,13 +285,19 @@ const OrderDetail = () => {
       </Card>
 
       {/* Thông tin thanh toán */}
-      <Card title="Thông tin thanh toán" style={{ marginBottom: "20px" }}>
-        <Descriptions bordered column={1}>
-          <Descriptions.Item label="Tổng tiền hàng">{`${totalPrice?.toLocaleString()} đ`}</Descriptions.Item>
-          <Descriptions.Item label="Phí vận chuyển">{`${shippingCost?.toLocaleString()} đ`}</Descriptions.Item>
-          <Descriptions.Item label="Voucher giảm giá">{`${discountVoucher?.toLocaleString()} đ`}</Descriptions.Item>
-          <Descriptions.Item label="Tổng thanh toán">
-            <strong>{`${totalCost?.toLocaleString()} đ`}</strong>
+      <Card title="Thông tin thanh toán">
+        <Descriptions bordered column={2}>
+          <Descriptions.Item label="Tổng tiền sản phẩm">
+            {totalPrice?.toLocaleString()} đ
+          </Descriptions.Item>
+          <Descriptions.Item label="Phí vận chuyển">
+            {shippingCost?.toLocaleString()} đ
+          </Descriptions.Item>
+          <Descriptions.Item label="Giảm giá">
+            {discountVoucher ? `${discountVoucher.toLocaleString()} đ` : "0 đ"}
+          </Descriptions.Item>
+          <Descriptions.Item label="Tổng tiền">
+            {totalCost?.toLocaleString()} đ
           </Descriptions.Item>
         </Descriptions>
       </Card>
@@ -281,4 +305,4 @@ const OrderDetail = () => {
   );
 };
 
-export default OrderDetail;
+export default AdminOrderDetail;
