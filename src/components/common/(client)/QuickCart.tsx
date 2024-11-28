@@ -7,6 +7,7 @@ import CartEmptyImage from "../../../assets/images/empty_cart_retina.png";
 import CartNotToken from "../../../assets/images/cart_not_token.jpg";
 import { CartItem } from "../../../interface/Cart";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 
 
@@ -28,6 +29,7 @@ const QuickCart: FC<QuickCartProps> = ({
 
   //hooks
   const nav = useNavigate();
+  const queryClient = useQueryClient();
 
   //context
   const { deleteItemCart } = useCart();

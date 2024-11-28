@@ -34,20 +34,20 @@ const UpdatePassword = () => {
       >
         <Form.Item
           name="passwordCurrent"
-          label={<span className="text-black-500">Mật khẩu hiện tại</span>}
+          label={<span className="block text-md font-semibold text-black-500 mb-2">Mật khẩu hiện tại</span>}
           rules={[
             { required: true, message: "Vui lòng nhập mật khẩu hiện tại" },
           ]}
         >
           <Input.Password
             placeholder="Nhập mật khẩu hiện tại"
-            className="h-12"
+            className="h-12 text-md font-semibold "
           />
         </Form.Item>
 
         <Form.Item
           name="password"
-          label={<span className="text-black-500">Mật khẩu mới</span>}
+          label={<span className="block text-md font-semibold text-black-500 mb-2">Mật khẩu mới</span>}
           rules={[
             { required: true, message: "Vui lòng nhập mật khẩu mới" },
             { min: 6, message: "Mật khẩu phải dài ít nhất 6 ký tự" },
@@ -69,12 +69,12 @@ const UpdatePassword = () => {
             },
           ]}
         >
-          <Input.Password placeholder="Nhập mật khẩu mới" className="h-12" />
+          <Input.Password placeholder="Nhập mật khẩu mới" className="h-12 text-md font-semibold" />
         </Form.Item>
 
         <Form.Item
           name="passwordConfirm"
-          label={<span className="text-black-500">Nhập lại mật khẩu</span>}
+          label={<span className="block text-md font-semibold text-black-500 mb-2">Nhập lại mật khẩu</span>}
           dependencies={["password"]}
           rules={[
             { required: true, message: "Vui lòng nhập lại mật khẩu" },
@@ -90,7 +90,7 @@ const UpdatePassword = () => {
             }),
           ]}
         >
-          <Input.Password placeholder="Nhập lại mật khẩu" className="h-12" />
+          <Input.Password placeholder="Nhập lại mật khẩu" className="h-12 text-md font-semibold" />
         </Form.Item>
 
         <Form.Item>

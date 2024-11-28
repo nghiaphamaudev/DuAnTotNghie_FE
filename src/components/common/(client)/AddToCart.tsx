@@ -1,6 +1,3 @@
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -12,11 +9,14 @@ import {
   RadioChangeEvent
 } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
 import { Swiper as SwiperType } from "swiper";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { Swiper, SwiperSlide } from "swiper/react";
 
 import {
-  Product,
+  Products,
   ProductSize,
   ProductVariant
 } from "../../../common/types/Product";
@@ -24,12 +24,13 @@ import { useCart } from "../../../contexts/CartContext";
 // import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Navigation, Pagination } from "swiper/modules";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AddToCartProps {
   isModalVisible: boolean;
   handleOk: (quantity: number) => void;
   handleCancel: () => void;
-  item: Product; // Nhận dữ liệu sản phẩm từ ProductCard
+  item: Products; // Nhận dữ liệu sản phẩm từ ProductCard
   setIsModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -40,10 +41,10 @@ const AddToCart: React.FC<AddToCartProps> = ({
   setIsModalVisible
 }: AddToCartProps) => {
   //context
-  const { addItemToCart } = useCart();
+  const { addItemToCart, cartData } = useCart();
   const { isLogin, token } = useAuth();
   //state
-
+  const [inventory, setInventory] = useState(item?.variants[0]?.inventory);
   const [color, setColor] = useState<string>(item?.variants[0]?.id);
   const [size, setSize] = useState<string>(item?.variants[0]?.sizes[0]?.id);
   const [quantity, setQuantity] = useState<number>(1);
@@ -54,12 +55,14 @@ const AddToCart: React.FC<AddToCartProps> = ({
     item?.variants[0]?.sizes[0]?.price
   );
   const [activeIndex, setActiveIndex] = useState(0);
-
+  const [idVariantSelect, setIdVariantSelect] = useState<string>(item?.variants[0]?.id);
+  const queryClient = useQueryClient();
   const swiperRef = useRef<SwiperType | null>(null);
+  const [quantityCart, setQuantityCart] = useState<number>(0);
 
   //lifecycle
   useEffect(() => {
-    const variant = item?.variants?.find((v) => v.id === color);
+    const variant = item?.variants?.find((v: ProductVariant) => v.id === color);
     setSelectedVariant(variant || item?.variants[0]);
     if (variant && variant?.sizes.length > 0) {
       setSize(variant?.sizes[0].id); // Reset size when color changes
@@ -67,12 +70,22 @@ const AddToCart: React.FC<AddToCartProps> = ({
   }, [color, item?.variants]);
 
   useEffect(() => {
-    const variant = item?.variants.find((v) => v.id === color);
+    const variant = item?.variants.find((v: ProductVariant) => v.id === color);
     const sizeOption = variant?.sizes.find((s) => s.id === size);
     if (sizeOption) {
       setPrice(sizeOption.price);
+      setInventory(sizeOption.inventory);
+      setIdVariantSelect(sizeOption.id);
     }
   }, [color, size, item?.variants]);
+
+  useEffect(() => {
+    setColor(item?.variants[0]?.id);
+    setSize(item?.variants[0]?.sizes[0]?.id);
+    setQuantity(1);
+    setPrice(item?.variants[0]?.sizes[0]?.price);
+    setInventory(item?.variants[0]?.sizes[0]?.inventory);
+  }, [isModalVisible])
 
   useEffect(() => {
     if (swiperRef.current && swiperRef.current.navigation) {
@@ -80,6 +93,13 @@ const AddToCart: React.FC<AddToCartProps> = ({
       swiperRef.current.navigation.update();
     }
   }, []);
+
+  useEffect(() => {
+    if (cartData && cartData?.items.length > 0) {
+      const dataCartVariantSelected = cartData && cartData?.items.filter(item => item.sizeId === idVariantSelect)
+      setQuantityCart(dataCartVariantSelected?.[0]?.quantity)
+    }
+  }, [cartData, idVariantSelect])
 
   //function
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -97,21 +117,30 @@ const AddToCart: React.FC<AddToCartProps> = ({
   };
 
   const onChangeQuantity = (value: number | null) => {
-    if (value !== null) {
+    if (value !== null && value <= (inventory - quantityCart)) {
       setQuantity(value);
+    } else {
+      notification.error({
+        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+        placement: "topRight",
+        duration: 2,
+      });
     }
   };
 
   const onChangeColor = (e: RadioChangeEvent) => {
     setColor(e.target.value);
+    setQuantity(1);
   };
 
   const onChangeSize = (e: RadioChangeEvent) => {
     setSize(e.target.value);
+    setQuantity(1);
   };
 
   const handleAddItemToCart = async (id: string) => {
-    if(!token || !isLogin) {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+    if (!token || !isLogin) {
       notification.error({
         message: "Vui lòng đăng nhập để tiếp tục",
         placement: "topRight",
@@ -120,6 +149,33 @@ const AddToCart: React.FC<AddToCartProps> = ({
       setIsModalVisible(false);
       return
     }
+    if (quantity > inventory) {
+      notification.error({
+        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+        placement: "topRight",
+        duration: 2
+      });
+      setIsModalVisible(false);
+      return
+    }
+    if (inventory === 0) {
+      notification.error({
+        message: "Sản phẩm không còn tồn tại. Vui lòng chọn sản phẩm khác",
+        placement: "topRight",
+        duration: 2
+      });
+      return
+    }
+
+    if (quantity > inventory - quantityCart) {
+      notification.error({
+        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+        placement: "topRight",
+        duration: 2
+      });
+      return
+    }
+
     const payload = {
       productId: id,
       variantId: color,
@@ -136,12 +192,12 @@ const AddToCart: React.FC<AddToCartProps> = ({
       });
       setIsModalVisible(false);
     } else {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       notification.error({
-        message: res.message,
+        message: "Sản phẩm không còn tồn tại. Vui lòng chọn sản phẩm khác",
         placement: "topRight",
         duration: 2
       });
-      setIsModalVisible(false);
     }
   };
 
@@ -163,16 +219,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
         <div className="col-span-12 md:col-span-5">
           {/* Swiper for the cover image */}
           <div className="relative">
-            {/* <button
-              disabled={activeIndex === 0}
-              className="hidden disabled:opacity-25 sm:block custom-swiper-button-prev">
-              <ChevronLeft />
-            </button>
-            <button
-              disabled={activeIndex === (selectedVariant?.images?.length ?? 0) - 1}
-              className="hidden disabled:opacity-25 sm:block custom-swiper-button-next">
-              <ChevronRight />
-            </button> */}
+            {/* Swiper */}
             <Swiper
               onSwiper={(swiper) => {
                 swiperRef.current = swiper;
@@ -182,30 +229,38 @@ const AddToCart: React.FC<AddToCartProps> = ({
               onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
               initialSlide={activeIndex}
               pagination={{
-                clickable: true
+                clickable: true,
               }}
               navigation={{
                 nextEl: ".custom-swiper-button-next",
-                prevEl: ".custom-swiper-button-prev"
+                prevEl: ".custom-swiper-button-prev",
               }}
               modules={[Pagination, Navigation]}
               className="mySwiper"
             >
               {selectedVariant?.images.map((image: string, index: number) => (
                 <SwiperSlide className="w-[400px] h-[300px]" key={index}>
-                  <div className="w-[400px] h-[300px]">
+                  {/* Image Container */}
+                  <div className="relative w-[400px] h-[300px]">
                     <Image
                       width={400}
                       height={300}
                       src={image}
                       alt={`Product variant ${color} image ${index + 1}`}
-                      className="w-full h-full md:h-[400px] object-cover mb-4" // Fixed height with responsive adjustments
+                      className="w-full h-full md:h-[400px] object-cover mb-4"
                     />
+                    {/* Overlay for "Hết hàng" */}
+                    {inventory - (quantityCart || 0) <= 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
+                        Hết hàng
+                      </div>
+                    )}
                   </div>
                 </SwiperSlide>
               ))}
             </Swiper>
           </div>
+
 
           {/* Thumbnails of variant images */}
           <div className="flex justify-start gap-2 mt-4">
@@ -251,10 +306,6 @@ const AddToCart: React.FC<AddToCartProps> = ({
                 currency: "VND"
               })}
             </span>
-            <span className="text-gray-400 text-lg line-through ml-4">
-              850,000 đ
-            </span>
-            <span className="text-red-500 ml-2">-24%</span>
           </div>
 
           {/* Color selection */}
@@ -286,26 +337,31 @@ const AddToCart: React.FC<AddToCartProps> = ({
             <p className="text-gray-700 font-semibold">Số lượng:</p>
             <div className="flex items-center">
               <Button
+                disabled={inventory === 0 || quantityCart >= inventory}
                 onClick={() => setQuantity(quantity > 1 ? quantity - 1 : 1)}
               >
                 -
               </Button>
               <InputNumber
+                readOnly
+                disabled={inventory === 0 || quantityCart >= inventory}
                 min={1}
-                max={10}
+                max={inventory - quantityCart}
                 value={quantity}
                 onChange={onChangeQuantity}
                 onKeyDown={handleKeyPress}
-                className="w-14 mx-2"
+                className="w-14 mx-2 focus:outline-none caret-transparent"
+                type="number"
               />
-              <Button onClick={() => setQuantity(quantity + 1)}>+</Button>
+              <Button disabled={inventory === 0 || quantityCart >= inventory} onClick={() => setQuantity(quantity < inventory ? quantity + 1 : quantity)}>+</Button>
             </div>
           </div>
 
           {/* Add to cart button */}
           <button
+            disabled={inventory === 0 || quantityCart >= inventory}
             onClick={() => handleAddItemToCart(item.id)}
-            className="bg-red-500 flex items-center justify-center gap-2 w-full text-white text-base font-semibold uppercase py-3"
+            className="bg-red-500 disabled:bg-gray-400 flex items-center justify-center gap-2 w-full text-white text-base font-semibold uppercase py-3"
           >
             <ShoppingCartOutlined className="text-2xl" />
             <span>Thêm vào giỏ</span>

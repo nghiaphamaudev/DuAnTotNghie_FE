@@ -9,7 +9,7 @@ export interface AddToCartRequest {
 // Yêu cầu cập nhật số lượng sản phẩm trong giỏ hàng
 export interface UpdateQuantityCartRequest {
   cartItemId: string; // ID của sản phẩm trong giỏ hàng
-  option: "increase" | "decrease"; // Tùy chọn tăng hoặc giảm số lượng
+  option: string; // Tùy chọn tăng hoặc giảm số lượng
 }
 
 // Thông tin của từng sản phẩm trong giỏ hàng

@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  UseMutateAsyncFunction,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { notification } from "antd";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,9 +14,10 @@ import {
   ResetPasswordRequest,
   UpdatePasswordRequest,
   User,
+  UserAdmin,
   UserLoginRequest,
   UserRegisterRequest,
-  UserResponse
+  UserResponse,
 } from "../common/types/User";
 import {
   addAddress,
@@ -51,8 +57,17 @@ type AuthContextProps = {
   updateMyPassword: (formData: UpdatePasswordRequest) => void;
   updatestatusAddress: (formData: AddressRequest) => void;
   forgotMyPassword: (formData: ForgotPasswordRequest) => void;
-  resetMyPassword: (params: { formData: ResetPasswordRequest; resetToken: string }) => Promise<void>;
-  IblockUser: (id : string) => void
+  resetMyPassword: (params: {
+    formData: ResetPasswordRequest;
+    resetToken: string;
+  }) => Promise<void>;
+  IblockUser: UseMutateAsyncFunction<
+    UserAdmin,
+    ApiError,
+    { userId: string; shouldBlock: boolean; note?: string },
+    unknown
+  >;
+  UnblockUser: (id: string) => void;
   updateroleUser: (data: { userId: string; role: string }) => Promise<void>;
 };
 
@@ -166,7 +181,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const data = await resetPassword(formData, resetToken);
       return data;
     },
-    onSuccess:() => {
+    onSuccess: () => {
       notification.success({
         message: "Đặt lại mật khẩu thành công",
         description: "Vui lòng đăng nhập lại để tiếp tục.",
@@ -174,10 +189,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       setIsLogin(false);
       setUser(null);
-      localStorage.clear()
-      handleLogout();
-      nav("/login")
-      
+      localStorage.clear();
+      nav("/login");
     },
     onError: (error: ApiError) => {
       const errorMessage = error?.response?.data?.message || error?.message;
@@ -188,13 +201,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
     },
   });
-  
-  
+
   // mutation get profile
   const {
     data: userData,
     refetch: refetchUserData,
-    isFetching:isFetching,
+    isFetching: isFetching,
   } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
@@ -208,6 +220,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { mutateAsync: updateUser } = useMutation({
     mutationFn: async (formData: User) => {
       const data = await updateProfile(formData);
+      setUser(data.data.user);
       return data;
     },
     onSuccess: (data: UserResponse) => {
@@ -215,7 +228,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         queryKey: ["users"],
       });
       localStorage.setItem("user", JSON.stringify(data));
-      notification.success({ message: "Cập nhật thông tin thành công!",placement: "topRight", });
+      notification.success({
+        message: "Cập nhật thông tin thành công!",
+        placement: "topRight",
+      });
     },
     onError: (error: ApiError) => {
       const errorMessage = error?.response?.data?.message || error?.message;
@@ -239,7 +255,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Vui lòng đăng nhập lại để tiếp tục.",
         placement: "topRight",
       });
-      handleLogout();
+      setIsLogin(false);
+      setUser(null);
+      localStorage.clear();
       nav("login");
     },
     onError: (error: ApiError) => {
@@ -251,7 +269,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
     },
   });
-  
+
   //mutation update address
   const { mutateAsync: updateMyAddress, isPending: isPendingUpdateAddress } =
     useMutation({
@@ -343,7 +361,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     },
   });
 
-
   const showDeleteModal = async (addressId: string) => {
     try {
       await deleteMyAddress(addressId);
@@ -354,17 +371,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   //mutation block user
   const { mutateAsync: IblockUser } = useMutation({
-    mutationFn: async (userId: string) => {
+    mutationFn: async ({
+      userId,
+      shouldBlock,
+      note,
+    }: {
+      userId: string;
+      shouldBlock: boolean;
+      note?: string;
+    }) => {
       const data = await toggleBlockUser({
         userId,
-        shouldBlock: false
+        shouldBlock,
+        note, // Truyền lý do chặn
       });
-      console.log(userId);  // Gọi hàm BlockUser từ authServices
       return data;
-      
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] }); // Invalidates query để làm mới dữ liệu
+      queryClient.invalidateQueries({ queryKey: ["usersAdmin"] }); // Làm mới dữ liệu
       notification.success({
         message: "Chặn người dùng thành công!",
       });
@@ -377,9 +401,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         placement: "topRight",
       });
     },
-    
   });
-  
+
+  const { mutateAsync: UnblockUser } = useMutation({
+    mutationFn: async (userId: string) => {
+      const data = await toggleBlockUser({
+        userId,
+        shouldBlock: true,
+      });
+      console.log(userId); // Gọi hàm BlockUser từ authServices
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["usersAdmin"] }); // Invalidates query để làm mới dữ liệu
+      notification.success({
+        message: "Bỏ chặn người dùng thành công!",
+      });
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Có lỗi khi chặn người dùng",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
+  });
+
   //
   const { mutateAsync: updateroleUser } = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
@@ -390,7 +438,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       notification.success({
         message: "Vai trò đã được cập nhật!",
       });
-      
     },
     onError: (error: ApiError) => {
       const errorMessage = error?.response?.data?.message || error?.message;
@@ -399,9 +446,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: errorMessage,
       });
     },
-
   });
-  
 
   const handleLogout = () => {
     try {
@@ -453,6 +498,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         forgotMyPassword,
         resetMyPassword,
         IblockUser,
+        UnblockUser,
         token,
       }}
     >

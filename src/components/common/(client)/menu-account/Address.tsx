@@ -111,7 +111,7 @@ const AddressComponent: React.FC = () => {
                 key={index}
                 className="border border-gray-300 rounded-lg p-4 relative mb-4"
               >
-                <Title className="mb-4" level={4}>
+                <Title className="block text-md font-semibold text-black-500 mb-4" level={4}>
                   {address.detailAddressReceiver},{" "}
                   {address.addressReceiver.ward.name},{" "}
                   {address.addressReceiver.district.name},{" "}
@@ -130,7 +130,7 @@ const AddressComponent: React.FC = () => {
                   </Dropdown>
                 </div>
                 {address.isDefault && (
-                  <div className="mb-4 text-red-500 text-sm">
+                  <div className="block text-sm font-light text-red-500 mb-4">
                     Địa chỉ mặc định
                   </div>
                 )}
