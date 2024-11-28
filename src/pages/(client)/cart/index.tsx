@@ -9,11 +9,13 @@ import {
   Checkbox
 } from "antd";
 import { Minus, Plus, Trash } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/pagination";
 import { useCart } from "../../../contexts/CartContext";
+import { debounce } from "lodash";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ShoppingCart: React.FC = () => {
   // context
@@ -22,6 +24,11 @@ const ShoppingCart: React.FC = () => {
 
   // state để lưu danh sách sản phẩm đã chọn
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+  },[])
 
   // Hàm xử lý khi checkbox thay đổi
   const handleCheckboxChange = (id: string, checked: boolean) => {
@@ -47,23 +54,23 @@ const ShoppingCart: React.FC = () => {
     }
   };
 
-  const handleQuantityChange = async (
-    id: string,
-    option: string
-  ) => {
-    const payload = {
-      cartItemId: id,
-      option: option
-    };
-    const res = await updateQuantityItem(payload);
-    if (!res.status) {
-      notification.error({
-        message: res.message,
-        placement: "topRight",
-        duration: 2
-      });
-    }
+
+
+const handleQuantityChange = debounce(async (id: string, option: string) => {
+  const payload = {
+    cartItemId: id,
+    option: option
   };
+  const res = await updateQuantityItem(payload);
+  if (!res.status) {
+    notification.error({
+      message: res.message,
+      placement: "topRight",
+      duration: 2
+    });
+  }
+}, 400); // 300ms debounce
+
 
   return (
     <div className="mx-auto px-5 py-8">

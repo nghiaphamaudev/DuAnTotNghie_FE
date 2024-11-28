@@ -1,17 +1,21 @@
-import { Button, Image, Modal, message, notification } from 'antd';
+import { Button, Image, InputNumber, Modal, message, notification } from 'antd';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import ProductCard from '../../../components/common/(client)/ProductCard';
 import { useCart } from '../../../contexts/CartContext';
 import { useProduct } from '../../../contexts/ProductContext';
 import './css.css';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 const DetailProduct = () => {
     //context
     const { isLogin, token } = useAuth();
+    const { cartData } = useCart();
+    const queryClient = useQueryClient();
 
     //state
+    const nav = useNavigate();
     const { id } = useParams();
     const [price, setPrice] = useState(0);
     const [selectedTab, setSelectedTab] = useState<number>(0);
@@ -27,6 +31,9 @@ const DetailProduct = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isSizeGuideVisible, setIsSizeGuideVisible] = useState(false);
     const [startIndex, setStartIndex] = useState(0);
+    const [quantityCart, setQuantityCart] = useState(0);
+    const [inventory, setInventory] = useState(0);
+    const [idVariantSelect, setIdVariantSelect] = useState('');
     const productsPerPage = 4;
 
     //lifecycle
@@ -35,7 +42,6 @@ const DetailProduct = () => {
             getDataProductById(id);
         }
     }, [id]);
-
 
     useEffect(() => {
         if (product?.data?.variants?.length > 0) {
@@ -49,6 +55,29 @@ const DetailProduct = () => {
             setPrice(defaultSize?.price || 0);
         }
     }, [product]);
+
+    useEffect(() => {
+        if (cartData && product?.data?.variants?.length > 0) {
+            // Tìm variant và size được chọn
+            const selectedVariant = product?.data?.variants.find(
+                variant => variant.color === selectedColor
+            );
+            const selectedSizeObject = selectedVariant?.sizes.find(
+                size => size.nameSize === selectedSize
+            );
+
+            // Cập nhật inventory
+            setInventory(selectedSizeObject?.inventory || 0);
+
+            // Tìm quantity trong cartData.items
+            const dataCartVariantSelected = cartData?.items.find(
+                item => item.sizeId === selectedSizeObject?.id
+            );
+            setQuantityCart(dataCartVariantSelected?.quantity || 0);
+            setQuantity(1)
+        }
+    }, [cartData, product, selectedColor, selectedSize]);
+
 
     // function
     const handleArrowClick = (direction: any) => {
@@ -119,54 +148,113 @@ const DetailProduct = () => {
     const handleAccordionToggle = (index) => {
         setOpenAccordion(openAccordion === index ? null : index);
     };
-    const handleAddToCart = async () => {
-        if(!token || !isLogin) {
+
+    const onChangeQuantity = (value: number | null) => {
+        if (value !== null && value <= (inventory - quantityCart)) {
+            setQuantity(value);
+        } else if (value === null) {
             notification.error({
-              message: "Vui lòng đăng nhập để tiếp tục",
-              placement: "topRight",
-              duration: 2
+                message: "Vui lòng nhập số lượng!",
+                placement: "topRight",
+                duration: 2,
             });
-            setIsModalVisible(false);
-            return
-          }
-        if (!product?.data) {
-            message.error('Không tìm thấy thông tin sản phẩm.');
-            return;
+        } else {
+            notification.error({
+                message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+                placement: "topRight",
+                duration: 2,
+            });
         }
+    };
+
+    const handleAddToCart = async () => {
+        queryClient.invalidateQueries({ queryKey: ["carts"] });
 
         const productId = product?.data?.id;
         const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
         const selectedSizeObject = selectedVariant?.sizes.find(size => size.nameSize === selectedSize);
+        if (!token || !isLogin) {
+            notification.error({
+                message: "Vui lòng đăng nhập để tiếp tục",
+                placement: "topRight",
+                duration: 2
+            });
+            return
+        }
+        
+        if (id) {
+            const res = await getDataProductById(id)
+            const sizeObjects = res.data.variants
+                .flatMap(variant => variant.sizes)
+                .filter(size => size.id === selectedSizeObject.id);
+            const newSizeObjectInventory = sizeObjects?.[0]?.inventory
+            if (!res.data.isActive) {
+                notification.error({
+                    message: "Sản phẩm không còn tồn tại!",
+                    placement: "topRight",
+                    duration: 4,
+                });
+                queryClient.invalidateQueries({ queryKey: ["products"] });
+                nav('/home')
+                return
+            } else {
+                if (newSizeObjectInventory === 0) {
+                    notification.error({
+                        message: "Sản phẩm không còn tồn tại!",
+                        placement: "topRight",
+                        duration: 4,
+                    });
+                } else if (newSizeObjectInventory < quantity) {
+                    notification.error({
+                        message: "Số lượng sản phẩm yêu cầu được chọn vượt quá số lượng tồn kho!",
+                        placement: "topRight",
+                        duration: 4,
+                    });
+                } else if (quantity > inventory - quantityCart) {
+                    notification.error({
+                        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+                        placement: "topRight",
+                        duration: 2
+                    });
+                    return
+                } else {
+                    const productData = {
+                        productId,
+                        variantId: selectedVariant.id,
+                        sizeId: selectedSizeObject.id,
+                        quantity,
+                    };
+
+                    const res = await addItemToCart(productData);
+                    if (res && res?.status) {
+                        notification.success({
+                            message: "Thêm sản phẩm thành công",
+                            placement: "topRight",
+                            duration: 2,
+                        });
+                    } else {
+                        notification.error({
+                            message: "Sản phẩm không còn tồn tại",
+                            placement: "topRight",
+                            duration: 2,
+                        });
+                    }
+                }
+            }
+        }
+
+        if (!product?.data) {
+            message.error('Không tìm thấy thông tin sản phẩm.');
+            return;
+        }
 
         if (!productId || !selectedVariant || !selectedSizeObject) {
             message.error('Vui lòng chọn đầy đủ thông tin sản phẩm.');
             return;
         }
 
-        const productData = {
-            productId,
-            variantId: selectedVariant.id,
-            sizeId: selectedSizeObject.id,
-            quantity,
-        };
-
-        const res = await addItemToCart(productData);
-        if (res && res?.status) {
-            notification.success({
-                message: "Thêm sản phẩm thành công",
-                placement: "topRight",
-                duration: 2,
-            });
-            setIsModalVisible(false)
-        } else {
-            notification.error({
-                message: res.message,
-                placement: "topRight",
-                duration: 2,
-            });
-            setIsModalVisible(false)
-        }
     };
+
     return (
         <div className="container">
             <div className="left-column">
@@ -301,15 +389,34 @@ const DetailProduct = () => {
                     </Modal>
                 </div>
 
-                <div className="quantity-selector">
-                    <Button onClick={() => handleQuantityChange(-1)}>-</Button>
-                    <input type="text" value={quantity} readOnly />
-                    <Button onClick={() => handleQuantityChange(1)}>+</Button>
+                <div className="flex items-center">
+                    <Button
+                        disabled={inventory === 0 || quantityCart >= inventory}
+                        onClick={() => setQuantity(quantity > 1 ? quantity - 1 : 1)}
+                    >
+                        -
+                    </Button>
+                    <InputNumber
+                        readOnly
+                        type='number'
+                        min={1}
+                        max={inventory - quantityCart}
+                        value={quantity}
+                        onChange={onChangeQuantity}
+                        // onKeyDown={handleKeyPress}
+                        className="w-14 mx-2 focus:outline-none caret-transparent"
+                    />
+                    <Button
+                        disabled={inventory === 0 || quantityCart >= inventory}
+                        onClick={() => setQuantity(quantity + 1)}
+                    >
+                        +
+                    </Button>
                 </div>
 
                 <div className="action-buttons">
-                    <button className="add-to-cart" onClick={handleAddToCart}>THÊM VÀO GIỎ HÀNG</button>
-                    <button className="buy-now">MUA NGAY</button>
+                    <button className="add-to-cart rounded-sm" onClick={handleAddToCart}>THÊM VÀO GIỎ HÀNG</button>
+                    <button className="buy-now rounded-sm">MUA NGAY</button>
                 </div>
                 <div className="action-button2">
                     <button className="like-add">

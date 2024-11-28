@@ -139,9 +139,19 @@ const AddToCart: React.FC<AddToCartProps> = ({
   };
 
   const handleAddItemToCart = async (id: string) => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
     if (!token || !isLogin) {
       notification.error({
         message: "Vui lòng đăng nhập để tiếp tục",
+        placement: "topRight",
+        duration: 2
+      });
+      setIsModalVisible(false);
+      return
+    }
+    if (quantity > inventory) {
+      notification.error({
+        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
         placement: "topRight",
         duration: 2
       });
@@ -333,12 +343,15 @@ const AddToCart: React.FC<AddToCartProps> = ({
                 -
               </Button>
               <InputNumber
+                readOnly
+                disabled={inventory === 0 || quantityCart >= inventory}
                 min={1}
                 max={inventory - quantityCart}
                 value={quantity}
                 onChange={onChangeQuantity}
                 onKeyDown={handleKeyPress}
-                className="w-14 mx-2"
+                className="w-14 mx-2 focus:outline-none caret-transparent"
+                type="number"
               />
               <Button disabled={inventory === 0 || quantityCart >= inventory} onClick={() => setQuantity(quantity < inventory ? quantity + 1 : quantity)}>+</Button>
             </div>
