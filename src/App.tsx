@@ -17,9 +17,7 @@ import CheckoutPage from "./pages/(client)/checkout";
 import VNPayReturn from "./pages/(client)/checkout/nvpayReturn";
 import MenuAccount from "./pages/(client)/my-account";
 import { ScrollToTop } from "./ultils/client";
-import OrderDetail, {
-  mockOrderDetail
-} from "./components/common/(client)/menu-account/OrderDetail";
+import OrderDetail from "./components/common/(client)/menu-account/OrderDetail";
 import ResetPassword from "./components/common/(client)/sign-in/ResetPassword";
 
 const routeConfig = [
@@ -65,7 +63,7 @@ const routeConfig = [
       },
       {
         path: "order-detail/:orderId",
-        element: <OrderDetail data={mockOrderDetail} />
+        element: <OrderDetail />
       },
       {
         path: "/vnpay_return",
