@@ -57,7 +57,7 @@ export const resetPassword = async (
 ) => {
   try {
     const { data } = await instance.patch(
-      `/users/auth/resetPassword/${resetToken}`, 
+      `/users/auth/resetPassword/${resetToken}`,
       payload
     );
     return data;
@@ -65,7 +65,6 @@ export const resetPassword = async (
     throw error;
   }
 };
-
 
 export const getProfile = async () => {
   try {
@@ -147,15 +146,20 @@ export const getAllUser = async () => {
   }
 };
 
-export const toggleBlockUser = async (payload: { userId: string; shouldBlock: boolean }) => {
+export const toggleBlockUser = async (payload: {
+  userId: string;
+  shouldBlock: boolean;
+  note?: string;
+}) => {
   try {
     const { data } = await instance.patch(
-      `/users/admin/${payload.userId}/toggle-block`, // Đây là endpoint chung
-      { shouldBlock: payload.shouldBlock } // Truyền thông tin cần thiết
+      `/users/admin/${payload.userId}/toggle-block`, // Endpoint API
+      {
+        shouldBlock: payload.shouldBlock,
+        note: payload.note, // Truyền lý do chặn
+      }
     );
-    console.log(payload.userId);
     return data;
-    
   } catch (error) {
     throw error;
   }
@@ -163,9 +167,12 @@ export const toggleBlockUser = async (payload: { userId: string; shouldBlock: bo
 
 export const updateRoleUser = async (userId: string, role: string) => {
   try {
-    const { data } = await instance.patch(`/users/admin/${userId}/change-user-role`, {
-      role, // Dữ liệu cần gửi để thay đổi vai trò
-    });
+    const { data } = await instance.patch(
+      `/users/admin/${userId}/change-user-role`,
+      {
+        role, 
+      }
+    );
     return data;
   } catch (error) {
     throw error;
