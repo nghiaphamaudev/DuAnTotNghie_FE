@@ -6,7 +6,7 @@ import {
   PhoneCall,
   Search,
   ShoppingBag,
-  X
+  X,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -16,21 +16,16 @@ import QuickCart from "./QuickCart";
 import { useCart } from "../../../contexts/CartContext";
 
 const HeaderClient = () => {
-
   // state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
 
-
   // context
   const { cartData, countItemCart } = useCart();
-  const { isLogin, handleLogout, user } = useAuth()
+  const { isLogin, handleLogout, user } = useAuth();
 
-
-  const cartItems = cartData?.items || []
-  const totalPrice = cartData?.totalCartPrice ?? 0
-
-
+  const cartItems = cartData?.items || [];
+  const totalPrice = cartData?.totalCartPrice ?? 0;
 
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -50,30 +45,38 @@ const HeaderClient = () => {
 
   const items: MenuProps["items"] = isLogin
     ? [
-      {
-        key: "2",
-        label: <Link to="/my-account">Thông tin cá nhân</Link>,
-      },
-      {
-        key: "3",
-        label: "Lịch sử đặt hàng",
-      },
-      {
-        key: "4",
-        label: "Đăng xuất",
-        onClick: handleLogout,
-      },
-    ]
+        {
+          key: "2",
+          label: <Link to="/my-account">Thông tin cá nhân</Link>,
+        },
+        {
+          key: "3",
+          label: "Lịch sử đặt hàng",
+        },
+        ...(user?.role === "admin"
+          ? [
+              {
+                key: "4",
+                label: <Link to="/admin">Trang quản trị</Link>,
+              },
+            ]
+          : []),
+        {
+          key: "5",
+          label: "Đăng xuất",
+          onClick: handleLogout,
+        },
+      ]
     : [
-      {
-        key: "1",
-        label: <Link to="/login">Đăng nhập</Link>,
-      },
-      {
-        key: "2",
-        label: <Link to="/register">Đăng ký</Link>,
-      },
-    ];
+        {
+          key: "1",
+          label: <Link to="/login">Đăng nhập</Link>,
+        },
+        {
+          key: "2",
+          label: <Link to="/register">Đăng ký</Link>,
+        },
+      ];
 
   // Example cart items and total price
   const freeShippingThreshold = 500000;
@@ -148,7 +151,7 @@ const HeaderClient = () => {
                   Xin chào, {user.fullName}
                 </span>
               )}
-              <Dropdown menu={{ items }} trigger={['click']}>
+              <Dropdown menu={{ items }} trigger={["click"]}>
                 <button className="bg-transparent text-large flex items-center space-x-1">
                   <CircleUserRound size={18} />
                   <a onClick={(e) => e.preventDefault()}>
