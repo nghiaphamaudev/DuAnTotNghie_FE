@@ -1,11 +1,10 @@
 import axios from "axios";
 import instance from "../config/axios";
-import { AdđToCartRequest, UpdateQuantityCartRequest } from "../interface/Cart";
+import {  AddToCartRequest, UpdateQuantityCartRequest } from "../interface/Cart";
 
 export const getCartForUserServices = async () => {
   try {
     const { data } = await instance.get("/cart/get-cart-detail/");
-    console.log("GET-CART-DETAIL: ", data);
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -16,7 +15,7 @@ export const getCartForUserServices = async () => {
   }
 };
 
-export const addItemToCartServices = async (payload: AdđToCartRequest) => {
+export const addItemToCartServices = async (payload: AddToCartRequest) => {
   try {
     const { data } = await instance.post("/cart/add", payload);
     return data;

@@ -16,6 +16,8 @@ import CategoryDetail from "../pages/admin/category/CategoryDetail";
 import PageComment from "../pages/admin/comment/PageComment";
 import Voucher from "../pages/admin/voucher/voucher";
 import VoucherAdd from "../pages/admin/voucher/voucherAdd";
+import Orders from "../pages/admin/order/Order";
+import AdminOrderDetail from "../pages/admin/order/AdminOrderDetail";
 
 export default function AdminRouter() {
   return (
@@ -39,6 +41,8 @@ export default function AdminRouter() {
           {/* <Route path="/change-password" element={<ChangePassword />} /> */}
           <Route path="/voucher" element={<Voucher />} />
           <Route path="/voucher/add" element={<VoucherAdd />} />
+          <Route path="/bill" element={<Orders />} />
+          <Route path="/bill/:orderId" element={<AdminOrderDetail />} />
         </Routes>
       </HeaderAdmin>
     </PrivateRoute>

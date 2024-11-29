@@ -176,7 +176,7 @@ export default function Size() {
               cell: CustomHeaderCell,
             },
           }}
-           dataSource={data}
+          dataSource={data}
           columns={columns}
           pagination={{
             current: currentPage,

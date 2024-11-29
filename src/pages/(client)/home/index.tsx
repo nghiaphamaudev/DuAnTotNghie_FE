@@ -13,21 +13,16 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import ProductCard from "../../../components/common/(client)/ProductCard";
 import { useProduct } from "../../../contexts/ProductContext";
-import { useEffect } from "react";
-import { Product } from "../../../common/types/Product";
 import { Tabs } from "antd";
 import { useRef } from "react";
 import { NavigationOptions } from "swiper/types";
+import { Products } from "../../../common/types/Product";
 
 const HomePage = () => {
   // context
-  const { allProduct, getAllDataProduct } = useProduct();
+  const { allProduct } = useProduct();
   const prevRef = useRef(null);
   const nextRef = useRef(null);
-  //lifecycle
-  useEffect(() => {
-    getAllDataProduct();
-  }, [getAllDataProduct]);
 
   const renderProductsBySeason = (season: string) => {
     const filteredProducts = allProduct.filter(
@@ -259,7 +254,7 @@ const HomePage = () => {
         >
           <h3 className="text-2xl font-bold my-5">Sản phẩm bán chạy</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-3">
-            {allProduct.map((item: Product, index: number) => (
+            {allProduct.filter((item) => item.isActive === true).map((item: Products, index: number) => (
               <ProductCard key={index} item={item} />
             ))}
           </div>

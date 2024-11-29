@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchVouchers, updateVoucherStatus } from "../../../services/voucher";
 import { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
 export default function Voucher() {
   const { Search } = Input;
   const queryClient = useQueryClient();
@@ -115,6 +116,8 @@ export default function Voucher() {
       key: "startDate",
       align: "center" as const,
       width: "10%",
+      render: (startDate: string) =>
+        dayjs(startDate).format("DD/MM/YYYY HH:mm"), 
     },
     {
       title: "Ngày kết thúc",
@@ -122,6 +125,8 @@ export default function Voucher() {
       key: "expirationDate",
       align: "center" as const,
       width: "10%",
+      render: (expirationDate: string) =>
+        dayjs(expirationDate).format("DD/MM/YYYY HH:mm"),
     },
     {
       title: "Trạng thái",
@@ -129,12 +134,17 @@ export default function Voucher() {
       key: "status",
       align: "center",
       width: "10%",
-      render: (status: string, record: any) => (
-        <Switch
-          checked={status === "active"}
-          onChange={(checked) => onSwitchChange(checked, record)}
-        />
-      ),
+      render: (_status: string, record: any) => {
+        const isExpired = dayjs(record.expirationDate).isBefore(dayjs());
+        const finalStatus = isExpired ? "inactive" : _status;
+        return (
+          <Switch
+            checked={finalStatus === "active"}
+            onChange={(checked) => onSwitchChange(checked, record)}
+            disabled={isExpired} 
+          />
+        );
+      },
     },
   ];
 

@@ -6,7 +6,7 @@ import ProductCard from "../../../components/common/(client)/ProductCard";
 const { Option } = Select;
 
 const ProductPage = () => {
-  const { allProduct, getAllDataProduct } = useProduct();
+  const { allProduct } = useProduct();
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000000]);
   const [sortOption, setSortOption] = useState<string>(
     localStorage.getItem("sortOption") || "featured"
@@ -19,9 +19,6 @@ const ProductPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8; // Define how many items per page
 
-  useEffect(() => {
-    getAllDataProduct();
-  }, [getAllDataProduct]);
 
   useEffect(() => {
     setFilteredProducts(allProduct);
