@@ -1,6 +1,6 @@
 import { Button, Divider, Drawer, Progress } from "antd";
 import { Trash, X } from "lucide-react";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../../contexts/CartContext";
 import CartEmptyImage from "../../../assets/images/empty_cart_retina.png";
@@ -30,6 +30,11 @@ const QuickCart: FC<QuickCartProps> = ({
   //hooks
   const nav = useNavigate();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+    queryClient.invalidateQueries({ queryKey: ["carts"] });
+  }, [isCartDrawerOpen]);
 
   //context
   const { deleteItemCart } = useCart();

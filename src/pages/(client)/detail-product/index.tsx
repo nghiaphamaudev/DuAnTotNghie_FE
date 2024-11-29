@@ -167,7 +167,7 @@ const DetailProduct = () => {
         }
     };
 
-    const handleAddToCart = async () => {
+    const handleAddToCart = async (option?: string) => {
         queryClient.invalidateQueries({ queryKey: ["carts"] });
 
         const productId = product?.data?.id;
@@ -227,11 +227,17 @@ const DetailProduct = () => {
 
                     const res = await addItemToCart(productData);
                     if (res && res?.status) {
-                        notification.success({
-                            message: "Thêm sản phẩm thành công",
-                            placement: "topRight",
-                            duration: 2,
-                        });
+                        if(option === 'buy-now') {
+                            nav('/cart')
+                        } else {
+                            notification.success({
+                                message: "Thêm sản phẩm thành công",
+                                placement: "topRight",
+                                duration: 2,
+                            });
+                        }
+
+                        
                     } else {
                         notification.error({
                             message: "Sản phẩm không còn tồn tại",
@@ -391,7 +397,7 @@ const DetailProduct = () => {
 
                 <div className="flex items-center">
                     <Button
-                        disabled={inventory === 0 || quantityCart >= inventory}
+                        disabled={inventory === 0}
                         onClick={() => setQuantity(quantity > 1 ? quantity - 1 : 1)}
                     >
                         -
@@ -400,14 +406,14 @@ const DetailProduct = () => {
                         readOnly
                         type='number'
                         min={1}
-                        max={inventory - quantityCart}
+                        max={inventory}
                         value={quantity}
                         onChange={onChangeQuantity}
                         // onKeyDown={handleKeyPress}
                         className="w-14 mx-2 focus:outline-none caret-transparent"
                     />
                     <Button
-                        disabled={inventory === 0 || quantityCart >= inventory}
+                        disabled={inventory === 0}
                         onClick={() => setQuantity(quantity + 1)}
                     >
                         +
@@ -415,8 +421,8 @@ const DetailProduct = () => {
                 </div>
 
                 <div className="action-buttons">
-                    <button className="add-to-cart rounded-sm" onClick={handleAddToCart}>THÊM VÀO GIỎ HÀNG</button>
-                    <button className="buy-now rounded-sm">MUA NGAY</button>
+                    <button className="add-to-cart rounded-sm" onClick={() => handleAddToCart()}>THÊM VÀO GIỎ HÀNG</button>
+                    <button onClick={() => handleAddToCart('buy-now')} className="buy-now rounded-sm">MUA NGAY</button>
                 </div>
                 <div className="action-button2">
                     <button className="like-add">
