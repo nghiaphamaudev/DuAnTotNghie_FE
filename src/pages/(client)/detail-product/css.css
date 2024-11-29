@@ -899,11 +899,11 @@ body {
 
 
 .star-filled {
-    color: gold;  /* Màu sao đầy */
+    color: gold; 
 }
 
 .star-empty {
-    color: gray;  /* Màu sao trống */
+    color: gray; 
 }
 
 
