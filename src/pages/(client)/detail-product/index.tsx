@@ -1,4 +1,4 @@
-import { Button, Image, InputNumber, Modal, message, notification } from 'antd';
+import { Button, Image, Input, Modal, Rate, message, notification, InputNumber } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ProductCard from '../../../components/common/(client)/ProductCard';
@@ -6,6 +6,10 @@ import { useCart } from '../../../contexts/CartContext';
 import { useProduct } from '../../../contexts/ProductContext';
 import './css.css';
 import { useAuth } from '../../../contexts/AuthContext';
+import axios from 'axios';
+import { deleteFeedback, toggleLikeFeedback, updateFeedback } from '../../../services/Feedbacks';
+import { LikeFilled, LikeOutlined } from '@ant-design/icons';
+
 import { useQueryClient } from '@tanstack/react-query';
 
 const DetailProduct = () => {
@@ -35,11 +39,20 @@ const DetailProduct = () => {
     const [inventory, setInventory] = useState(0);
     const [idVariantSelect, setIdVariantSelect] = useState('');
     const productsPerPage = 4;
+    const [feedbacks, setFeedbacks] = useState<any[]>([]);
+    const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
+    const [comment, setComment] = useState('');
+    const [rating, setRating] = useState(5);
+    const [images, setImages] = useState([]);
+    const [editingFeedback, setEditingFeedback] = useState(null);
+    const [updatedComment, setUpdatedComment] = useState("");
+    const [updatedRating, setUpdatedRating] = useState(1);
 
     //lifecycle
     useEffect(() => {
         if (id) {
             getDataProductById(id);
+            fetchFeedbacks(id);
         }
     }, [id]);
 
@@ -80,6 +93,166 @@ const DetailProduct = () => {
 
 
     // function
+
+    const fetchFeedbacks = async (productId) => {
+        try {
+            const response = await axios.get(`http://127.0.0.1:8000/api/v1/feedback/${productId}`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            if (response.headers['content-type'].includes('text/html')) {
+                console.log("Received HTML response instead of JSON.");
+                message.error('Lỗi khi tải feedbacks, nhận được trang lỗi từ server.');
+                return;
+            }
+            const data = response.data;
+            if (!data || !data.data || !data.data.feedbacks) {
+                console.log("Không có feedbacks trong phản hồi.");
+                message.error('Không có feedbacks cho sản phẩm này.');
+                return;
+            }
+            setFeedbacks(data.data.feedbacks);
+        } catch (error) {
+            console.log("chưa có commet ", error);
+        }
+    };
+
+
+    //editFeedbacks
+    const handleEdit = (feedback: any) => {
+        setEditingFeedback(feedback);
+        setUpdatedComment(feedback.comment);
+        setUpdatedRating(feedback.rating);
+    };
+    const handleSaveEdit = async () => {
+        if (!updatedComment) {
+            message.error('Bình luận không thể trống!');
+            return;
+        }
+
+        const updatedData = {
+            comment: updatedComment,
+            rating: updatedRating,
+        };
+
+        try {
+            const result = await updateFeedback(editingFeedback.id, updatedData);
+
+            if (result.success) {
+                // Cập nhật feedbacks khi chỉnh sửa thành công
+                setFeedbacks(feedbacks.map(feedback =>
+                    feedback.id === editingFeedback.id ? { ...feedback, ...updatedData } : feedback
+                ));
+                message.success("thanh công");
+                setEditingFeedback(null);
+                setUpdatedComment("");
+                setUpdatedRating(1);
+            } else {
+                // Hiển thị lỗi ra console và alert
+                console.error("Lỗi khi chỉnh sửa bình luận:", result.message);
+                message.error(`Lỗi: ${result.message}`);
+            }
+        } catch (error) {
+            console.error("Lỗi không mong muốn khi chỉnh sửa bình luận:", error);
+            message.error("Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.");
+        }
+    };
+
+
+    const handleCommentChange = (e: any) => {
+        setComment(e.target.value);
+    };
+
+    const handleRatingChange = (value: any) => {
+        setRating(value);
+    };
+
+    const handleSubmitFeedback = async () => {
+        if (!isLogin || !token) {
+            message.error('Vui lòng đăng nhập để gửi bình luận');
+            return;
+        }
+
+        if (!comment || rating <= 0) {
+            message.error('Vui lòng điền đầy đủ thông tin');
+            return;
+        }
+
+        try {
+            const response = await axios.post(
+                'http://127.0.0.1:8000/api/v1/feedback/add',
+                {
+                    user: token,
+                    productId: product?.data?.id,
+                    rating,
+                    comment,
+                    images,
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                }
+            );
+            console.log(response);
+
+            // Xử lý khi API trả về kết quả
+            if (response.status === 201) {
+                message.success('Bình luận đã được gửi thành công');
+                setComment('');
+                setRating(5);
+                setImages([]);
+            }
+        } catch (error) {
+            message.error('Lỗi khi gửi bình luận');
+        }
+    };
+
+    const handleDelete = async (feedbackId: any) => {
+        const confirmed = window.confirm("Bạn có chắc chắn muốn xóa bình luận này?");
+        if (!confirmed) return;
+
+        try {
+            const response = await deleteFeedback(feedbackId);
+            if (response.success) {
+                setFeedbacks(feedbacks.filter(feedback => feedback.id !== feedbackId));
+                message.success("Đã xóa bình luận thành công!");
+            } else {
+                message.error(`Lỗi: ${response.message}`);
+            }
+        } catch (error) {
+            console.error("Lỗi khi xóa bình luận:", error);
+            message.error("Đã xảy ra lỗi khi xóa bình luận. Vui lòng thử lại.");
+        }
+    };
+
+    const handleToggleLike = async (feedbackId) => {
+        if (!isLogin) {
+            message.error("Bạn cần đăng nhập để thực hiện thao tác này.");
+            return;
+        }
+
+        try {
+            const response = await toggleLikeFeedback(feedbackId, token);
+            if (response && response.data) {
+                const updatedFeedback = response.data.feedback;
+                setFeedbacks((prevFeedbacks) =>
+                    prevFeedbacks.map((feedback) =>
+                        feedback.id === feedbackId ? updatedFeedback : feedback
+                    )
+                );
+            }
+        } catch (error) {
+            console.error("Lỗi khi toggle like:", error);
+            alert("Không thể thực hiện thao tác thích. Vui lòng thử lại.");
+        }
+    };
+
+    //end
+
+
+
     const handleArrowClick = (direction: any) => {
         const images = product?.data?.variants.find((variant: any) => variant.color === selectedColor)?.images;
         const newIndex = (selectedThumbnail + direction + images.length) % images.length;
@@ -109,7 +282,7 @@ const DetailProduct = () => {
         const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
         const selectedSizeObject = selectedVariant?.sizes.find(sizeObj => sizeObj.nameSize === size);
         if (selectedSizeObject) {
-            setPrice(selectedSizeObject.price);  // Cập nhật giá theo kích thước được chọn
+            setPrice(selectedSizeObject.price);
         }
     };
 
@@ -181,7 +354,7 @@ const DetailProduct = () => {
             });
             return
         }
-        
+
         if (id) {
             const res = await getDataProductById(id)
             const sizeObjects = res.data.variants
@@ -227,7 +400,7 @@ const DetailProduct = () => {
 
                     const res = await addItemToCart(productData);
                     if (res && res?.status) {
-                        if(option === 'buy-now') {
+                        if (option === 'buy-now') {
                             nav('/cart')
                         } else {
                             notification.success({
@@ -237,7 +410,7 @@ const DetailProduct = () => {
                             });
                         }
 
-                        
+
                     } else {
                         notification.error({
                             message: "Sản phẩm không còn tồn tại",
@@ -260,6 +433,97 @@ const DetailProduct = () => {
         }
 
     };
+
+
+    const renderFeedbacks = () => {
+        return feedbacks.map((feedback) => (
+            <div key={feedback.id} className="feedback-item">
+                <div className="feedback-header">
+                    <img
+                        src={feedback.user.avatar}
+                        alt="avatar"
+                        className="feedback-avatar"
+                    />
+                    <div>
+                        <strong className="feedback-username">{feedback.user.fullName}</strong>
+                        <p className="feedback-rating">
+                            Đánh giá:
+                            {[...Array(5)].map((_, index) => (
+                                <span key={index} className={index < feedback.rating ? "star-filled" : "star-empty"}>★</span>
+                            ))}
+                        </p>
+                    </div>
+                </div>
+
+
+                <div className="feedback-content">
+                    {editingFeedback?.id === feedback.id ? (
+                        <div className="feedback-edit-form">
+                            <label>Chỉnh sửa bình luận:</label>
+                            <Input.TextArea
+                                value={updatedComment}
+                                onChange={(e) => setUpdatedComment(e.target.value)}
+                                rows={4}
+                                placeholder="Nhập bình luận mới"
+                            />
+                            <div className="feedback-rating">
+                                <label>Đánh giá:</label>
+                                <Rate
+                                    value={updatedRating}
+                                    onChange={(value) => setUpdatedRating(value)}
+                                    count={5}
+                                />
+                            </div>
+                            <div className="feedback-actions">
+                                <Button type="primary" onClick={handleSaveEdit}>
+                                    Lưu
+                                </Button>
+                                <Button type="default" onClick={() => setEditingFeedback(null)}>
+                                    Hủy
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <p>{feedback.comment}</p>
+                    )}
+                </div>
+                <div className="feedback-footer">
+                    {editingFeedback?.id !== feedback.id ? (
+                        <>
+                            <Button type="link" onClick={() => handleEdit(feedback)}>
+                                Sửa
+                            </Button>
+                            <Button type="text" danger onClick={() => handleDelete(feedback.id)}>
+                                Xóa
+                            </Button>
+                        </>
+                    ) : null}
+                    {isLogin ? (
+                        <>
+                            <Button
+                                type="link"
+                                onClick={() => handleToggleLike(feedback.id)}
+                                icon={feedback.likedBy.includes(token) ? <LikeFilled /> : <LikeOutlined />}
+                                style={{
+                                    color: feedback.likedBy.includes(token) ? "#1890ff" : "",
+                                    fontWeight: feedback.likedBy.includes(token) ? "bold" : "normal",
+                                    backgroundColor: feedback.likedBy.includes(token) ? "#e6f7ff" : "",
+                                    borderColor: feedback.likedBy.includes(token) ? "#1890ff" : ""
+                                }}
+                            >
+                                {feedback.likedBy.includes(token) ? "Bỏ thích" : "Thích"}
+                            </Button>
+                            <span>{feedback.like} lượt thích</span>
+                        </>
+                    ) : (
+                        <span>{feedback.like} lượt thích </span>
+                    )}
+                </div>
+            </div>
+        ));
+    };
+
+
 
     return (
         <div className="container">
@@ -432,13 +696,10 @@ const DetailProduct = () => {
                         CHIA SẺ <i className="fab fa-facebook"></i>
                     </button>
                 </div>
-                <div className="title11">
-                    <h1 >Những cửa hàng còn mặt hàng này</h1>
 
-                </div>
+
                 <div className="infor">
                     <div className="accordion">
-
                         <div className="accordion-item">
                             <div className="accordion-item">
                                 <div className="accordion-header" onClick={() => handleAccordionToggle(1)}>
@@ -450,30 +711,6 @@ const DetailProduct = () => {
                                 </div>
                             </div>
 
-                            <div className="accordion-content" style={{ display: 'none' }}>
-                                <p></p>
-                            </div>
-                        </div>
-                        <div className="accordion-item">
-                            <div className="accordion-header" onClick={(e) => toggleAccordion(e.currentTarget)}>
-                                <span>CHÍNH SÁCH ĐỔI TRẢ</span>
-                                <i className="fas fa-plus"></i>
-                            </div>
-                            <div className="accordion-content" style={{ display: 'none' }}>
-                                <p>- Mức phí: 30,000đ nội thành và 40,000đ ngoại thành <br />
-                                    - Được kiểm tra hàng trước khi nhận hàng <br />
-                                    - Đổi hàng trong vòng 30 ngày kể từ khi nhận hàng <br />
-                                    - Không áp dụng đổi/trả sản phẩm trong CTKM <br />
-                                    - Miễn phí đổi trả nếu lỗi sai sót từ phía atino.vn <br />
-
-                                </p>
-                            </div>
-                        </div>
-                        <div className="accordion-item">
-                            <div className="accordion-header" onClick={(e) => toggleAccordion(e.currentTarget)}>
-                                <span>ƯU ĐÃI MEMBER</span>
-                                <i className="fas fa-plus"></i>
-                            </div>
                             <div className="accordion-content" style={{ display: 'none' }}>
                                 <p></p>
                             </div>
@@ -495,10 +732,39 @@ const DetailProduct = () => {
                         </div>
                     </div>
                 </div>
-
-
             </div>
 
+            <div>
+                <div className="feedback-from">
+                    <div className="product-feedback-container">
+                        <div className="product-feedback-form">
+                            <h3>Thêm Bình Luận</h3>
+                            <Input.TextArea
+                                value={comment}
+                                onChange={handleCommentChange}
+                                rows={4}
+                                placeholder="Nhập bình luận của bạn"
+                            />
+                            <div className="rating">
+                                <label>Đánh giá: </label>
+                                <Rate
+                                    value={rating}
+                                    onChange={handleRatingChange}
+                                    count={5}
+                                />
+                            </div>
+                            <Button type="primary" onClick={handleSubmitFeedback}>
+                                Gửi Bình Luận
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="product-feedbacks">
+                        <h2>XEM BÌNH LUẬN</h2>
+                        {renderFeedbacks()}
+                    </div>
+                </div>
+
+            </div>
             <div className="product-like">
                 <div className="product-list">
                     <i
@@ -515,9 +781,13 @@ const DetailProduct = () => {
                         style={{ cursor: startIndex + productsPerPage >= allProduct.length ? 'not-allowed' : 'pointer' }}
                     />
                 </div>
+
             </div>
 
+
+
         </div>
+
     );
 };
 
