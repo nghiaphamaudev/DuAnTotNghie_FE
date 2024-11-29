@@ -13,35 +13,21 @@ import {
   message
 } from "antd";
 import axios from "axios";
+import { TicketCheck } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import codpay from "../../../assets/images/codpay.png";
 import vnpay from "../../../assets/images/vnpay.png";
 import { AddressRequest } from "../../../common/types/Address";
 import { CartItem } from "../../../interface/Cart";
+import { Coupon } from "../../../interface/Voucher";
 import { getProfile } from "../../../services/authServices";
-import { getCartForUserServices } from "../../../services/cartServices";
 import {
   createOrderService,
   initiateVNPayPayment
 } from "../../../services/orderService";
-import { TicketCheck } from "lucide-react";
 import { getVouchers } from "../../../services/vorcherServices";
-import { Coupon } from "../../../interface/Voucher";
-
 const { Text } = Typography;
-
-const validateCoupon = async (couponCode: string) => {
-  return new Promise<{ amount: number }>((resolve, reject) => {
-    setTimeout(() => {
-      if (couponCode === "DISCOUNT10") {
-        resolve({ amount: 10000 });
-      } else {
-        reject(new Error("Invalid coupon code"));
-      }
-    }, 1000);
-  });
-};
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -60,22 +46,38 @@ const CheckoutPage: React.FC = () => {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const shippingFee: number = totalPrice >= 500000 ? 0 : 20000;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, setSelectedCheckboxes] = useState<string[]>([]);
+
   const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(
     null
   );
+  const calculateTotalPrice = (selectedProducts: any[]) => {
+    return selectedProducts.reduce(
+      (total, item) => total + item.totalItemPrice,
+      0
+    );
+  };
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const cartData = await getCartForUserServices();
-        setCart(cartData.data);
-        setTotalPrice(cartData.data.totalCartPrice);
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          message.error(error.response?.data || "Lỗi khi lấy giỏ hàng!");
-        }
-      }
-    };
+    // const fetchCart = async () => {
+    //   try {
+    //     const cartData = await getCartForUserServices();
+    //     setCart(cartData.data);
+    //     setTotalPrice(cartData.data.totalCartPrice);
+    //   } catch (error) {
+    //     if (axios.isAxiosError(error)) {
+    //       message.error(error.response?.data || "Lỗi khi lấy giỏ hàng!");
+    //     }
+    //   }
+    // };
+
+    const selectedProducts = localStorage.getItem("selectedProducts");
+    if (selectedProducts) {
+      const parsedProducts = JSON.parse(selectedProducts);
+      setCart({
+        items: parsedProducts,
+        totalCartPrice: calculateTotalPrice(parsedProducts)
+      });
+      setTotalPrice(calculateTotalPrice(parsedProducts));
+    }
 
     const fetchAddresses = async () => {
       try {
@@ -101,7 +103,7 @@ const CheckoutPage: React.FC = () => {
       }
     };
 
-    fetchCart();
+    // fetchCart();
     fetchAddresses();
     fetchCoupons();
   }, []);
@@ -137,14 +139,9 @@ const CheckoutPage: React.FC = () => {
       } else {
         await createOrderService(orderData);
         message.success("Đặt hàng thành công!");
+        localStorage.removeItem("selectedProducts");
         form.resetFields();
-        setSelectedCheckboxes([]);
-        const updatedCart = await getCartForUserServices();
-        setCart(updatedCart.data);
-        setTotalPrice(updatedCart.data.totalCartPrice);
-        if (!updatedCart.data.items || updatedCart.data.items.length === 0) {
-          navigate("/home");
-        }
+        navigate("/home");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -152,7 +149,9 @@ const CheckoutPage: React.FC = () => {
       }
     }
   };
-
+  const handleBackToCart = () => {
+    localStorage.removeItem("selectedProducts"); // Xóa sản phẩm khỏi localStorage khi quay lại giỏ hàng
+  };
   const handleSelectAddress = (address: AddressRequest) => {
     form.setFieldsValue({
       receiver: address.nameReceiver,
@@ -351,10 +350,21 @@ const CheckoutPage: React.FC = () => {
               </button>
             </Form.Item>
           </Form>
+          <Link
+            style={{
+              fontSize: "15px",
+              textDecoration: "underline"
+            }}
+            to={"/cart"}
+            onClick={handleBackToCart} // Xử lý khi quay lại giỏ hàng
+          >
+            Quay lại giỏ hàng
+          </Link>
         </div>
+
         <div className="bg-gray-50 p-6 rounded-lg">
           <h4 className="text-xl font-semibold">Tóm tắt đơn hàng</h4>
-          {cart ? (
+          {cart?.items && cart.items.length > 0 ? (
             <>
               {cart.items.map((item) => (
                 <Card
@@ -398,6 +408,7 @@ const CheckoutPage: React.FC = () => {
                   </Row>
                 </Card>
               ))}
+
               <div className="mt-6 p-4 bg-white shadow">
                 <Row justify="space-between">
                   <Text>Phí vận chuyển:</Text>
@@ -412,7 +423,7 @@ const CheckoutPage: React.FC = () => {
                   <Row justify="space-between" style={{ color: "green" }}>
                     <Text>Giảm giá:</Text>
                     <Text>
-                      -{(cart?.totalCartPrice - totalPrice).toLocaleString()}₫
+                      -{(cart.totalCartPrice - totalPrice).toLocaleString()}₫
                     </Text>
                   </Row>
                 )}
@@ -424,6 +435,7 @@ const CheckoutPage: React.FC = () => {
                   </Text>
                 </Row>
 
+                {/* Mã giảm giá */}
                 <div className="flex flex-col mt-2 gap-1">
                   <Button onClick={() => setModalVisibleVoucher(true)}>
                     <TicketCheck />
