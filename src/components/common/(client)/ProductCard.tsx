@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { notification } from "antd";
 import { Eye, ShoppingBag } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Product } from "../../../common/types/Product";
 import { useProduct } from "../../../contexts/ProductContext";
@@ -41,7 +41,9 @@ const ProductCard = ({ item }: ProductCardProps) => {
   const handleOk = () => {
     setIsModalVisible(true);
   };
-  const handleCancel = () => setIsModalVisible(false);
+  const handleCancel = () => {
+    setIsModalVisible(false)
+  };
 
   const handleToProductDetail = async (id: string) => {
     const res = await getDataProductById(id)

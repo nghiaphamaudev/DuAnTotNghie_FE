@@ -167,14 +167,14 @@ const AddToCart: React.FC<AddToCartProps> = ({
       return
     }
 
-    if (quantity > inventory - quantityCart) {
-      notification.error({
-        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
-        placement: "topRight",
-        duration: 2
-      });
-      return
-    }
+    // if (quantity > inventory - quantityCart) {
+    //   notification.error({
+    //     message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+    //     placement: "topRight",
+    //     duration: 2
+    //   });
+    //   return
+    // }
 
     const payload = {
       productId: id,
@@ -200,7 +200,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
       });
     }
   };
-
+console.log(inventory);
   return (
     <Modal
       open={isModalVisible}
@@ -337,29 +337,29 @@ const AddToCart: React.FC<AddToCartProps> = ({
             <p className="text-gray-700 font-semibold">Số lượng:</p>
             <div className="flex items-center">
               <Button
-                disabled={inventory === 0 || quantityCart >= inventory}
+                disabled={inventory === 0}
                 onClick={() => setQuantity(quantity > 1 ? quantity - 1 : 1)}
               >
                 -
               </Button>
               <InputNumber
                 readOnly
-                disabled={inventory === 0 || quantityCart >= inventory}
+                disabled={inventory === 0}
                 min={1}
-                max={inventory - quantityCart}
+                max={inventory}
                 value={quantity}
                 onChange={onChangeQuantity}
                 onKeyDown={handleKeyPress}
                 className="w-14 mx-2 focus:outline-none caret-transparent"
                 type="number"
               />
-              <Button disabled={inventory === 0 || quantityCart >= inventory} onClick={() => setQuantity(quantity < inventory ? quantity + 1 : quantity)}>+</Button>
+              <Button disabled={inventory === 0} onClick={() => setQuantity(quantity < inventory ? quantity + 1 : quantity)}>+</Button>
             </div>
           </div>
 
           {/* Add to cart button */}
           <button
-            disabled={inventory === 0 || quantityCart >= inventory}
+            disabled={inventory === 0 || quantityCart === inventory}
             onClick={() => handleAddItemToCart(item.id)}
             className="bg-red-500 disabled:bg-gray-400 flex items-center justify-center gap-2 w-full text-white text-base font-semibold uppercase py-3"
           >
