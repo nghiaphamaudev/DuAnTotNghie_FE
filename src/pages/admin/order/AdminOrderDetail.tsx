@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Descriptions,
   Table,
@@ -25,7 +25,7 @@ const AdminOrderDetail = () => {
   const [newStatus, setNewStatus] = useState("");
   const [cancelOrReturnNote, setCancelOrReturnNote] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-
+  const navigate = useNavigate();
   const statusOrder = [
     "Đã xác nhận",
     "Đóng gói chờ vận chuyển",
@@ -52,12 +52,27 @@ const AdminOrderDetail = () => {
   }, [orderId]);
 
   const fetchOrderDetail = async () => {
-    setLoading(true);
-    if (orderId) {
-      const { data } = await getOrderDetailService(orderId);
-      setOrderDetail(data);
+    setLoading(true); // Bật trạng thái loading
+
+    try {
+      if (!orderId) {
+        throw new Error("Không tìm thấy mã đơn hàng."); // Trường hợp không có orderId
+      }
+
+      const response = await getOrderDetailService(orderId);
+
+      if (!response || !response.data) {
+        throw new Error("Không thể tải thông tin đơn hàng."); // Trường hợp dữ liệu trả về không hợp lệ
+      }
+
+      setOrderDetail(response.data); // Cập nhật dữ liệu vào state
+    } catch (error) {
+      console.error("fetchOrderDetail Error: ", error); // Log lỗi để debug
+      message.error(error.message || "Đã xảy ra lỗi. Vui lòng thử lại."); // Hiển thị thông báo lỗi
+      navigate("/admin/bill"); // Điều hướng về trang quản lý tài khoản
+    } finally {
+      setLoading(false); // Tắt trạng thái loading
     }
-    setLoading(false);
   };
 
   const handleStatusChange = async (status, note = "") => {
@@ -102,6 +117,17 @@ const AdminOrderDetail = () => {
   const currentStatusIndex = statusOrder.findIndex(
     (status) => status === orderInfor?.status
   );
+
+  if (!orderDetail) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <p>Không tìm thấy thông tin đơn hàng.</p>
+        <Link to="/admin/bill">
+          <Button>Quay về</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div

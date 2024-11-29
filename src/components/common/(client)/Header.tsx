@@ -6,7 +6,7 @@ import {
   PhoneCall,
   Search,
   ShoppingBag,
-  X,
+  X
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -47,35 +47,32 @@ const HeaderClient = () => {
     ? [
         {
           key: "2",
-          label: <Link to="/my-account">Thông tin cá nhân</Link>,
+          label: <Link to="/my-account">Thông tin cá nhân</Link>
         },
-        {
-          key: "3",
-          label: "Lịch sử đặt hàng",
-        },
+
         ...(user?.role === "admin"
           ? [
               {
                 key: "4",
-                label: <Link to="/admin">Trang quản trị</Link>,
-              },
+                label: <Link to="/admin">Trang quản trị</Link>
+              }
             ]
           : []),
         {
           key: "5",
           label: "Đăng xuất",
-          onClick: handleLogout,
-        },
+          onClick: handleLogout
+        }
       ]
     : [
         {
           key: "1",
-          label: <Link to="/login">Đăng nhập</Link>,
+          label: <Link to="/login">Đăng nhập</Link>
         },
         {
           key: "2",
-          label: <Link to="/register">Đăng ký</Link>,
-        },
+          label: <Link to="/register">Đăng ký</Link>
+        }
       ];
 
   // Example cart items and total price
