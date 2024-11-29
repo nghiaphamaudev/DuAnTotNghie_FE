@@ -693,3 +693,241 @@ body {
         font-size: 20px;
     }
 }
+
+
+.feedback-item {
+    border: 1px solid #ddd;
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.feedback-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #1890ff;
+}
+
+.feedback-username {
+    font-size: 1rem;
+    color: #1890ff;
+}
+
+.feedback-rating {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.feedback-content {
+    margin-bottom: 12px;
+}
+
+.feedback-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.feedback-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.feedback-actions .ant-btn {
+    min-width: 80px;
+}
+
+.feedback-footer .ant-btn-link {
+    color: #52c41a;
+}
+
+.feedback-footer .ant-btn-text {
+    color: #ff4d4f;
+}
+
+
+
+.product-feedback-form {
+    background-color: #f9f9f9; /* Màu nền nhạt */
+    padding: 20px; /* Tạo không gian bên trong */
+    border-radius: 8px; /* Bo góc mềm mại */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+    width: 1000px; /* Giới hạn chiều rộng */
+    margin: 20px auto; /* Canh giữa */
+}
+
+.product-feedback-form h3 {
+    font-size: 1.5rem; /* Tăng kích thước tiêu đề */
+    margin-bottom: 15px; /* Tạo khoảng cách dưới tiêu đề */
+    color: #333; /* Màu chữ đậm hơn */
+}
+
+.product-feedback-form .ant-input {
+    width: 100%; /* Chiếm toàn bộ chiều ngang */
+    margin-bottom: 15px; /* Khoảng cách dưới input */
+    border-radius: 6px; /* Bo góc mềm mại */
+    border: 1px solid #ddd; /* Viền nhẹ */
+}
+
+.product-feedback-form .rating {
+    display: flex; /* Căn chỉnh đánh giá */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    margin-bottom: 15px; /* Khoảng cách dưới */
+}
+
+
+.product-feedback-form .rating label {
+    margin-right: 10px; /* Khoảng cách giữa nhãn và rate */
+    font-weight: 600; /* Tăng độ đậm cho chữ */
+    color: #555; /* Màu chữ trung tính */
+}
+
+.product-feedback-form .ant-rate {
+    font-size: 20px; /* Tăng kích thước icon đánh giá */
+}
+
+.product-feedback-form button {
+    width: 100%; /* Nút chiếm hết chiều ngang */
+    background-color: #1890ff; /* Màu nền nút */
+    color: white; /* Màu chữ */
+    border-radius: 6px; /* Bo góc mềm mại */
+    padding: 10px 0; /* Tạo độ cao cho nút */
+    font-size: 1rem; /* Kích thước chữ trong nút */
+    font-weight: bold; /* Tăng độ đậm chữ */
+    transition: all 0.3s ease; /* Hiệu ứng hover */
+}
+
+.product-feedback-form button:hover {
+    background-color: #40a9ff; /* Màu sáng hơn khi hover */
+}
+
+
+.feedback-title {
+    font-size: 30px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.comment-section {
+    margin-bottom: 20px;
+}
+
+.comment-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+.comment-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.rating-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.rating-label {
+    font-size: 16px;
+    margin-right: 10px;
+    color: #555;
+}
+
+.rating-input {
+    width: 60px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    text-align: center;
+    transition: border-color 0.3s;
+}
+
+.rating-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 6px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+    background-color: #45a049;
+}
+
+.submit-button:active {
+    background-color: #388e3c;
+}
+
+.submit-button:disabled {
+    background-color: #bdbdbd;
+    cursor: not-allowed;
+}
+
+
+
+
+
+.star-filled {
+    color: gold;  /* Màu sao đầy */
+}
+
+.star-empty {
+    color: gray;  /* Màu sao trống */
+}
+
+
+
+.feedback-from {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+    margin: 0 auto;
+    padding-left: 200px; 
+    padding-right: 30px; 
+}
+
+.product-feedbacks {
+    padding: 20px; 
+    width: 1000px;
+    margin: 20px auto; 
+    align-items: center;
+}
+
+.comment-list {
+    width: 700px;
+    border-radius: 4px;
+    margin-top: 20px;
+}
