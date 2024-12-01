@@ -215,6 +215,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     },
     enabled: !!token,
   });
+  console.log(userData);
 
   // mutation updateProfile
   const { mutateAsync: updateUser } = useMutation({
@@ -227,7 +228,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       queryClient.invalidateQueries({
         queryKey: ["users"],
       });
-      localStorage.setItem("user", JSON.stringify(data));
+      localStorage.setItem("user", JSON.stringify(data.data?.user));
       notification.success({
         message: "Cập nhật thông tin thành công!",
         placement: "topRight",

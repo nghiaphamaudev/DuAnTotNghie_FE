@@ -128,15 +128,6 @@ export const deleteAddress = async (payload: { id: string }) => {
   }
 };
 
-export const uploadImage = async (formData: FormData) => {
-  const { data } = await instance.post("/users/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  return data;
-};
-
 export const getAllUser = async () => {
   try {
     const { data } = await instance.get("/users/admin");

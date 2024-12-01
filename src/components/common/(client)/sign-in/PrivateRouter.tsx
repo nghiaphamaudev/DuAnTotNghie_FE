@@ -1,27 +1,19 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 
-interface PrivateRouteProps {
+interface AuthGuardProps {
   children: ReactNode;
-  requireAdmin?: boolean;
 }
 
-const PrivateRoute = ({
-  children,
-  requireAdmin = false
-}: PrivateRouteProps) => {
+const AuthGuard = ({ children }: AuthGuardProps) => {
   const userData = localStorage.getItem("user");
   const user = userData ? JSON.parse(userData) : null;
 
-  if (!user) {
-    return <Navigate to="/login" />;
+  if (user) {
+    return <Navigate to="/home" />; // Nếu đã đăng nhập, chuyển hướng tới trang home
   }
 
-  if (requireAdmin && user.role !== "admin") {
-    return <Navigate to="/home" />;
-  }
-
-  return <>{children}</>;
+  return <>{children}</>; // Nếu chưa đăng nhập, hiển thị nội dung
 };
 
-export default PrivateRoute;
+export default AuthGuard;
