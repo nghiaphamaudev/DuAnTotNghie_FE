@@ -138,9 +138,11 @@ export default function Category() {
       align: "center",
       width: "2%",
       render: (record: ICategory) => (
-        <Link to={`/admin/category/${record.id}`}>
-          <EditOutlined />
-        </Link>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }} >
+          <Link to={`/admin/category/${record.id}`} >
+            <EditOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
+          </Link>
+        </div>
       ),
     },
   ];

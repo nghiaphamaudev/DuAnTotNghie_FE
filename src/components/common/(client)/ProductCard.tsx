@@ -1,8 +1,11 @@
+import { useQueryClient } from "@tanstack/react-query";
+import { notification } from "antd";
 import { Eye, ShoppingBag } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useState } from "react";
-import AddToCart from "./AddToCart";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Product } from "../../../common/types/Product";
+import { useProduct } from "../../../contexts/ProductContext";
+import AddToCart from "./AddToCart";
 
 type ProductCardProps = {
   item: Product;
@@ -10,16 +13,51 @@ type ProductCardProps = {
 };
 
 const ProductCard = ({ item }: ProductCardProps) => {
+  const { getDataProductById } = useProduct();
+  const nav = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const queryClient = useQueryClient();
+
 
   const countColors = (): number => item?.variants.length;
   const countSizes = (): number =>
     item?.variants.reduce((total, variant) => total + variant.sizes.length, 0);
 
-  const showModal = () => setIsModalVisible(true);
-  const handleOk = () => setIsModalVisible(false);
-  const handleCancel = () => setIsModalVisible(false);
+  const showModal = async (id: string) => {
+    const res = await getDataProductById(id)
+    if (res?.data?.isActive === false) {
+      notification.error({
+        message: "Sản phẩm không còn tồn tại!",
+        placement: "topRight",
+        duration: 4,
+      });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    } else {
+      setIsModalVisible(true)
+    }
+
+  };
+  const handleOk = () => {
+    setIsModalVisible(true);
+  };
+  const handleCancel = () => {
+    setIsModalVisible(false)
+  };
+
+  const handleToProductDetail = async (id: string) => {
+    const res = await getDataProductById(id)
+    if (res?.data?.isActive === false) {
+      notification.error({
+        message: "Sản phẩm không còn tồn tại!",
+        placement: "topRight",
+        duration: 4,
+      });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    } else {
+      nav(`/home/product/${id}`)
+    }
+  }
 
   return (
     <div
@@ -42,15 +80,15 @@ const ProductCard = ({ item }: ProductCardProps) => {
           <div className="absolute inset-0 flex justify-center items-end mb-5 space-x-4">
             <button
               className="bg-white p-2 rounded-full shadow-md flex justify-start items-center gap-1"
-              onClick={showModal}
+              onClick={() =>showModal(item.id)}
             >
               <ShoppingBag size={20} className="text-gray-800" />
               <span className="hidden md:block text-base">Thêm giỏ hàng</span>
             </button>
             {/* Nút Xem chi tiết sản phẩm */}
-            <Link to={`/home/product/${item?.id}`} className="bg-white p-2 rounded-full shadow-md">
+            <button onClick={() => handleToProductDetail(item.id)} className="bg-white p-2 rounded-full shadow-md">
               <Eye size={20} className="text-gray-800" /> {/* Icon Xem */}
-            </Link>
+            </button>
 
           </div>
         )}

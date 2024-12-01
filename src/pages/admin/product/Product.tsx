@@ -58,7 +58,7 @@ export default function Product() {
   };
 
   const handleStatusFilterChange = (e: any) => {
-    setStatusFilter(e.target.value); // Update status filter
+    setStatusFilter(e.target.value);
   };
   if (isLoading) {
     <div>...Loading</div>;
@@ -148,14 +148,17 @@ export default function Product() {
       key: "key",
       width: "20%",
       render: (_, record) => (
-        <div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
           <Link to={`/admin/product/${record.id}`}>
-            <EditOutlined />
+            <EditOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
           </Link>
-          <Link to={`/admin/product/detail/${record.id}`}>< EyeOutlined /></Link>
+          <Link to={`/admin/product/detail/${record.id}`}>
+            <EyeOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
+          </Link>
         </div>
       ),
-    },
+    }
+
   ];
 
   const handleExportExcel = () => {

@@ -15,6 +15,7 @@ export type ProductVariant = {
   images: string[]; // Danh sách các ảnh cho biến thể này
   sizes: ProductSize[]; // Danh sách các kích thước khả dụng
   id: string; // Một ID nữa (có thể giống _id hoặc khác)
+  inventory: number
 };
 
 // Định nghĩa type cho sản phẩm chính (product)

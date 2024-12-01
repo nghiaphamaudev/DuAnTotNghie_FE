@@ -1,6 +1,7 @@
 import { Card, Col, Row, Select, Table, Switch, Radio } from "antd";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 const customTableHeaderCellStyle: React.CSSProperties = {
   color: "black",
@@ -17,72 +18,79 @@ const CustomHeaderCell: React.FC<CustomTableHeaderCellProps> = (props) => (
 );
 
 export default function PageComment() {
-  const [statusFilter, setStatusFilter] = useState<string | null>(null); // State để quản lý trạng thái lọc
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [dataSource, setDataSource] = useState<any>([]);
 
+  // Call API to fetch feedbacks
+  const fetchFeedbacks = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get("http://127.0.0.1:8000/api/v1/feedback");
+      setFeedbacks(response.data.data.feedbacks);
+    } catch (error) {
+      console.error("Error fetching feedbacks", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const data = [
-    {
-      key: '1',
-      stt: 1,
-      fullName: 'Nguyễn Văn A',
-      productName: 'Áo thun nam',
-      sizeName: 'L',
-      rate: 5,
-      comment: 'Sản phẩm rất tốt, chất lượng vượt mong đợi.',
-    },
-    {
-      key: '2',
-      stt: 2,
-      fullName: 'Trần Thị B',
-      productName: 'Giày thể thao',
-      sizeName: '40',
-      rate: 4,
-      comment: 'Giày đi rất êm chân, nhưng màu sắc không đẹp như mong đợi.',
-    },
-    {
-      key: '3',
-      stt: 3,
-      fullName: 'Lê Quang C',
-      productName: 'Quần jeans',
-      sizeName: 'M',
-      rate: 3,
-      comment: 'Chất liệu ổn, nhưng form hơi rộng so với size thông thường.',
-    },
-  ];
+  useEffect(() => {
+    fetchFeedbacks(); // Fetch feedbacks when component mounts
+  }, []);  // Empty dependency array means this will run once when the component mounts
+
   const columns = [
     {
       title: "STT",
-      dataIndex: "stt",
+      dataIndex: "id",  // Use ID or a custom index for "STT"
       key: "stt",
       align: "center" as const,
+      render: (text: any, record: any, index: number) => index + 1,  // Index for serial number
       width: "5%",
-
     },
     {
       title: "Tên tài khoản",
-      dataIndex: "fullName",
+      dataIndex: ["user", "fullName"],  // Access fullName inside user object
       key: "fullName",
       align: "center" as const,
       width: "20%",
     },
     {
       title: "Tên sản phẩm",
-      dataIndex: "productName",
+      dataIndex: ["productId", "name"],  // Access name inside productId object
       key: "productName",
       align: "center" as const,
       width: "20%",
     },
     {
-      title: "Kích cỡ",
-      dataIndex: "sizeName",
-      key: "sizeName",
+      title: "Ảnh sản phẩm",
+      dataIndex: ["productId", "coverImg"], // Đúng đường dẫn tới coverImg
+      key: "coverImg",
       align: "center" as const,
       width: "10%",
+      render: (imageUrl: string) => (
+        imageUrl ? (
+          <img
+            src={imageUrl}
+            alt="Product"
+            style={{
+              width: "50px",
+              height: "50px",
+              objectFit: "cover",
+              borderRadius: "4px",
+            }}
+          />
+        ) : (
+          <span>Không có ảnh</span>
+        )
+      ),
     },
+
     {
       title: "Đánh giá",
-      dataIndex: "rate",
-      key: "rate",
+      dataIndex: "rating",
+      key: "rating",
       align: "center" as const,
       width: "10%",
     },
@@ -94,14 +102,25 @@ export default function PageComment() {
       width: "30%",
     },
     {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
+      title: "Lượt thích",
+      dataIndex: "like",
+      key: "like",
       align: "center" as const,
       width: "10%",
-      render: () => (
+      render: (like: number) => <span>{like} lượt thích</span>,
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "classify",
+      key: "classify",
+      align: "center",
+      width: "10%",
+      render: (classify, record) => (
         <Switch
-
+          checked={classify === true}
+          checkedChildren=""
+          unCheckedChildren=""
+        // onChange={(checked) => handleStatusChange(checked, record.id)}
         />
       ),
     },
@@ -114,27 +133,15 @@ export default function PageComment() {
         <Row gutter={16} style={{ marginTop: "12px" }}>
           <Col span={5}>
             <span>Sản phẩm: </span>
-            <Select
-
-              style={{ width: "100%" }}
-              value={1}
-            >
+            <Select style={{ width: "100%" }} value={1}>
               <Select.Option value={null}>Tất cả</Select.Option>
             </Select>
           </Col>
           <Col span={5}>
             <span>Khách hàng: </span>
-            <Select
-
-              style={{ width: "100%" }}
-              value={1}
-            >
+            <Select style={{ width: "100%" }} value={1}>
               <Select.Option value={null}>Tất cả</Select.Option>
-
-              <Select.Option >
-                <Select.Option value={1}>User 1</Select.Option>
-              </Select.Option>
-
+              <Select.Option value={1}>User 1</Select.Option>
             </Select>
           </Col>
           <Col span={14}>
@@ -142,7 +149,6 @@ export default function PageComment() {
             <Radio.Group
               onChange={(e) => {
                 setStatusFilter(e.target.value);
-
               }}
               value={statusFilter}
             >
@@ -160,10 +166,10 @@ export default function PageComment() {
               cell: CustomHeaderCell,
             },
           }}
-          dataSource={data}
           columns={columns}
-          
-
+          dataSource={feedbacks}
+          loading={loading}
+          rowKey="id"
         />
       </Card>
     </div>
