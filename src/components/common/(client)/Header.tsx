@@ -49,16 +49,20 @@ const HeaderClient = () => {
           key: "2",
           label: <Link to="/my-account">Thông tin cá nhân</Link>,
         },
+        {
+          key: "3",
+          label: "Lịch sử đặt hàng",
+        },
         ...(user?.role === "admin"
           ? [
               {
-                key: "3",
+                key: "4",
                 label: <Link to="/admin">Trang quản trị</Link>,
               },
             ]
           : []),
         {
-          key: "4",
+          key: "5",
           label: "Đăng xuất",
           onClick: handleLogout,
         },

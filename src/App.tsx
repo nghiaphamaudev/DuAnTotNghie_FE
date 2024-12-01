@@ -19,8 +19,6 @@ import MenuAccount from "./pages/(client)/my-account";
 import { ScrollToTop } from "./ultils/client";
 import OrderDetail from "./components/common/(client)/menu-account/OrderDetail";
 import ResetPassword from "./components/common/(client)/sign-in/ResetPassword";
-import AuthGuard from "./components/common/(client)/sign-in/PrivateRouter";
-import PrivateRoute from "./components/common/(client)/menu-account/PrivateRouter";
 
 const routeConfig = [
   {
@@ -29,70 +27,58 @@ const routeConfig = [
     children: [
       {
         path: "",
-        element: <Navigate to="/home" />,
+        element: <Navigate to="/home" />
       },
       {
         path: "home",
-        element: <HomePage />,
+        element: <HomePage />
       },
       {
         path: "home/product/:id",
-        element: <DetailProduct />,
+        element: <DetailProduct />
       },
       {
         path: "login",
-        element: (
-          <AuthGuard>
-            <LoginPage />
-          </AuthGuard>
-        ),
+        element: <LoginPage />
       },
       {
         path: "register",
-        element: (
-          <AuthGuard>
-            <RegisterPage />
-          </AuthGuard>
-        ),
+        element: <RegisterPage />
       },
       {
         path: "product",
-        element: <ProductPage />,
+        element: <ProductPage />
       },
       {
         path: "cart",
-        element: <ShoppingCart />,
+        element: <ShoppingCart />
       },
       {
         path: "checkout",
-        element: <CheckoutPage />,
+        element: <CheckoutPage />
       },
       {
         path: "my-account",
-        element: (
-          <PrivateRoute>
-            <MenuAccount />
-          </PrivateRoute>
-        ),
+        element: <MenuAccount />
       },
       {
         path: "order-detail/:orderId",
-        element: <OrderDetail />,
+        element: <OrderDetail />
       },
       {
         path: "/vnpay_return",
-        element: <VNPayReturn />,
+        element: <VNPayReturn />
       },
       {
         path: "resetPassword/:resetToken",
-        element: <ResetPassword />,
-      },
-    ],
+        element: <ResetPassword />
+      }
+    ]
   },
   {
     path: "/admin/*",
-    element: <AdminRouter />,
-  },
+    element: <AdminRouter />
+  }
 ];
 
 const App = () => {

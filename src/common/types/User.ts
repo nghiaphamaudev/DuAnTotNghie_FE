@@ -15,7 +15,6 @@ export type User = {
   id: string;
   gender: boolean;
   birthday: Date;
-  user:string
 };
 export type UserResponse = {
   accessToken: string;

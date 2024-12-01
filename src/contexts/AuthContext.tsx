@@ -215,7 +215,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     },
     enabled: !!token,
   });
-  console.log(userData);
 
   // mutation updateProfile
   const { mutateAsync: updateUser } = useMutation({
