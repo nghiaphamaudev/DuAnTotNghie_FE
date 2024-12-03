@@ -69,10 +69,6 @@ const QuickCart: FC<QuickCartProps> = ({
     closeCartDrawer();
   }
 
-
-
-  
-
   return (
     <Drawer
       title="Giỏ hàng"

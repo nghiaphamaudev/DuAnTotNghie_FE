@@ -25,6 +25,7 @@ const ProductCard = ({ item }: ProductCardProps) => {
     item?.variants.reduce((total, variant) => total + variant.sizes.length, 0);
 
   const showModal = async (id: string) => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
     const res = await getDataProductById(id)
     if (res?.data?.isActive === false) {
       notification.error({

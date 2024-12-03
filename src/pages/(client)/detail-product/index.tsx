@@ -57,6 +57,12 @@ const DetailProduct = () => {
     }, [id]);
 
     useEffect(() => {
+        if (product?.data && !product?.data?.isActive) {
+            nav('*');
+        }
+    }, [product?.data]);
+
+    useEffect(() => {
         if (product?.data?.variants?.length > 0) {
             const defaultVariant = product.data.variants[0];
             const defaultSize = defaultVariant.sizes?.[0];
@@ -248,9 +254,6 @@ const DetailProduct = () => {
             alert("Không thể thực hiện thao tác thích. Vui lòng thử lại.");
         }
     };
-
-    //end
-
 
 
     const handleArrowClick = (direction: any) => {
@@ -635,9 +638,9 @@ const DetailProduct = () => {
                     </a>
                     <div className="size-options">
                         {product?.data?.variants
-                            ?.find(variant => variant.color === selectedColor)?.sizes.map(size => (
+                            ?.find(variant => variant.color === selectedColor)?.sizes.map((size, index) => (
                                 <Button
-                                    key={size._id}
+                                    key={index}
                                     onClick={() => handleSizeSelect(size.nameSize)}
                                     style={{
                                         border: selectedSize === size.nameSize ? '2px solid #000' : '1px solid #ccc',
