@@ -11,7 +11,6 @@ import CategoryEdit from "../pages/admin/category/CategoryEdit";
 import Users from "../pages/admin/users/Users";
 import PrivateRoute from "../components/common/(client)/sign-in/PrivateRouter";
 import ProductEdit from "../pages/admin/product/ProductEdit";
-import Size from "../pages/admin/size/Size";
 import CategoryDetail from "../pages/admin/category/CategoryDetail";
 import PageComment from "../pages/admin/comment/PageComment";
 import Voucher from "../pages/admin/voucher/voucher";
@@ -34,7 +33,6 @@ export default function AdminRouter() {
           <Route path="/category/add" element={<CategoryAdd />} />
           <Route path="/category/:id" element={<CategoryEdit />} />
           <Route path="/category/detail/:id" element={<CategoryDetail />} />
-          <Route path="/size" element={<Size />} />
           {/* <Route path="/staff" element={<Staff />} /> */}
           <Route path="/users" element={<Users />} />
           <Route path="/comments" element={<PageComment />} />
