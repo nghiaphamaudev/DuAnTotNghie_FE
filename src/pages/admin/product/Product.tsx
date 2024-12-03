@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState } from 'react';
 import { Button, Card, Col, Row, Switch, Table, Radio, Input } from "antd";
 import { DownloadOutlined, EditOutlined, EyeOutlined, PlusCircleFilled } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { debounce } from 'lodash';
 import { deleteProductStatus, getAllProduct } from '../../../services/productServices';
 import { Products, ProductVariant } from '../../../common/types/Product';
 import { ColumnType } from 'antd/es/table';
@@ -10,21 +10,11 @@ import BreadcrumbsCustom from '../../../components/common/(admin)/BreadcrumbsCus
 import * as XLSX from 'xlsx';
 import { useQuery } from '@tanstack/react-query';
 
-const customTableHeaderCellStyle: React.CSSProperties = {
-  fontWeight: "bold",
-  textAlign: "center",
-  height: "10px",
-};
-
-const CustomHeaderCell: React.FC<React.ComponentProps<"th">> = (props) => (
-  <th {...props} style={customTableHeaderCellStyle} />
-);
-
 export default function Product() {
   const [dataSource, setDataSource] = useState<Products[]>([]);
   const [statusFilter, setStatusFilter] = useState(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
-
+  const { Search } = Input;
   // Fetch products function
   const { data, isError, isLoading } = useQuery<{ status: string; data: Products[] }, Error>({
     queryKey: ["products"],
@@ -37,10 +27,19 @@ export default function Product() {
     }
   }, [data]);
 
-  const filteredData = dataSource.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  const filteredData = dataSource
+    .filter(product => {
+      // Lọc theo trạng thái
+      if (statusFilter === 2) return product.isActive === true; 
+      if (statusFilter === 3) return product.isActive === false; 
+      return true; 
+    })
+    .filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) 
+    );
+  const handleSearch = (value: string) => {
+    setSearchTerm(value.toLowerCase().trim());
+  };
   const handleStatusChange = async (checked: boolean, id: string) => {
     try {
       const productData = await deleteProductStatus(id, checked);
@@ -56,7 +55,6 @@ export default function Product() {
       console.error('Lỗi khi cập nhật trạng thái sản phẩm:', error);
     }
   };
-
   const handleStatusFilterChange = (e: any) => {
     setStatusFilter(e.target.value);
   };
@@ -81,7 +79,7 @@ export default function Product() {
       key: "name",
       width: "20%",
       align: "center",
-      onFilter: (value: any, record: any) => {
+      onFilter: (_value: any, record: any) => {
         return record.name.toLowerCase().includes(searchTerm.toLowerCase());
       },
     },
@@ -174,10 +172,12 @@ export default function Product() {
       <Card bordered={false}>
         <Row gutter={16}>
           <Col span={12}>
-            <Input.Search
-              placeholder="Tìm kiếm theo tên danh mục"
-              onSearch={(value) => setSearchTerm(value)}
-              enterButton
+            <Search
+              placeholder="Tìm kiếm theo mã hoặc mô tả"
+              allowClear
+              enterButton="Tìm kiếm"
+              size="middle"
+              onSearch={handleSearch}
             />
           </Col>
           <Col span={12}>
@@ -217,17 +217,7 @@ export default function Product() {
       </Card>
 
       <Card style={{ marginTop: "12px" }}>
-        <Table
-          components={{
-            header: {
-              cell: CustomHeaderCell,
-            },
-          }}
-          dataSource={filteredData}
-          columns={columns}
-          rowKey="id"
-          pagination={false} // Disable pagination
-        />
+        <Table dataSource={filteredData.slice().reverse()} columns={columns} rowKey="id" />
       </Card>
     </div>
   );
