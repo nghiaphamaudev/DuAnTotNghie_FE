@@ -39,7 +39,6 @@ export default function Voucher() {
   const handleSearch = (value: string) => {
     setSearchKeyword(value.toLowerCase().trim());
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   // Hàm thay đổi trạng thái
   const onSwitchChange = (checked: boolean, record: any) => {
     const newStatus = checked ? "active" : "inactive";
@@ -100,7 +99,6 @@ export default function Voucher() {
       updateFilteredData(data);
     }
   }, [filterStatus, searchKeyword, data]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const columns: ColumnsType<any> = [
     {
       title: "STT",
@@ -230,8 +228,8 @@ export default function Voucher() {
             <Search
               placeholder="Tìm kiếm theo mã hoặc mô tả"
               allowClear
-              enterButton="Search"
-              size="large"
+              enterButton="Tìm kiếm"
+              size="middle"
               onSearch={handleSearch}
             />
           </Col>

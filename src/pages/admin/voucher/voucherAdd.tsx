@@ -46,8 +46,8 @@ const VoucherAddPage = () => {
   const onFinish: FormProps<IVoucher>["onFinish"] = (values) => {
     const payload: IVoucher = {
       ...values,
-      startDate: new Date(values.startDate),
-      expirationDate: new Date(values.expirationDate),
+      startDate: dayjs(values.startDate).toISOString(),
+      expirationDate: dayjs(values.expirationDate).toISOString(),
     };
 
     if (payload.discountType === "percentage") {
@@ -82,7 +82,13 @@ const VoucherAddPage = () => {
             label="Mã giảm giá"
             name="code"
             style={{ width: 850 }}
-            rules={[{ required: true, message: "Vui lòng nhập mã giảm giá!" }]}
+            rules={
+              [{ required: true, message: "Vui lòng nhập mã giảm giá!" },
+                {
+                  pattern: /^[\p{L}\p{N}\s]{6,}$/u,
+                  message: "Tên mã giảm giá phải có ít nhất 6 ký tự gồm chữ cái và số",
+                }
+              ]}
           >
             <Input placeholder="Mã giảm giá" />
           </Form.Item>
@@ -93,7 +99,8 @@ const VoucherAddPage = () => {
             label="Mô tả"
             name="description"
             style={{ width: 850 }}
-            rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+            rules={[{ required: true, message: "Vui lòng nhập mô tả!" }
+            ]}
           >
             <Input.TextArea rows={4} placeholder="Mô tả ngắn" />
           </Form.Item>
@@ -130,7 +137,7 @@ const VoucherAddPage = () => {
                     const discountType = getFieldValue('discountType');
 
                     if (discountType === 'percentage' && value > 20) {
-                      return Promise.reject('Phần trăm giảm giá < 20%');
+                      return Promise.reject('Phần trăm giảm giá nhỏ hơn 20%');
                     }
 
                     return Promise.resolve();
@@ -157,7 +164,7 @@ const VoucherAddPage = () => {
                     const discountType = getFieldValue('discountType');
 
                     if (discountType === 'amount' && value > 100) {
-                      return Promise.reject('Giảm giá tiền phải < 100.000');
+                      return Promise.reject('Giảm giá tiền phải nhỏ hơn 100.000');
                     }
 
                     return Promise.resolve();
