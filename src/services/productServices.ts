@@ -14,8 +14,7 @@ export const getAllProduct = async () => {
     }
 }
 
-
-
+const token = localStorage.getItem('accessToken');
 
 
 export const getProductById = async (id: string) => {
@@ -38,7 +37,13 @@ export const addProduct = async (product: Products) => {
 };
 export const deleteProductStatus = async (id: string, isActive: boolean) => {
     try {
-        const response = await instance.patch(`/products/${id}/status`, { isActive });
+        console.log(token);
+        const response = await instance.patch(`/products/${id}/status`, { isActive }, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token ? token : ''
+            }
+        });
         console.log('API response:', response.data);
         if (!response.data || !response.data.data || !response.data.data.id) {
             throw new Error('Product ID is invalid');
