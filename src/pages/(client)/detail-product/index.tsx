@@ -1,16 +1,16 @@
-import { Button, Image, InputNumber, Modal, message, notification } from 'antd';
-import axios from 'axios';
+import { Button, Image, Input, Modal, Rate, message, notification, InputNumber } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ProductCard from '../../../components/common/(client)/ProductCard';
-import { useAuth } from '../../../contexts/AuthContext';
 import { useCart } from '../../../contexts/CartContext';
 import { useProduct } from '../../../contexts/ProductContext';
-import { deleteFeedback, toggleLikeFeedback, updateFeedback } from '../../../services/Feedbacks';
 import './css.css';
+import { useAuth } from '../../../contexts/AuthContext';
+import axios from 'axios';
+import { deleteFeedback, toggleLikeFeedback, updateFeedback } from '../../../services/Feedbacks';
+import { LikeFilled, LikeOutlined } from '@ant-design/icons';
 
-
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 const DetailProduct = () => {
   //context
@@ -91,31 +91,6 @@ const DetailProduct = () => {
     }
   }, [cartData, product, selectedColor, selectedSize]);
 
-  //sản phẩm cùng loại
-  const getProductid = useQuery({
-    queryKey: ["PRODUCT", id],
-    queryFn: async () => {
-      const { data } = await axios.get(`http://127.0.0.1:8000/api/v1/products/${id}`);
-      return data;
-    }
-  });
-
-  const { data: relatedProducts } = useQuery({
-    queryKey: ["RELATED_PRODUCT", getProductid.data?.data?.category?.id],
-    queryFn: async () => {
-      const categoryId = getProductid.data?.data?.category?.id;
-      const productId = getProductid.data?.data?.id;
-
-      const { data } = await axios.get(
-        `http://127.0.0.1:8000/api/v1/products/${categoryId}/related/${productId}`
-      );
-      console.log('API response:', data);
-      return data.data || [];
-    },
-    enabled: !!getProductid.data?.data?.category?.id
-  });
-
-  //end
 
   // function
 
@@ -150,7 +125,6 @@ const DetailProduct = () => {
     setUpdatedComment(feedback.comment);
     setUpdatedRating(feedback.rating);
   };
-
   const handleSaveEdit = async () => {
     if (!updatedComment) {
       message.error('Bình luận không thể trống!');
@@ -194,7 +168,46 @@ const DetailProduct = () => {
     setRating(value);
   };
 
+  const handleSubmitFeedback = async () => {
+    if (!isLogin || !token) {
+      message.error('Vui lòng đăng nhập để gửi bình luận');
+      return;
+    }
 
+    if (!comment || rating <= 0) {
+      message.error('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        'http://127.0.0.1:8000/api/v1/feedback/add',
+        {
+          user: token,
+          productId: product?.data?.id,
+          rating,
+          comment,
+          images,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(response);
+
+      // Xử lý khi API trả về kết quả
+      if (response.status === 201) {
+        message.success('Bình luận đã được gửi thành công');
+        setComment('');
+        setRating(5);
+        setImages([]);
+      }
+    } catch (error) {
+      message.error('Lỗi khi gửi bình luận');
+    }
+  };
 
   const handleDelete = async (feedbackId: any) => {
     const confirmed = window.confirm("Bạn có chắc chắn muốn xóa bình luận này?");
@@ -214,7 +227,7 @@ const DetailProduct = () => {
     }
   };
 
-  const handleToggleLike = async (feedbackId: string) => {
+  const handleToggleLike = async (feedbackId) => {
     if (!isLogin) {
       message.error("Bạn cần đăng nhập để thực hiện thao tác này.");
       return;
@@ -222,11 +235,8 @@ const DetailProduct = () => {
 
     try {
       const response = await toggleLikeFeedback(feedbackId, token);
-
       if (response && response.data) {
         const updatedFeedback = response.data.feedback;
-        console.log("LikedBy:", updatedFeedback.likedBy);
-        console.log("Current Token:", token);
         setFeedbacks((prevFeedbacks) =>
           prevFeedbacks.map((feedback) =>
             feedback.id === feedbackId ? updatedFeedback : feedback
@@ -238,7 +248,6 @@ const DetailProduct = () => {
       alert("Không thể thực hiện thao tác thích. Vui lòng thử lại.");
     }
   };
-
 
   //end
 
@@ -426,9 +435,108 @@ const DetailProduct = () => {
   };
 
 
+  const renderFeedbacks = () => {
+    return feedbacks.map((feedback) => (
+      <div key={feedback.id} className="feedback-item">
+        <div className="feedback-header">
+          <img
+            src={feedback.user.avatar}
+            alt="avatar"
+            className="feedback-avatar"
+          />
+          <div>
+            <strong className="feedback-username">{feedback.user.fullName}</strong>
+            <p className="feedback-rating">
+              Đánh giá:
+              {[...Array(5)].map((_, index) => (
+                <span key={index} className={index < feedback.rating ? "star-filled" : "star-empty"}>★</span>
+              ))}
+            </p>
+          </div>
+        </div>
+
+
+        <div className="feedback-content">
+          {editingFeedback?.id === feedback.id ? (
+            <div className="feedback-edit-form">
+              <label>Chỉnh sửa bình luận:</label>
+              <Input.TextArea
+                value={updatedComment}
+                onChange={(e) => setUpdatedComment(e.target.value)}
+                rows={4}
+                placeholder="Nhập bình luận mới"
+              />
+              <div className="feedback-rating">
+                <label>Đánh giá:</label>
+                <Rate
+                  value={updatedRating}
+                  onChange={(value) => setUpdatedRating(value)}
+                  count={5}
+                />
+              </div>
+              <div className="feedback-actions">
+                <Button type="primary" onClick={handleSaveEdit}>
+                  Lưu
+                </Button>
+                <Button type="default" onClick={() => setEditingFeedback(null)}>
+                  Hủy
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p>{feedback.comment}</p>
+          )}
+        </div>
+        <div className="feedback-footer">
+          {editingFeedback?.id !== feedback.id ? (
+            <>
+              <Button type="link" onClick={() => handleEdit(feedback)}>
+                Sửa
+              </Button>
+              <Button type="text" danger onClick={() => handleDelete(feedback.id)}>
+                Xóa
+              </Button>
+            </>
+          ) : null}
+          {isLogin ? (
+            <>
+              <Button
+                type="link"
+                onClick={() => handleToggleLike(feedback.id)}
+                icon={feedback.likedBy.includes(token) ? <LikeFilled /> : <LikeOutlined />}
+                style={{
+                  color: feedback.likedBy.includes(token) ? "#1890ff" : "",
+                  fontWeight: feedback.likedBy.includes(token) ? "bold" : "normal",
+                  backgroundColor: feedback.likedBy.includes(token) ? "#e6f7ff" : "",
+                  borderColor: feedback.likedBy.includes(token) ? "#1890ff" : ""
+                }}
+              >
+                {feedback.likedBy.includes(token) ? "Bỏ thích" : "Thích"}
+              </Button>
+              <span>{feedback.like} lượt thích</span>
+            </>
+          ) : (
+            <span>{feedback.like} lượt thích </span>
+          )}
+        </div>
+      </div>
+    ));
+  };
+
+
+
   return (
-    <div className="container mx-auto">
+    <div className="container">
       <div className="left-column">
+        <div className="breadcrumb">
+          <i className="fas fa-home"></i>
+          <a href="#">Trang chủ</a>
+          <span>|</span>
+          <a href="#">Danh mục {product?.data?.category?.name}</a>
+          <span>|</span>
+          <a href="#">{product?.data?.name}</a>
+        </div>
+
         <div className="image-gallery">
           <div className="thumbnail-container">
             <div className="thumbnail-images">
@@ -476,7 +584,7 @@ const DetailProduct = () => {
 
       <div className="right-column">
         <h1 className="product-title">{product?.data?.name}</h1>
-        <span>{inventory !== 0 ? `Còn hàng: ${inventory}` : "Hết hàng"}</span>
+        <span>{product?.data?.isActive ? "Còn hàng" : "Hết hàng"}</span>
         <hr />
         <div className="product-price">
           {price.toLocaleString()}₫
@@ -580,8 +688,34 @@ const DetailProduct = () => {
           <button className="add-to-cart rounded-sm" onClick={() => handleAddToCart()}>THÊM VÀO GIỎ HÀNG</button>
           <button onClick={() => handleAddToCart('buy-now')} className="buy-now rounded-sm">MUA NGAY</button>
         </div>
+        <div className="action-button2">
+          <button className="like-add">
+            <i className="fa fa-heart"></i> YÊU THÍCH
+          </button>
+          <button className="shear-add">
+            CHIA SẺ <i className="fab fa-facebook"></i>
+          </button>
+        </div>
+
+
         <div className="infor">
-          <p>{product?.data?.description}</p>
+          <div className="accordion">
+            <div className="accordion-item">
+              <div className="accordion-item">
+                <div className="accordion-header" onClick={() => handleAccordionToggle(1)}>
+                  <span>THÔNG TIN SẢN PHẨM</span>
+                  <i className={openAccordion === 1 ? "fas fa-minus" : "fas fa-plus"}></i>
+                </div>
+                <div className="accordion-content" style={{ display: openAccordion === 1 ? 'block' : 'none' }}>
+                  <p>{product?.data?.description}</p>
+                </div>
+              </div>
+
+              <div className="accordion-content" style={{ display: 'none' }}>
+                <p></p>
+              </div>
+            </div>
+          </div>
 
           <div className="info-section">
             <div className="info-item">
@@ -600,16 +734,45 @@ const DetailProduct = () => {
         </div>
       </div>
 
+      <div>
+        <div className="feedback-from">
+          <div className="product-feedback-container">
+            <div className="product-feedback-form">
+              <h3>Thêm Bình Luận</h3>
+              <Input.TextArea
+                value={comment}
+                onChange={handleCommentChange}
+                rows={4}
+                placeholder="Nhập bình luận của bạn"
+              />
+              <div className="rating">
+                <label>Đánh giá: </label>
+                <Rate
+                  value={rating}
+                  onChange={handleRatingChange}
+                  count={5}
+                />
+              </div>
+              <Button type="primary" onClick={handleSubmitFeedback}>
+                Gửi Bình Luận
+              </Button>
+            </div>
+          </div>
+          <div className="product-feedbacks">
+            <h2>XEM BÌNH LUẬN</h2>
+            {renderFeedbacks()}
+          </div>
+        </div>
 
+      </div>
       <div className="product-like">
-        <h3 className="text-2xl font-bold my-5">Sản phẩm cùng loại</h3>
         <div className="product-list">
           <i
             className={`fas fa-chevron-left arrow ${startIndex === 0 ? 'disabled' : ''}`}
             onClick={handlePrevious}
             style={{ cursor: startIndex === 0 ? 'not-allowed' : 'pointer' }}
           />
-          {Array.isArray(relatedProducts) && relatedProducts.length > 0 && relatedProducts.slice(startIndex, startIndex + productsPerPage).map((item, index) => (
+          {allProduct.slice(startIndex, startIndex + productsPerPage).map((item, index) => (
             <ProductCard key={index} item={item} />
           ))}
           <i
