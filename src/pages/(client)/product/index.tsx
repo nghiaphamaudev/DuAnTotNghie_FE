@@ -19,7 +19,6 @@ const ProductPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8; // Define how many items per page
 
-
   useEffect(() => {
     setFilteredProducts(allProduct);
   }, [allProduct]);
@@ -87,12 +86,12 @@ const ProductPage = () => {
           <div className="border p-4 rounded-md">
             {/* Filter options */}
             <h3 className="text-lg font-bold mb-4">Bộ lọc</h3>
-            <h4 className="text-md font-semibold mb-2">Danh mục sản phẩm</h4>
+            {/* <h4 className="text-md font-semibold mb-2">Danh mục sản phẩm</h4>
             <ul className="space-y-2">
               <li>Áo nam</li>
               <li>Quần nam</li>
               <li>Bộ sưu tập</li>
-            </ul>
+            </ul> */}
 
             <h4 className="text-md font-semibold mt-4 mb-2">Khoảng giá</h4>
             <Slider
