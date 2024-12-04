@@ -1,6 +1,6 @@
-import { Button, Divider, Drawer, Progress } from "antd";
+import { Button, Divider, Drawer, notification, Progress } from "antd";
 import { Trash, X } from "lucide-react";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../../contexts/CartContext";
 import CartEmptyImage from "../../../assets/images/empty_cart_retina.png";
@@ -8,6 +8,8 @@ import CartNotToken from "../../../assets/images/cart_not_token.jpg";
 import { CartItem } from "../../../interface/Cart";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
+import { useProduct } from "../../../contexts/ProductContext";
+import { Product } from "../../../interface/Order";
 
 
 
@@ -19,6 +21,7 @@ interface QuickCartProps {
   freeShippingThreshold: number;
 }
 
+
 const QuickCart: FC<QuickCartProps> = ({
   isCartDrawerOpen,
   closeCartDrawer,
@@ -26,8 +29,16 @@ const QuickCart: FC<QuickCartProps> = ({
   totalPrice,
   freeShippingThreshold
 }) => {
+  //context
+  const { getDataProductById, allProduct } = useProduct();
+  const { deleteItemCart } = useCart();
+  const { token } = useAuth();
 
   //hooks
+  const [isActiveProduct, setIsActiveProduct] = useState<boolean>(true);
+  const [arrIdInvalid, setArrIdInvalid] = useState([])
+  const [arrVariantInvalid, setArrVariantInvalid] = useState([])
+  const [inventory, setinventory] = useState(cartItems[0]?.inventory)
   const nav = useNavigate();
   const queryClient = useQueryClient();
 
@@ -36,9 +47,19 @@ const QuickCart: FC<QuickCartProps> = ({
     queryClient.invalidateQueries({ queryKey: ["carts"] });
   }, [isCartDrawerOpen]);
 
-  //context
-  const { deleteItemCart } = useCart();
-  const { token } = useAuth();
+  useEffect(() => {
+    const result = validateProducts(cartItems, allProduct)
+    const result2 = validateVariantStatus(cartItems, allProduct)
+    setArrVariantInvalid(result2)
+    if (result.isValid === false) {
+      setIsActiveProduct(false)
+      setArrIdInvalid(result.invalidIds)
+    } else {
+      setIsActiveProduct(true)
+      setArrIdInvalid([])
+    }
+  }, [isCartDrawerOpen])
+  console.log(cartItems);
 
   //functions
   const remainingAmountForFreeShipping = Math.max(
@@ -63,11 +84,89 @@ const QuickCart: FC<QuickCartProps> = ({
     nav('/register');
     closeCartDrawer();
   }
+  const validateProducts = (array1: any, array2: any) => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+    const productStatusMap = new Map(
+      array2.map((product) => [product.id, product.isActive])
+    );
 
-  const handleClickToCart = () => {
-    nav('/cart');
-    closeCartDrawer();
-  }
+    // Kiểm tra từng sản phẩm trong array1
+    const invalidProducts = array1
+      .filter(item => !productStatusMap.get(item.productId)) // Lấy các sản phẩm isActive = false
+
+    const errors = invalidProducts.map(
+      item => `Product with ID ${item.productId} is inactive.`
+    );
+
+    const invalidIds = invalidProducts.map(item => item.id);
+
+    if (errors.length > 0) {
+      console.error(errors.join('\n'));
+    }
+    return {
+      isValid: errors.length === 0,
+      invalidIds,
+      errors,
+    };
+  };
+
+  const validateVariantStatus = (array1: any, array2: any) => {
+    return array1
+      .filter(item1 =>
+        array2.some(item2 =>
+          item2.variants.some(variant => variant.id === item1.variantId && variant.status === false)
+        )
+      )
+      .map(item => item.variantId);
+  };
+
+
+
+
+
+
+  const handleClickToCart = async () => {
+    const itemsWithZeroInventory = cartItems.filter(item => item.inventory === 0);
+
+    if (!isActiveProduct) {
+      notification.error({
+        message: "Giỏ hàng đã có sự thay đổi. Xin vui lòng kiểm tra lại",
+        duration: 4,
+      });
+
+      if (arrIdInvalid.length > 0) {
+        for (const id of arrIdInvalid) {
+          try {
+            await deleteItemCart(id);
+          } catch (error) {
+            console.error(`Failed to delete product with ID: ${id}`, error);
+          }
+        }
+        queryClient.invalidateQueries({ queryKey: ["carts"] });
+      }
+    } else if (itemsWithZeroInventory.length > 0) {
+      // Thông báo cho người dùng về thay đổi trong giỏ hàng
+      notification.warning({
+        message: "Một số sản phẩm đã hết hàng và đã bị xóa khỏi giỏ hàng.",
+        duration: 5,
+      });
+
+      // Xóa từng sản phẩm có inventory = 0
+      for (const item of itemsWithZeroInventory) {
+        try {
+          await deleteItemCart(item.id);
+        } catch (error) {
+          console.error(`Failed to delete product with ID: ${item.id}`, error);
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ["carts"] });
+    } else {
+      // Nếu tất cả sản phẩm hợp lệ
+      nav('/cart');
+      closeCartDrawer();
+    }
+  };
+
 
   return (
     <Drawer
