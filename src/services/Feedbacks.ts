@@ -1,4 +1,5 @@
 import axios from "axios";
+import instance from "../config/axios";
 
 export const updateFeedback = async (feedbackId: any, updatedData: any) => {
     const token = localStorage.getItem('accessToken');
@@ -83,3 +84,26 @@ export const toggleLikeFeedback = async (feedbackId: any, token: any) => {
     }
 };
 
+export const deleteFeedbackStatus = async (feedbackId: string, classify: boolean) => {
+    try {
+        const response = await instance.put(`/feedback/${feedbackId}/status`, { classify });
+        console.log('API response:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating status:', error);
+        throw error;
+    }
+};
+
+
+export const getRelatedProducts = async (categoryId: string, productId: string) => {
+    try {
+        const response = await instance.get(`http://127.0.0.1:8000/api/v1/products/${categoryId}/related/${productId}`);
+        console.log(response.data);
+        return response.data
+    } catch (error) {
+        console.error('Error updating status:', error);
+        throw error;
+    }
+
+}

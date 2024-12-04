@@ -1,6 +1,8 @@
+import axios from "axios";
 import { DeleteProduct, Products } from "../common/types/Product";
 /* eslint-disable no-useless-catch */
 import instance from "../config/axios";
+import { message } from "antd";
 
 
 export const getAllProduct = async () => {
@@ -63,6 +65,8 @@ export const updateProduct = async (id: string, formData: FormData) => {
     console.log('Response body:', responseBody);
     return responseBody;
 };
+
+
 
 
 

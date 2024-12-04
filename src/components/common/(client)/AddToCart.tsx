@@ -58,7 +58,9 @@ const AddToCart: React.FC<AddToCartProps> = ({
     item?.variants[0]?.sizes[0]?.price
   );
   const [activeIndex, setActiveIndex] = useState(0);
-  const [idVariantSelect, setIdVariantSelect] = useState<string>(item?.variants[0]?.id);
+  const [idVariantSelect, setIdVariantSelect] = useState<string>(
+    item?.variants[0]?.id
+  );
   const queryClient = useQueryClient();
   const swiperRef = useRef<SwiperType | null>(null);
   const [quantityCart, setQuantityCart] = useState<number>(0);
@@ -88,7 +90,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
     setQuantity(1);
     setPrice(item?.variants[0]?.sizes[0]?.price);
     setInventory(item?.variants[0]?.sizes[0]?.inventory);
-  }, [isModalVisible])
+  }, [isModalVisible]);
 
   useEffect(() => {
     if (swiperRef.current && swiperRef.current.navigation) {
@@ -99,10 +101,12 @@ const AddToCart: React.FC<AddToCartProps> = ({
 
   useEffect(() => {
     if (cartData && cartData?.items.length > 0) {
-      const dataCartVariantSelected = cartData && cartData?.items.filter(item => item.sizeId === idVariantSelect)
-      setQuantityCart(dataCartVariantSelected?.[0]?.quantity)
+      const dataCartVariantSelected =
+        cartData &&
+        cartData?.items.filter((item) => item.sizeId === idVariantSelect);
+      setQuantityCart(dataCartVariantSelected?.[0]?.quantity);
     }
-  }, [cartData, idVariantSelect])
+  }, [cartData, idVariantSelect]);
 
   //function
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -120,13 +124,13 @@ const AddToCart: React.FC<AddToCartProps> = ({
   };
 
   const onChangeQuantity = (value: number | null) => {
-    if (value !== null && value <= (inventory - quantityCart)) {
+    if (value !== null && value <= inventory - quantityCart) {
       setQuantity(value);
     } else {
       notification.error({
         message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
         placement: "topRight",
-        duration: 2,
+        duration: 2
       });
     }
   };
@@ -152,7 +156,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
         duration: 2
       });
       setIsModalVisible(false);
-      return
+      return;
     }
     if(!newProduct.data.isActive) {
       notification.error({
@@ -169,7 +173,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
         duration: 2
       });
       setIsModalVisible(false);
-      return
+      return;
     }
     if (inventory === 0) {
       notification.error({
@@ -177,7 +181,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
         placement: "topRight",
         duration: 2
       });
-      return
+      return;
     }
 
     const payload = {
@@ -233,11 +237,11 @@ const AddToCart: React.FC<AddToCartProps> = ({
               onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
               initialSlide={activeIndex}
               pagination={{
-                clickable: true,
+                clickable: true
               }}
               navigation={{
                 nextEl: ".custom-swiper-button-next",
-                prevEl: ".custom-swiper-button-prev",
+                prevEl: ".custom-swiper-button-prev"
               }}
               modules={[Pagination, Navigation]}
               className="mySwiper"
@@ -265,15 +269,15 @@ const AddToCart: React.FC<AddToCartProps> = ({
             </Swiper>
           </div>
 
-
           {/* Thumbnails of variant images */}
           <div className="flex justify-start gap-2 mt-4">
             {selectedVariant?.images.map((image: string, index: number) => (
               <div
                 onClick={() => handleThumbnailClick(index)}
                 key={index}
-                className={`w-1/4 aspect-w-1 aspect-h-1 cursor-pointer ${index === activeIndex ? "border border-blue-500" : ""
-                  }`}
+                className={`w-1/4 aspect-w-1 aspect-h-1 cursor-pointer ${
+                  index === activeIndex ? "border border-blue-500" : ""
+                }`}
               >
                 <img
                   src={image}
@@ -305,7 +309,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
 
           <div className="flex items-center mb-4">
             <span className="text-red-500 text-xl font-semibold">
-              {price.toLocaleString("vi-VN", {
+              {price?.toLocaleString("vi-VN", {
                 style: "currency",
                 currency: "VND"
               })}
@@ -357,7 +361,14 @@ const AddToCart: React.FC<AddToCartProps> = ({
                 className="w-14 mx-2 focus:outline-none caret-transparent"
                 type="number"
               />
-              <Button disabled={inventory === 0} onClick={() => setQuantity(quantity < inventory ? quantity + 1 : quantity)}>+</Button>
+              <Button
+                disabled={inventory === 0}
+                onClick={() =>
+                  setQuantity(quantity < inventory ? quantity + 1 : quantity)
+                }
+              >
+                +
+              </Button>
             </div>
           </div>
 

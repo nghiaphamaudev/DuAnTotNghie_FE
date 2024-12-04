@@ -186,7 +186,7 @@ const HeaderClient = () => {
             <a href="#">Sản phẩm mới</a>
           </li>
           <li className="block text-[15px] font-semibold whitespace-nowrap">
-            <a href="#">Sản phẩm hot</a>
+            <a href="#">Sản phẩm </a>
           </li>
           <li className="block text-[15px] font-semibold whitespace-nowrap">
             <a href="#">Bộ sưu tập</a>
