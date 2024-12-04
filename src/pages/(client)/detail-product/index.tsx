@@ -1,29 +1,16 @@
-import {
-  Button,
-  Image,
-  Input,
-  Modal,
-  Rate,
-  message,
-  notification,
-  InputNumber
-} from "antd";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import ProductCard from "../../../components/common/(client)/ProductCard";
-import { useCart } from "../../../contexts/CartContext";
-import { useProduct } from "../../../contexts/ProductContext";
-import "./css.css";
-import { useAuth } from "../../../contexts/AuthContext";
-import axios from "axios";
-import {
-  deleteFeedback,
-  toggleLikeFeedback,
-  updateFeedback
-} from "../../../services/Feedbacks";
-import { LikeFilled, LikeOutlined } from "@ant-design/icons";
+import { Button, Image, Input, Modal, Rate, message, notification, InputNumber } from 'antd';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import ProductCard from '../../../components/common/(client)/ProductCard';
+import { useCart } from '../../../contexts/CartContext';
+import { useProduct } from '../../../contexts/ProductContext';
+import './css.css';
+import { useAuth } from '../../../contexts/AuthContext';
+import axios from 'axios';
+import { deleteFeedback, toggleLikeFeedback, updateFeedback } from '../../../services/Feedbacks';
+import { LikeFilled, LikeOutlined } from '@ant-design/icons';
 
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from '@tanstack/react-query';
 
 const DetailProduct = () => {
   //context
@@ -40,9 +27,9 @@ const DetailProduct = () => {
   const { addItemToCart } = useCart();
   const { allProduct } = useProduct();
   const [selectedThumbnail, setSelectedThumbnail] = useState(0);
-  const [mainImage, setMainImage] = useState("");
-  const [selectedColor, setSelectedColor] = useState("");
-  const [selectedSize, setSelectedSize] = useState("");
+  const [mainImage, setMainImage] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
   const [selectedPrice, setSelectedPrice] = useState(0); // New state for selected price
   const [quantity, setQuantity] = useState(1);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -50,11 +37,11 @@ const DetailProduct = () => {
   const [startIndex, setStartIndex] = useState(0);
   const [quantityCart, setQuantityCart] = useState(0);
   const [inventory, setInventory] = useState(0);
-  const [idVariantSelect, setIdVariantSelect] = useState("");
+  const [idVariantSelect, setIdVariantSelect] = useState('');
   const productsPerPage = 4;
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState('');
   const [rating, setRating] = useState(5);
   const [images, setImages] = useState([]);
   const [editingFeedback, setEditingFeedback] = useState(null);
@@ -73,10 +60,10 @@ const DetailProduct = () => {
     if (product?.data?.variants?.length > 0) {
       const defaultVariant = product.data.variants[0];
       const defaultSize = defaultVariant.sizes?.[0];
-      setSelectedColor(defaultVariant.color || "");
-      setSelectedSize(defaultSize?.nameSize || "");
+      setSelectedColor(defaultVariant.color || '');
+      setSelectedSize(defaultSize?.nameSize || '');
       setSelectedPrice(defaultSize?.price || 0);
-      setMainImage(defaultVariant.images[0] || "");
+      setMainImage(defaultVariant.images[0] || '');
       setSelectedThumbnail(0);
       setPrice(defaultSize?.price || 0);
     }
@@ -86,10 +73,10 @@ const DetailProduct = () => {
     if (cartData && product?.data?.variants?.length > 0) {
       // Tìm variant và size được chọn
       const selectedVariant = product?.data?.variants.find(
-        (variant) => variant.color === selectedColor
+        variant => variant.color === selectedColor
       );
       const selectedSizeObject = selectedVariant?.sizes.find(
-        (size) => size.nameSize === selectedSize
+        size => size.nameSize === selectedSize
       );
 
       // Cập nhật inventory
@@ -97,34 +84,32 @@ const DetailProduct = () => {
 
       // Tìm quantity trong cartData.items
       const dataCartVariantSelected = cartData?.items.find(
-        (item) => item.sizeId === selectedSizeObject?.id
+        item => item.sizeId === selectedSizeObject?.id
       );
       setQuantityCart(dataCartVariantSelected?.quantity || 0);
-      setQuantity(1);
+      setQuantity(1)
     }
   }, [cartData, product, selectedColor, selectedSize]);
+
 
   // function
 
   const fetchFeedbacks = async (productId) => {
     try {
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/v1/feedback/${productId}`,
-        {
-          headers: {
-            Accept: "application/json"
-          }
+      const response = await axios.get(`http://127.0.0.1:8000/api/v1/feedback/${productId}`, {
+        headers: {
+          'Accept': 'application/json'
         }
-      );
-      if (response.headers["content-type"].includes("text/html")) {
+      });
+      if (response.headers['content-type'].includes('text/html')) {
         console.log("Received HTML response instead of JSON.");
-        message.error("Lỗi khi tải feedbacks, nhận được trang lỗi từ server.");
+        message.error('Lỗi khi tải feedbacks, nhận được trang lỗi từ server.');
         return;
       }
       const data = response.data;
       if (!data || !data.data || !data.data.feedbacks) {
         console.log("Không có feedbacks trong phản hồi.");
-        message.error("Không có feedbacks cho sản phẩm này.");
+        message.error('Không có feedbacks cho sản phẩm này.');
         return;
       }
       setFeedbacks(data.data.feedbacks);
@@ -132,6 +117,7 @@ const DetailProduct = () => {
       console.log("chưa có commet ", error);
     }
   };
+
 
   //editFeedbacks
   const handleEdit = (feedback: any) => {
@@ -141,13 +127,13 @@ const DetailProduct = () => {
   };
   const handleSaveEdit = async () => {
     if (!updatedComment) {
-      message.error("Bình luận không thể trống!");
+      message.error('Bình luận không thể trống!');
       return;
     }
 
     const updatedData = {
       comment: updatedComment,
-      rating: updatedRating
+      rating: updatedRating,
     };
 
     try {
@@ -155,13 +141,9 @@ const DetailProduct = () => {
 
       if (result.success) {
         // Cập nhật feedbacks khi chỉnh sửa thành công
-        setFeedbacks(
-          feedbacks.map((feedback) =>
-            feedback.id === editingFeedback.id
-              ? { ...feedback, ...updatedData }
-              : feedback
-          )
-        );
+        setFeedbacks(feedbacks.map(feedback =>
+          feedback.id === editingFeedback.id ? { ...feedback, ...updatedData } : feedback
+        ));
         message.success("thanh công");
         setEditingFeedback(null);
         setUpdatedComment("");
@@ -177,6 +159,7 @@ const DetailProduct = () => {
     }
   };
 
+
   const handleCommentChange = (e: any) => {
     setComment(e.target.value);
   };
@@ -187,57 +170,53 @@ const DetailProduct = () => {
 
   const handleSubmitFeedback = async () => {
     if (!isLogin || !token) {
-      message.error("Vui lòng đăng nhập để gửi bình luận");
+      message.error('Vui lòng đăng nhập để gửi bình luận');
       return;
     }
 
     if (!comment || rating <= 0) {
-      message.error("Vui lòng điền đầy đủ thông tin");
+      message.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/v1/feedback/add",
+        'http://127.0.0.1:8000/api/v1/feedback/add',
         {
           user: token,
           productId: product?.data?.id,
           rating,
           comment,
-          images
+          images,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            'Authorization': `Bearer ${token}`,
+          },
         }
       );
       console.log(response);
 
       // Xử lý khi API trả về kết quả
       if (response.status === 201) {
-        message.success("Bình luận đã được gửi thành công");
-        setComment("");
+        message.success('Bình luận đã được gửi thành công');
+        setComment('');
         setRating(5);
         setImages([]);
       }
     } catch (error) {
-      message.error("Lỗi khi gửi bình luận");
+      message.error('Lỗi khi gửi bình luận');
     }
   };
 
   const handleDelete = async (feedbackId: any) => {
-    const confirmed = window.confirm(
-      "Bạn có chắc chắn muốn xóa bình luận này?"
-    );
+    const confirmed = window.confirm("Bạn có chắc chắn muốn xóa bình luận này?");
     if (!confirmed) return;
 
     try {
       const response = await deleteFeedback(feedbackId);
       if (response.success) {
-        setFeedbacks(
-          feedbacks.filter((feedback) => feedback.id !== feedbackId)
-        );
+        setFeedbacks(feedbacks.filter(feedback => feedback.id !== feedbackId));
         message.success("Đã xóa bình luận thành công!");
       } else {
         message.error(`Lỗi: ${response.message}`);
@@ -272,12 +251,11 @@ const DetailProduct = () => {
 
   //end
 
+
+
   const handleArrowClick = (direction: any) => {
-    const images = product?.data?.variants.find(
-      (variant: any) => variant.color === selectedColor
-    )?.images;
-    const newIndex =
-      (selectedThumbnail + direction + images.length) % images.length;
+    const images = product?.data?.variants.find((variant: any) => variant.color === selectedColor)?.images;
+    const newIndex = (selectedThumbnail + direction + images.length) % images.length;
     setSelectedThumbnail(newIndex);
     setMainImage(images[newIndex]);
   };
@@ -287,9 +265,7 @@ const DetailProduct = () => {
     setSelectedThumbnail(index);
   };
   const handleColorSelect = (color) => {
-    const variant = product.data.variants.find(
-      (variant) => variant.color === color
-    );
+    const variant = product.data.variants.find(variant => variant.color === color);
     setSelectedColor(color);
     setMainImage(variant.images[0]);
     setSelectedThumbnail(0);
@@ -303,19 +279,15 @@ const DetailProduct = () => {
   const handleSizeSelect = (size) => {
     setSelectedSize(size);
 
-    const selectedVariant = product?.data?.variants.find(
-      (variant) => variant.color === selectedColor
-    );
-    const selectedSizeObject = selectedVariant?.sizes.find(
-      (sizeObj) => sizeObj.nameSize === size
-    );
+    const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
+    const selectedSizeObject = selectedVariant?.sizes.find(sizeObj => sizeObj.nameSize === size);
     if (selectedSizeObject) {
       setPrice(selectedSizeObject.price);
     }
   };
 
   const handleQuantityChange = (change: any) => {
-    setQuantity((prevQuantity) => Math.max(1, prevQuantity + change));
+    setQuantity(prevQuantity => Math.max(1, prevQuantity + change));
   };
 
   const showModal = () => setIsModalVisible(true);
@@ -340,10 +312,9 @@ const DetailProduct = () => {
 
   const toggleAccordion = (header) => {
     const content = header.nextElementSibling;
-    const icon = header.querySelector("i");
-    content.style.display = content.style.display === "none" ? "block" : "none";
-    icon.className =
-      content.style.display === "none" ? "fas fa-plus" : "fas fa-minus";
+    const icon = header.querySelector('i');
+    content.style.display = content.style.display === 'none' ? 'block' : 'none';
+    icon.className = content.style.display === 'none' ? 'fas fa-plus' : 'fas fa-minus';
   };
   const [openAccordion, setOpenAccordion] = useState(null);
 
@@ -352,19 +323,19 @@ const DetailProduct = () => {
   };
 
   const onChangeQuantity = (value: number | null) => {
-    if (value !== null && value <= inventory - quantityCart) {
+    if (value !== null && value <= (inventory - quantityCart)) {
       setQuantity(value);
     } else if (value === null) {
       notification.error({
         message: "Vui lòng nhập số lượng!",
         placement: "topRight",
-        duration: 2
+        duration: 2,
       });
     } else {
       notification.error({
         message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
         placement: "topRight",
-        duration: 2
+        duration: 2,
       });
     }
   };
@@ -373,49 +344,44 @@ const DetailProduct = () => {
     queryClient.invalidateQueries({ queryKey: ["carts"] });
 
     const productId = product?.data?.id;
-    const selectedVariant = product?.data?.variants.find(
-      (variant) => variant.color === selectedColor
-    );
-    const selectedSizeObject = selectedVariant?.sizes.find(
-      (size) => size.nameSize === selectedSize
-    );
+    const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
+    const selectedSizeObject = selectedVariant?.sizes.find(size => size.nameSize === selectedSize);
     if (!token || !isLogin) {
       notification.error({
         message: "Vui lòng đăng nhập để tiếp tục",
         placement: "topRight",
         duration: 2
       });
-      return;
+      return
     }
 
     if (id) {
-      const res = await getDataProductById(id);
+      const res = await getDataProductById(id)
       const sizeObjects = res.data.variants
-        .flatMap((variant) => variant.sizes)
-        .filter((size) => size.id === selectedSizeObject.id);
-      const newSizeObjectInventory = sizeObjects?.[0]?.inventory;
+        .flatMap(variant => variant.sizes)
+        .filter(size => size.id === selectedSizeObject.id);
+      const newSizeObjectInventory = sizeObjects?.[0]?.inventory
       if (!res.data.isActive) {
         notification.error({
           message: "Sản phẩm không còn tồn tại!",
           placement: "topRight",
-          duration: 4
+          duration: 4,
         });
         queryClient.invalidateQueries({ queryKey: ["products"] });
-        nav("/home");
-        return;
+        nav('/home')
+        return
       } else {
         if (newSizeObjectInventory === 0) {
           notification.error({
             message: "Sản phẩm không còn tồn tại!",
             placement: "topRight",
-            duration: 4
+            duration: 4,
           });
         } else if (newSizeObjectInventory < quantity) {
           notification.error({
-            message:
-              "Số lượng sản phẩm yêu cầu được chọn vượt quá số lượng tồn kho!",
+            message: "Số lượng sản phẩm yêu cầu được chọn vượt quá số lượng tồn kho!",
             placement: "topRight",
-            duration: 4
+            duration: 4,
           });
         } else if (quantity > inventory - quantityCart) {
           notification.error({
@@ -423,31 +389,33 @@ const DetailProduct = () => {
             placement: "topRight",
             duration: 2
           });
-          return;
+          return
         } else {
           const productData = {
             productId,
             variantId: selectedVariant.id,
             sizeId: selectedSizeObject.id,
-            quantity
+            quantity,
           };
 
           const res = await addItemToCart(productData);
           if (res && res?.status) {
-            if (option === "buy-now") {
-              nav("/cart");
+            if (option === 'buy-now') {
+              nav('/cart')
             } else {
               notification.success({
                 message: "Thêm sản phẩm thành công",
                 placement: "topRight",
-                duration: 2
+                duration: 2,
               });
             }
+
+
           } else {
             notification.error({
               message: "Sản phẩm không còn tồn tại",
               placement: "topRight",
-              duration: 2
+              duration: 2,
             });
           }
         }
@@ -455,15 +423,17 @@ const DetailProduct = () => {
     }
 
     if (!product?.data) {
-      message.error("Không tìm thấy thông tin sản phẩm.");
+      message.error('Không tìm thấy thông tin sản phẩm.');
       return;
     }
 
     if (!productId || !selectedVariant || !selectedSizeObject) {
-      message.error("Vui lòng chọn đầy đủ thông tin sản phẩm.");
+      message.error('Vui lòng chọn đầy đủ thông tin sản phẩm.');
       return;
     }
+
   };
+
 
   const renderFeedbacks = () => {
     return feedbacks.map((feedback) => (
@@ -475,24 +445,16 @@ const DetailProduct = () => {
             className="feedback-avatar"
           />
           <div>
-            <strong className="feedback-username">
-              {feedback.user.fullName}
-            </strong>
+            <strong className="feedback-username">{feedback.user.fullName}</strong>
             <p className="feedback-rating">
               Đánh giá:
               {[...Array(5)].map((_, index) => (
-                <span
-                  key={index}
-                  className={
-                    index < feedback.rating ? "star-filled" : "star-empty"
-                  }
-                >
-                  ★
-                </span>
+                <span key={index} className={index < feedback.rating ? "star-filled" : "star-empty"}>★</span>
               ))}
             </p>
           </div>
         </div>
+
 
         <div className="feedback-content">
           {editingFeedback?.id === feedback.id ? (
@@ -531,11 +493,7 @@ const DetailProduct = () => {
               <Button type="link" onClick={() => handleEdit(feedback)}>
                 Sửa
               </Button>
-              <Button
-                type="text"
-                danger
-                onClick={() => handleDelete(feedback.id)}
-              >
+              <Button type="text" danger onClick={() => handleDelete(feedback.id)}>
                 Xóa
               </Button>
             </>
@@ -545,21 +503,11 @@ const DetailProduct = () => {
               <Button
                 type="link"
                 onClick={() => handleToggleLike(feedback.id)}
-                icon={
-                  feedback.likedBy.includes(token) ? (
-                    <LikeFilled />
-                  ) : (
-                    <LikeOutlined />
-                  )
-                }
+                icon={feedback.likedBy.includes(token) ? <LikeFilled /> : <LikeOutlined />}
                 style={{
                   color: feedback.likedBy.includes(token) ? "#1890ff" : "",
-                  fontWeight: feedback.likedBy.includes(token)
-                    ? "bold"
-                    : "normal",
-                  backgroundColor: feedback.likedBy.includes(token)
-                    ? "#e6f7ff"
-                    : "",
+                  fontWeight: feedback.likedBy.includes(token) ? "bold" : "normal",
+                  backgroundColor: feedback.likedBy.includes(token) ? "#e6f7ff" : "",
                   borderColor: feedback.likedBy.includes(token) ? "#1890ff" : ""
                 }}
               >
@@ -575,87 +523,61 @@ const DetailProduct = () => {
     ));
   };
 
+
+
   return (
     <div className="container">
       <div className="left-column">
-        {/* <div className="breadcrumb">
-                    <i className="fas fa-home"></i>
-                    <a href="#">Trang chủ</a>
-                    <span>|</span>
-                    <a href="#">Danh mục {product?.data?.category?.name}</a>
-                    <span>|</span>
-                    <a href="#">{product?.data?.name}</a>
-                </div> */}
+        <div className="breadcrumb">
+          <i className="fas fa-home"></i>
+          <a href="#">Trang chủ</a>
+          <span>|</span>
+          <a href="#">Danh mục {product?.data?.category?.name}</a>
+          <span>|</span>
+          <a href="#">{product?.data?.name}</a>
+        </div>
 
         <div className="image-gallery">
           <div className="thumbnail-container">
             <div className="thumbnail-images">
-              {product?.data?.variants
-                ?.find((variant) => variant.color === selectedColor)
-                ?.images.map((image, index) => (
-                  <img
-                    key={index}
-                    alt={`Thumbnail ${index + 1}`}
-                    className={`thumbnail-image ${
-                      selectedThumbnail === index ? "selected" : ""
-                    }`}
-                    src={image}
-                    onClick={() => handleThumbnailClick(index, image)}
-                  />
-                ))}
+              {product?.data?.variants?.find(variant => variant.color === selectedColor)?.images.map((image, index) => (
+                <img
+                  key={index}
+                  alt={`Thumbnail ${index + 1}`}
+                  className={`thumbnail-image ${selectedThumbnail === index ? 'selected' : ''}`}
+                  src={image}
+                  onClick={() => handleThumbnailClick(index, image)}
+                />
+              ))}
             </div>
           </div>
 
-          <div
-            className="main-image-container"
-            style={{
-              position: "relative",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-          >
-            <div
-              className="arrow-button left"
-              onClick={() => handleArrowClick(-1)}
-            >
-              &#8592;
-            </div>
+          <div className="main-image-container" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div className="arrow-button left" onClick={() => handleArrowClick(-1)}>&#8592;</div>
             <Image
               className="main-image"
               src={mainImage}
               style={{
-                width: "678px",
-                height: "700px",
-                cursor: "pointer",
-                display: "block",
-                margin: "0 auto",
-                marginTop: "-5px",
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)"
+                width: '678px',
+                height: '700px',
+                cursor: 'pointer',
+                display: 'block',
+                margin: '0 auto',
+                marginTop: '-5px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
               }}
               preview={false}
               onClick={showModal}
             />
-            <Modal
-              open={isModalVisible}
-              onCancel={handleCancel}
-              footer={null}
-              width={600}
-            >
-              <Image
-                src={mainImage || product?.data?.coverImg}
-                preview={false}
-              />
+            <Modal open={isModalVisible} onCancel={handleCancel} footer={null} width={600}>
+
+              <Image src={mainImage || product?.data?.coverImg} preview={false} />
             </Modal>
 
-            <div
-              className="arrow-button right"
-              onClick={() => handleArrowClick(1)}
-            >
-              &#8594;
-            </div>
+
+            <div className="arrow-button right" onClick={() => handleArrowClick(1)}>&#8594;</div>
           </div>
         </div>
       </div>
@@ -664,33 +586,29 @@ const DetailProduct = () => {
         <h1 className="product-title">{product?.data?.name}</h1>
         <span>{product?.data?.isActive ? "Còn hàng" : "Hết hàng"}</span>
         <hr />
-        <div className="product-price">{price.toLocaleString()}₫</div>
+        <div className="product-price">
+          {price.toLocaleString()}₫
+        </div>
+
 
         <div className="product-options">
-          <label htmlFor="color" className="product-options1">
-            Màu Sắc
-          </label>
+          <label htmlFor="color" className="product-options1">Màu Sắc</label>
           <div className="color-options">
             {product?.data?.variants?.map((variant, index) => (
               <Button
                 key={index}
-                className={`color-option ${
-                  selectedColor === variant.color ? "selected" : ""
-                }`}
+                className={`color-option ${selectedColor === variant.color ? "selected" : ""}`}
                 onClick={() => handleColorSelect(variant.color)}
                 style={{
                   padding: 0,
-                  margin: "5px",
-                  border:
-                    selectedColor === variant.color
-                      ? "2px solid #000"
-                      : "1px solid #ccc",
-                  borderRadius: "50%",
-                  width: "40px",
-                  height: "40px",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center"
+                  margin: '5px',
+                  border: selectedColor === variant.color ? '2px solid #000' : '1px solid #ccc',
+                  borderRadius: '50%',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
               >
                 {variant.images?.[0] ? (
@@ -698,48 +616,31 @@ const DetailProduct = () => {
                     src={variant.images[0]}
                     alt={variant.color}
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      borderRadius: "50%",
-                      objectFit: "cover"
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
                     }}
                   />
                 ) : (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      borderRadius: "50%",
-                      backgroundColor: "#ccc"
-                    }}
-                  ></div>
+                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', backgroundColor: '#ccc' }}></div>
                 )}
               </Button>
             ))}
           </div>
 
-          <label className="product-options1" htmlFor="size">
-            Kích Thước
-          </label>
-          <a
-            className="size-review size-review-link"
-            onClick={showSizeGuide}
-            style={{ cursor: "pointer" }}
-          >
+          <label className="product-options1" htmlFor="size">Kích Thước</label>
+          <a className="size-review size-review-link" onClick={showSizeGuide} style={{ cursor: 'pointer' }}>
             Hướng dẫn chọn size
           </a>
           <div className="size-options">
             {product?.data?.variants
-              ?.find((variant) => variant.color === selectedColor)
-              ?.sizes.map((size) => (
+              ?.find(variant => variant.color === selectedColor)?.sizes.map(size => (
                 <Button
                   key={size._id}
                   onClick={() => handleSizeSelect(size.nameSize)}
                   style={{
-                    border:
-                      selectedSize === size.nameSize
-                        ? "2px solid #000"
-                        : "1px solid #ccc"
+                    border: selectedSize === size.nameSize ? '2px solid #000' : '1px solid #ccc',
                   }}
                 >
                   {size.nameSize}
@@ -747,16 +648,12 @@ const DetailProduct = () => {
               ))}
           </div>
 
-          <Modal
-            open={isSizeGuideVisible}
-            onCancel={handleSizeGuideCancel}
-            footer={null}
-            width={600}
-          >
+
+          <Modal open={isSizeGuideVisible} onCancel={handleSizeGuideCancel} footer={null} width={600}>
             <Image
               src="../../../assets/images/size.png"
               alt="Hướng dẫn chọn size"
-              style={{ width: "100%", height: "auto" }}
+              style={{ width: '100%', height: 'auto' }}
               preview={false}
             />
           </Modal>
@@ -771,7 +668,7 @@ const DetailProduct = () => {
           </Button>
           <InputNumber
             readOnly
-            type="number"
+            type='number'
             min={1}
             max={inventory}
             value={quantity}
@@ -788,18 +685,8 @@ const DetailProduct = () => {
         </div>
 
         <div className="action-buttons">
-          <button
-            className="add-to-cart rounded-sm"
-            onClick={() => handleAddToCart()}
-          >
-            THÊM VÀO GIỎ HÀNG
-          </button>
-          <button
-            onClick={() => handleAddToCart("buy-now")}
-            className="buy-now rounded-sm"
-          >
-            MUA NGAY
-          </button>
+          <button className="add-to-cart rounded-sm" onClick={() => handleAddToCart()}>THÊM VÀO GIỎ HÀNG</button>
+          <button onClick={() => handleAddToCart('buy-now')} className="buy-now rounded-sm">MUA NGAY</button>
         </div>
         <div className="action-button2">
           <button className="like-add">
@@ -810,30 +697,21 @@ const DetailProduct = () => {
           </button>
         </div>
 
+
         <div className="infor">
           <div className="accordion">
             <div className="accordion-item">
               <div className="accordion-item">
-                <div
-                  className="accordion-header"
-                  onClick={() => handleAccordionToggle(1)}
-                >
+                <div className="accordion-header" onClick={() => handleAccordionToggle(1)}>
                   <span>THÔNG TIN SẢN PHẨM</span>
-                  <i
-                    className={
-                      openAccordion === 1 ? "fas fa-minus" : "fas fa-plus"
-                    }
-                  ></i>
+                  <i className={openAccordion === 1 ? "fas fa-minus" : "fas fa-plus"}></i>
                 </div>
-                <div
-                  className="accordion-content"
-                  style={{ display: openAccordion === 1 ? "block" : "none" }}
-                >
+                <div className="accordion-content" style={{ display: openAccordion === 1 ? 'block' : 'none' }}>
                   <p>{product?.data?.description}</p>
                 </div>
               </div>
 
-              <div className="accordion-content" style={{ display: "none" }}>
+              <div className="accordion-content" style={{ display: 'none' }}>
                 <p></p>
               </div>
             </div>
@@ -869,7 +747,11 @@ const DetailProduct = () => {
               />
               <div className="rating">
                 <label>Đánh giá: </label>
-                <Rate value={rating} onChange={handleRatingChange} count={5} />
+                <Rate
+                  value={rating}
+                  onChange={handleRatingChange}
+                  count={5}
+                />
               </div>
               <Button type="primary" onClick={handleSubmitFeedback}>
                 Gửi Bình Luận
@@ -881,38 +763,31 @@ const DetailProduct = () => {
             {renderFeedbacks()}
           </div>
         </div>
+
       </div>
       <div className="product-like">
         <div className="product-list">
           <i
-            className={`fas fa-chevron-left arrow ${
-              startIndex === 0 ? "disabled" : ""
-            }`}
+            className={`fas fa-chevron-left arrow ${startIndex === 0 ? 'disabled' : ''}`}
             onClick={handlePrevious}
-            style={{ cursor: startIndex === 0 ? "not-allowed" : "pointer" }}
+            style={{ cursor: startIndex === 0 ? 'not-allowed' : 'pointer' }}
           />
-          {allProduct
-            .slice(startIndex, startIndex + productsPerPage)
-            .map((item, index) => (
-              <ProductCard key={index} item={item} />
-            ))}
+          {allProduct.slice(startIndex, startIndex + productsPerPage).map((item, index) => (
+            <ProductCard key={index} item={item} />
+          ))}
           <i
-            className={`fas fa-chevron-right arrow ${
-              startIndex + productsPerPage >= allProduct.length
-                ? "disabled"
-                : ""
-            }`}
+            className={`fas fa-chevron-right arrow ${startIndex + productsPerPage >= allProduct.length ? 'disabled' : ''}`}
             onClick={handleNext}
-            style={{
-              cursor:
-                startIndex + productsPerPage >= allProduct.length
-                  ? "not-allowed"
-                  : "pointer"
-            }}
+            style={{ cursor: startIndex + productsPerPage >= allProduct.length ? 'not-allowed' : 'pointer' }}
           />
         </div>
+
       </div>
+
+
+
     </div>
+
   );
 };
 
