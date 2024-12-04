@@ -8,7 +8,6 @@ import {
   CommentOutlined,
   ProductOutlined,
   UnorderedListOutlined,
-  FontSizeOutlined,
   GiftOutlined
 } from "@ant-design/icons";
 import CategoryDropdown from "../../../pages/admin/category/CategoryDropdown";

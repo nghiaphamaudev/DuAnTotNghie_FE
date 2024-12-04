@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, Button, InputNumber, Row, Col, Upload, UploadFile, message, Spin } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
@@ -124,8 +125,12 @@ const ProductAdd: React.FC = () => {
 
   const validateUniqueColor = (_: any, value: string) => {
     const variants = form.getFieldValue('variants') || [];
-    const colors = variants.map((variant: any) => variant?.color).filter(Boolean);
-    if (colors.filter((color: string) => color === value).length > 1) {
+    // Chuẩn hóa màu sang chữ thường và lọc các giá trị hợp lệ
+    const colors = variants
+      .map((variant: any) => variant?.color?.toLowerCase())
+      .filter(Boolean);
+    // Kiểm tra trùng lặp không phân biệt chữ hoa chữ thường
+    if (colors.filter((color: string) => color === value?.toLowerCase()).length > 1) {
       return Promise.reject(new Error('Màu sắc đã tồn tại! Vui lòng chọn màu khác.'));
     }
     return Promise.resolve();
@@ -153,7 +158,12 @@ const ProductAdd: React.FC = () => {
         <Form.Item
           label="Tên sản phẩm"
           name="name"
-          rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]} >
+          rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' },
+            {
+              pattern: /^[\p{L}\p{N}\s]{6,}$/u,
+              message: "Tên mã giảm giá phải có ít nhất 6 ký tự gồm chữ cái và số",
+            }
+          ]} >
           <Input placeholder="Nhập tên sản phẩm" />
         </Form.Item>
 
@@ -171,7 +181,8 @@ const ProductAdd: React.FC = () => {
         <Form.Item
           label="Mô tả sản phẩm"
           name="description"
-          rules={[{ required: true, message: 'Vui lòng nhập mô tả sản phẩm!' }]} >
+          rules={[{ required: true, message: 'Vui lòng nhập mô tả sản phẩm!' }
+          ]} >
           <Input.TextArea rows={4} placeholder="Nhập mô tả sản phẩm" />
         </Form.Item>
 
