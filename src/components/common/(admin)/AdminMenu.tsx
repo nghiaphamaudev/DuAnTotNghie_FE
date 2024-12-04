@@ -8,7 +8,6 @@ import {
   CommentOutlined,
   ProductOutlined,
   UnorderedListOutlined,
-  FontSizeOutlined,
   GiftOutlined,
 } from "@ant-design/icons";
 import CategoryDropdown from "../../../pages/admin/category/CategoryDropdown";
@@ -79,11 +78,6 @@ export default function AdminMenu({ small }: Props) {
           ),
         },
       ],
-    },
-    {
-      key: "size",
-      icon: <FontSizeOutlined />,
-      label: <Link to="/admin/size">Kích cỡ</Link>,
     },
     {
       key: "voucher",
