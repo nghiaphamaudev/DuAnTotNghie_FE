@@ -38,8 +38,8 @@ const FooterClient = () => {
           <div className="info-item flex flex-col">
             <h3 className="uppercase font-semibold mb-3">Thông tin liên hệ</h3>
             <p className="text-sm text-[#9a9a9a] mb-2">
-              <span className="font-bold text-[#000]">Địa chỉ:</span> Tầng 8,
-              tòa nhà Ford, số 313 Trường Chinh, quận Thanh Xuân, Hà Nội
+              <span className="font-bold text-[#000] text-left">Địa chỉ:</span>{" "}
+              Tầng 8, tòa nhà Ford, số 313 Trường Chinh, quận Thanh Xuân, Hà Nội
             </p>
             <p className="text-sm text-[#9a9a9a] mb-2">
               <span className="font-bold text-[#000]">Email:</span>{" "}
