@@ -2,6 +2,7 @@ import { Card, Col, Row, Select, Table, Switch, Radio } from "antd";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { deleteFeedback, deleteFeedbackStatus } from "../../../services/Feedbacks";
 
 const customTableHeaderCellStyle: React.CSSProperties = {
   color: "black",
@@ -37,35 +38,70 @@ export default function PageComment() {
   };
 
   useEffect(() => {
-    fetchFeedbacks(); // Fetch feedbacks when component mounts
-  }, []);  // Empty dependency array means this will run once when the component mounts
+    fetchFeedbacks();
+  }, []);
+
+
+
+  const handleStatusChange = async (checked: boolean, id: string) => {
+    setFeedbacks((prevFeedbacks) =>
+      prevFeedbacks.map((feedback) =>
+        feedback.id === id ? { ...feedback, classify: checked } : feedback
+      )
+    );
+
+    try {
+      const FeedbackData = await deleteFeedbackStatus(id, checked);
+      if (FeedbackData && FeedbackData.data) {
+        const { data } = FeedbackData;
+        setFeedbacks((prevFeedbacks) =>
+          prevFeedbacks.map((feedback) =>
+            feedback.id === data.id ? { ...feedback, classify: data.classify } : feedback
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái:", error);
+      setFeedbacks((prevFeedbacks) =>
+        prevFeedbacks.map((feedback) =>
+          feedback.id === id ? { ...feedback, classify: !checked } : feedback
+        )
+      );
+    }
+  };
+
+
+
+
+
+
 
   const columns = [
     {
       title: "STT",
-      dataIndex: "id",  // Use ID or a custom index for "STT"
+      dataIndex: "id",
       key: "stt",
       align: "center" as const,
-      render: (text: any, record: any, index: number) => index + 1,  // Index for serial number
+      render: (text: any, record: any, index: number) => index + 1,
       width: "5%",
     },
     {
       title: "Tên tài khoản",
-      dataIndex: ["user", "fullName"],  // Access fullName inside user object
+      dataIndex: ["user", "fullName"],
       key: "fullName",
       align: "center" as const,
       width: "20%",
     },
     {
       title: "Tên sản phẩm",
-      dataIndex: ["productId", "name"],  // Access name inside productId object
+      dataIndex: ["productId", "name"],
       key: "productName",
       align: "center" as const,
       width: "20%",
     },
     {
       title: "Ảnh sản phẩm",
-      dataIndex: ["productId", "coverImg"], // Đúng đường dẫn tới coverImg
+      dataIndex: ["productId", "coverImg"],
       key: "coverImg",
       align: "center" as const,
       width: "10%",
@@ -115,12 +151,12 @@ export default function PageComment() {
       key: "classify",
       align: "center",
       width: "10%",
-      render: (classify, record) => (
+      render: (classify: boolean, record: any) => (
         <Switch
-          checked={classify === true}
+          checked={classify}
           checkedChildren=""
           unCheckedChildren=""
-        // onChange={(checked) => handleStatusChange(checked, record.id)}
+          onChange={(checked) => handleStatusChange(checked, record.id)}
         />
       ),
     },
