@@ -107,3 +107,22 @@ export const getRelatedProducts = async (categoryId: string, productId: string) 
     }
 
 }
+
+
+export const getFeedbacksByProductId = async (productId: string) => {
+    try {
+        const response = await instance.get(`http://127.0.0.1:8000/api/v1/feedback/${productId}`, {
+        });
+        if (response.headers['content-type'].includes('text/html')) {
+            throw new Error('Received HTML response instead of JSON.');
+        }
+        const data = response.data;
+        if (!data?.data?.feedbacks) {
+            throw new Error('Không có feedbacks cho sản phẩm này.');
+        }
+        return data.data.feedbacks;
+    } catch (error) {
+        console.error('Lỗi khi tải feedbacks:', error.message || error);
+        throw error;
+    }
+};

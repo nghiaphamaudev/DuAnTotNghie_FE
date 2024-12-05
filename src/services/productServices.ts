@@ -37,14 +37,12 @@ export const addProduct = async (product: Products) => {
 };
 export const deleteProductStatus = async (id: string, isActive: boolean) => {
     try {
-        console.log(token);
         const response = await instance.patch(`/products/${id}/status`, { isActive }, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + token ? token : ''
             }
         });
-        console.log('API response:', response.data);
         if (!response.data || !response.data.data || !response.data.data.id) {
             throw new Error('Product ID is invalid');
         }
@@ -67,6 +65,22 @@ export const updateProduct = async (id: string, formData: FormData) => {
 };
 
 
+export const toggleVariantStatus = async (productId: string, variantId: string, currentStatus: any) => {
+
+    try {
+        const response = await instance.put(`/products/${productId}/variant/${variantId}`, {
+            status: currentStatus ? false : true,
+        });
+
+        if (response.status === 200) {
+            message.success(response.data.message);
+        } else {
+            message.error('Đã có lỗi xảy ra');
+        }
+    } catch (error) {
+        message.error('Lỗi khi thay đổi trạng thái biến thể');
+    }
+};
 
 
 

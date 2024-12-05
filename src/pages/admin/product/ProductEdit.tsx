@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Select, Button, InputNumber, Row, Col, Upload, UploadFile, message, Spin } from 'antd';
+import { Form, Input, Select, Button, InputNumber, Row, Col, Upload, UploadFile, message, Spin, Switch } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { getProductById, updateProduct } from '../../../services/productServices';
+import { getProductById, toggleVariantStatus, updateProduct } from '../../../services/productServices';
 import { getAllCategory } from '../../../services/categoryServices';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -35,10 +35,10 @@ const ProductEdit: React.FC = () => {
           category: product.data.category ? product.data.category.id : 'Không có danh mục',
           description: product.data.description,
           discount: product.data.discount,
-          status: product.data.status,
           coverImage: coverImageFileList,
           variants: product.data.variants.map((variant: any) => ({
             color: variant.color,
+            status: variant.status,
             sizes: variant.sizes,
             images: variant.images.map((img: any) => ({ url: img }))
           }))
@@ -98,6 +98,7 @@ const ProductEdit: React.FC = () => {
     if (values.variants && values.variants.length > 0) {
       values.variants.forEach((variant: any, index: number) => {
         formData.append(`variants[${index}][color]`, variant.color);
+        formData.append(`variants[${index}][status]`, variant.status);
 
         // Xử lý sizes
         variant.sizes.forEach((size: any, sizeIndex: number) => {
@@ -200,6 +201,43 @@ const ProductEdit: React.FC = () => {
     return Promise.resolve();
   };
 
+
+  const handleStatusChange = (productId: string, variantIndex: number, currentStatus: any) => {
+    if (!initialData || !Array.isArray(initialData.variants)) {
+      console.error("Initial Data hoặc variants không hợp lệ:", initialData);
+      message.error("Dữ liệu sản phẩm chưa sẵn sàng hoặc không hợp lệ.");
+      return;
+    }
+
+    const variant = initialData.variants[variantIndex];
+    console.log("Variant Data:", variant);
+
+    if (!variant || !variant.id) {
+      console.error("Không tìm thấy biến thể tại index:", variantIndex);
+      message.error("Không tìm thấy ID của biến thể.");
+      return;
+    }
+
+    const newStatus = currentStatus ? false : true;
+    const variantId = variant.id; // Sử dụng `id` thay vì `_id`
+
+    console.log("Product ID:", productId);
+    console.log("Variant ID:", variantId);
+    console.log("New Status:", newStatus);
+
+    toggleVariantStatus(productId, variantId, newStatus)
+      .then(() => message.success("Cập nhật trạng thái thành công!"))
+      .catch((err) => {
+        console.error("Error updating status:", err);
+        message.error("Cập nhật trạng thái thất bại.");
+      });
+  };
+
+
+
+
+
+
   return (
     <Spin spinning={loading} tip="Đang xử lý...">
       <Form
@@ -211,10 +249,10 @@ const ProductEdit: React.FC = () => {
         disabled={loading}
       >
         <Form.Item label="Tên sản phẩm" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' },
-          {
-            pattern: /^[\p{L}\p{N}\s]{6,}$/u,
-            message: "Tên mã giảm giá phải có ít nhất 6 ký tự gồm chữ cái và số",
-          }
+        {
+          pattern: /^[\p{L}\p{N}\s]{6,}$/u,
+          message: "Tên mã giảm giá phải có ít nhất 6 ký tự gồm chữ cái và số",
+        }
         ]}>
           <Input placeholder="Nhập tên sản phẩm" />
         </Form.Item>
@@ -258,7 +296,7 @@ const ProductEdit: React.FC = () => {
           <Form.List name="variants">
             {(fields, { add, remove }) => (
               <>
-                {fields.map(({ key, name, fieldKey, ...restField }) => (
+                {fields.map(({ key, name, fieldKey, ...restField }, variantIndex) => (
                   <div key={key} style={{ border: '1px solid #f0f0f0', padding: '16px', marginBottom: '24px', borderRadius: '8px' }}>
                     <Row gutter={16}>
                       <Col span={6}>
@@ -269,6 +307,25 @@ const ProductEdit: React.FC = () => {
                           rules={[{ required: true, message: 'Vui lòng nhập màu sắc' }, { validator: validateUniqueColor }]}
                         >
                           <Input placeholder="Nhập màu sắc" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={6}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'status']}
+                          label="Trạng thái"
+                        >
+                          <Switch
+                            checked={restField.value?.status}
+                            onChange={async (checked: boolean) => {
+                              setLoading(true);
+                              const currentStatus = checked;
+                              const productId = id;
+                              handleStatusChange(productId, variantIndex, currentStatus); // Truyền variantIndex
+                              setLoading(false);
+                            }}
+                          />
                         </Form.Item>
                       </Col>
 
