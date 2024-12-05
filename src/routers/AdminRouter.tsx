@@ -19,6 +19,7 @@ import VoucherAdd from "../pages/admin/voucher/voucherAdd";
 import Orders from "../pages/admin/order/Order";
 import AdminOrderDetail from "../pages/admin/order/AdminOrderDetail";
 
+
 export default function AdminRouter() {
   return (
     <PrivateRoute requireAdmin>
