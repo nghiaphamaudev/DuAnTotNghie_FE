@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { notification } from "antd";
 import { Eye, ShoppingBag } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Product } from "../../../common/types/Product";
 import { useProduct } from "../../../contexts/ProductContext";
@@ -65,15 +65,6 @@ const ProductCard = ({ item }: ProductCardProps) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {item?.discount ? (
-        <div className="absolute z-10 top-2 right-4 bg-red-500 text-white text-[14px] font-semibold rounded-full px-2 py-1">
-          -{item?.discount}%
-        </div>
-      ) : (
-        <div className="absolute z-10 top-0 right-0 bg-red-500 text-white text-[12px] font-semibold rounded-e-md shadow-lg px-2 py-1">
-          -10%
-        </div>
-      )}
       <div className="relative">
         <img
           className="w-full object-cover h-[250px] mb-4"
@@ -110,7 +101,7 @@ const ProductCard = ({ item }: ProductCardProps) => {
         <span className="text-red-500 text-[16px] font-bold mr-2">
           {item?.variants[0]?.sizes[0]?.price.toLocaleString()}đ
         </span>
-        <span className="text-gray-400 text-[14px] line-through">178,000đ</span>
+        {/* <span className="text-gray-400 text-[14px] line-through">178,000đ</span> */}
       </div>
       <AddToCart
         isModalVisible={isModalVisible}

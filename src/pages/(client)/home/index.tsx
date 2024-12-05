@@ -9,31 +9,32 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 
+import { Tabs } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import ProductCard from "../../../components/common/(client)/ProductCard";
-import { useProduct } from "../../../contexts/ProductContext";
-import { Tabs } from "antd";
-import { useEffect, useRef, useState } from "react";
 import { NavigationOptions } from "swiper/types";
-import {
-  getAllCategory,
-  getCategoryById
-} from "../../../services/categoryServices";
-import axios from "axios";
+import ProductCard from "../../../components/common/(client)/ProductCard";
+import { useCategory } from "../../../contexts/CategoryContext";
+import { useProduct } from "../../../contexts/ProductContext";
 // import { Products } from "../../../common/types/Product";
 
 const HomePage = () => {
+  const navigate = useNavigate();
   // context
   const { allProduct } = useProduct();
-  const [category, setCategory] = useState([]);
-  const [activeCategoryProducts, setActiveCategoryProducts] = useState([]);
+  const {
+    allCategory,
+    activeCategoryProducts,
+    getAllDataCategory,
+    getDataCategoryById
+  } = useCategory();
   const [loading, setLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(8);
   const prevRef = useRef(null);
   const nextRef = useRef(null);
-
   const newProducts = allProduct
     .filter((item) => item.isActive === true)
     .filter((item) => {
@@ -43,47 +44,24 @@ const HomePage = () => {
       const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
       return diffInDays <= 7; //! Chỉ lấy sản phẩm được tạo trong vòng 4 ngày
     });
-
   // Hàm hiển thị thêm sản phẩm
   const handleShowMore = () => {
     setVisibleCount((prev) => prev + 6);
   };
-
   // Hàm ẩn bớt sản phẩm
   const handleShowLess = () => {
     setVisibleCount((prev) => (prev - (prev - 8) > 0 ? prev - 8 : 8));
   };
-
-  const fetchCategoryDetail = async (categoryId: string) => {
-    setLoading(true);
-    try {
-      const response = await getCategoryById(categoryId);
-      console.log("Fetched category detail:", response);
-      setActiveCategoryProducts(response?.products || response?.products[0]);
-    } catch (error) {
-      console.error("Error fetching category detail:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    const getAllCategories = async () => {
-      try {
-        const { data } = await getAllCategory();
-        setCategory(data);
-        // if (data?.length > 0) {
-        //   fetchCategoryDetail(data[0].id); // Fetch products for the first category
-        // }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          message.error(error?.response?.data || "Lỗi khi lấy mã giảm giá!");
+    setLoading(true);
+    getAllDataCategory()
+      .then(() => {
+        if (allCategory.length > 0) {
+          getDataCategoryById(allCategory[0]?.id);
         }
-      }
-    };
-    getAllCategories();
+      })
+      .finally(() => setLoading(false));
   }, []);
-
   // console.log(category);
   const renderProductsByCategory = () => {
     if (loading) return <p>Đang tải...</p>;
@@ -235,9 +213,12 @@ const HomePage = () => {
               1024: { slidesPerView: 4 }
             }}
           >
-            {category?.map((item, index) => (
+            {allCategory?.map((item, index) => (
               <SwiperSlide key={index}>
-                <div className="relative group">
+                <div
+                  className="relative group cursor-pointer"
+                  onClick={() => navigate(`/product?category=${item.id}`)}
+                >
                   <img
                     className="w-full object-cover h-[700px] sm:h-[600px] md:h-[700px] lg:h-[750px] aspect-square"
                     src={item?.imageCategory}
@@ -297,18 +278,12 @@ const HomePage = () => {
         <div className="flex flex-col justify-start items-center w-full px-4 sm:px-10 md:px-20 py-16 my-5">
           <h1 className="text-2xl font-semibold text-center">Bộ sưu tập</h1>
           <Tabs
-            defaultActiveKey="1"
-            onChange={(key) =>
-              fetchCategoryDetail(category?.[parseInt(key)]?.id)
-            }
-            items={
-              category?.length > 0
-                ? category.map((item, index) => ({
-                    label: item.name,
-                    key: `${index}`
-                  }))
-                : []
-            }
+            defaultActiveKey="0"
+            onChange={(key) => getDataCategoryById(allCategory[key]?.id)}
+            items={allCategory.map((item, index) => ({
+              label: item.name,
+              key: `${index}`
+            }))}
           />
           <div className="mt-4">{renderProductsByCategory()}</div>
         </div>
