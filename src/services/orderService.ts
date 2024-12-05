@@ -32,7 +32,19 @@ export const initiateVNPayPayment = async (payload: CheckoutFormData) => {
     }
   }
 };
-
+// lay tat ca don hang
+export const getAllOrdersService = async () => {
+  try {
+    const { data } = await instance.get("/orders/all-order");
+    return data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      return error.response?.data;
+    } else {
+      throw new Error("Something went wrong!");
+    }
+  }
+};
 // Lấy danh sách đơn hàng theo người dùng
 export const getOrdersByUserService = async () => {
   try {

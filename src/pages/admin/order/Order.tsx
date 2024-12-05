@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Button, Space, Tag, Tabs, Card, Row, Col } from "antd";
 import { Link } from "react-router-dom";
 import { Search, View } from "lucide-react";
-import { getOrdersByUserService } from "../../../services/orderService";
+import { getAllOrdersService } from "../../../services/orderService";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 
 const Orders = () => {
@@ -10,11 +10,11 @@ const Orders = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      const response = await getOrdersByUserService();
+      const response = await getAllOrdersService();
       console.log("orders: ", response);
 
-      if (response?.data?.orders) {
-        setOrders(response.data.orders);
+      if (response?.data) {
+        setOrders(response.data);
       }
     };
     fetchOrders();
@@ -37,7 +37,7 @@ const Orders = () => {
     },
     {
       title: "Tên khách hàng",
-      dataIndex: "creator",
+      dataIndex: "receiver",
       key: "creator",
       width: 150,
       render: (text) => <span style={{ fontWeight: "500" }}>{text}</span>
@@ -90,7 +90,7 @@ const Orders = () => {
       width: 150,
       render: (_, record) => (
         <Space>
-          <Link to={`${record.id}`}>
+          <Link to={`${record._id}`}>
             <Button icon={<View />} type="link">
               Chi tiết
             </Button>
