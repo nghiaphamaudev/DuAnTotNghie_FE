@@ -184,7 +184,7 @@ export default function Category() {
               cell: CustomHeaderCell,
             },
           }}
-          dataSource={filteredData}  // Display the filtered data
+          dataSource={filteredData}
           columns={columns}
           rowKey="id"
         />

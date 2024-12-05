@@ -19,3 +19,7 @@ export const updateVoucherStatus = async (id: string, status: string): Promise<a
     const response = await instance.patch(`/vouchers/${id}`, { status });
     return response.data;   
 };
+export const deleteVoucher = async (id: string) => {
+    const response = await instance.delete(`/vouchers/${id}`);
+    return response.data;
+};
