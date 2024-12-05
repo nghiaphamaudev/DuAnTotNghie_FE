@@ -72,7 +72,7 @@ const ProductDetail: React.FC = () => {
           <Col span={8} style={{ display: "flex", justifyContent: "center" }}>
             <img
               alt={product.name || "Product"}
-              src={product.coverImg || "default-image-url.jpg"} // Đặt URL ảnh mặc định nếu coverImg không tồn tại
+              src={product.coverImg || "default-image-url.jpg"}
               style={{ height: "300px", width: "300px", objectFit: "cover" }}
             />
           </Col>

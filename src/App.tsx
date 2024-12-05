@@ -22,6 +22,8 @@ import ResetPassword from "./components/common/(client)/sign-in/ResetPassword";
 import PrivateRouter from "./components/common/(client)/menu-account/PrivateRouter";
 import { PrivateLoginRegister } from "./components/common/(client)/sign-in/PrivateLoginRegister";
 import LoginAdmin from "./pages/admin/users/LoginAdmin";
+import NotFound from "./pages/(client)/404";
+import AboutUs from "./pages/(client)/about-us";
 
 const routeConfig = [
   {
@@ -89,6 +91,10 @@ const routeConfig = [
         element: <ResetPassword />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFound />
   },
   {
     path: "/admin/*",

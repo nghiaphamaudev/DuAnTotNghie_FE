@@ -1,11 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LoadingOutlined, PlusCircleFilled } from "@ant-design/icons";
-import { Button, Card, Col, Input, Radio, Row, Switch, Table, message } from "antd";
+import { Button, Card, Col, Input, Popconfirm, Radio, Row, Switch, Table, message } from "antd";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchVouchers, updateVoucherStatus } from "../../../services/voucher";
+import { deleteVoucher, fetchVouchers, updateVoucherStatus } from "../../../services/voucher";
 import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 export default function Voucher() {
@@ -16,7 +17,8 @@ export default function Voucher() {
     queryFn: async () => await fetchVouchers(),
   });
   const [filterStatus, setFilterStatus] = useState<number>(1);
-  const [searchKeyword, setSearchKeyword] = useState<string>(""); 
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [filteredData, setFilteredData] = useState<any[]>([])
   const mutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) =>
       await updateVoucherStatus(id, status),
@@ -24,7 +26,7 @@ export default function Voucher() {
       message.success("Cập nhật trạng thái thành công!");
       queryClient.invalidateQueries({
         queryKey: ["vouchers"],
-      }); 
+      });
     },
     onError: () => {
       message.error("Cập nhật trạng thái thất bại!");
@@ -37,32 +39,67 @@ export default function Voucher() {
   const handleSearch = (value: string) => {
     setSearchKeyword(value.toLowerCase().trim());
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   // Hàm thay đổi trạng thái
   const onSwitchChange = (checked: boolean, record: any) => {
     const newStatus = checked ? "active" : "inactive";
     mutation.mutate({ id: record._id, status: newStatus });
     console.log(record._id);
-    
-  };
-  const filteredData = data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ?.filter((voucher: any) => {
-      if (filterStatus === 2) return voucher.status === "active"; 
-      if (filterStatus === 3) return voucher.status === "inactive"; 
-      return true; 
-    })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .filter((voucher: any) => {
-      if (!searchKeyword) return true; 
-      return (
-        voucher.code.toLowerCase().includes(searchKeyword) || 
-        voucher.description?.toLowerCase().includes(searchKeyword) 
-      );
-    });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const columns: ColumnsType<any> =[
+  };
+
+  useEffect(() => {
+    if (data) {
+      // Cập nhật trạng thái mỗi 1 phút
+      const interval = setInterval(() => {
+        const updatedData = data.map((voucher: any) => {
+          const isExpired = dayjs(voucher.expirationDate).isBefore(dayjs());
+          return { ...voucher, status: isExpired ? "inactive" : voucher.status };
+        });
+        setFilteredData(updatedData);
+      }, 60000); // 1 phút cập nhật một lần
+
+      // Xóa interval khi component unmount
+      return () => clearInterval(interval);
+    }
+  }, [data]);
+  //Xóa voucher
+  const handleDelete = useMutation({
+    mutationFn: async (id: string) => await deleteVoucher(id),
+    onSuccess: () => {
+      message.success("Xóa mã giảm giá thành công!");
+      queryClient.invalidateQueries({ queryKey: ["vouchers"] });
+    },
+    onError: () => {
+      message.error("Xóa mã giảm giá thất bại!");
+    },
+  });
+  const updateFilteredData = (vouchers: any[]) => {
+    const updatedData = vouchers.map((voucher) => ({
+      ...voucher,
+      status: dayjs(voucher.expirationDate).isBefore(dayjs()) ? "inactive" : voucher.status,
+    }));
+    const filtered = updatedData
+      .filter((voucher) => {
+        if (filterStatus === 2) return voucher.status === "active";
+        if (filterStatus === 3) return voucher.status === "inactive";
+        return true;
+      })
+      .filter((voucher) =>
+        searchKeyword
+          ? voucher.code.toLowerCase().includes(searchKeyword) ||
+          voucher.description?.toLowerCase().includes(searchKeyword)
+          : true
+      );
+    setFilteredData(filtered);
+  };
+
+  // Xử lý khi trạng thái lọc hoặc từ khóa thay đổi
+  useEffect(() => {
+    if (data) {
+      updateFilteredData(data);
+    }
+  }, [filterStatus, searchKeyword, data]);
+  const columns: ColumnsType<any> = [
     {
       title: "STT",
       dataIndex: "stt",
@@ -117,7 +154,7 @@ export default function Voucher() {
       align: "center" as const,
       width: "10%",
       render: (startDate: string) =>
-        dayjs(startDate).format("DD/MM/YYYY HH:mm"), 
+        dayjs(startDate).format("DD/MM/YYYY HH:mm"),
     },
     {
       title: "Ngày kết thúc",
@@ -141,8 +178,33 @@ export default function Voucher() {
           <Switch
             checked={finalStatus === "active"}
             onChange={(checked) => onSwitchChange(checked, record)}
-            disabled={isExpired} 
+            disabled={isExpired}
           />
+        );
+      },
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      align: "center" as const,
+      width: "15%",
+      render: (_text: string, record: any) => {
+        const isExpired = dayjs(record.expirationDate).isBefore(dayjs());
+        return (
+          <>
+            {isExpired && (
+              <Popconfirm
+                title="Bạn có chắc muốn xóa mã giảm giá này không?"
+                onConfirm={() => handleDelete.mutate(record._id)}
+                okText="Xóa"
+                cancelText="Hủy"
+              >
+                <Button type="primary" danger>
+                  Xóa
+                </Button>
+              </Popconfirm>
+            )}
+          </>
         );
       },
     },
@@ -166,8 +228,8 @@ export default function Voucher() {
             <Search
               placeholder="Tìm kiếm theo mã hoặc mô tả"
               allowClear
-              enterButton="Search"
-              size="large"
+              enterButton="Tìm kiếm"
+              size="middle"
               onSearch={handleSearch}
             />
           </Col>
@@ -195,7 +257,15 @@ export default function Voucher() {
         </Row>
       </Card>
       <Card style={{ marginTop: "12px" }}>
-        <Table dataSource={filteredData.slice().reverse()} columns={columns} rowKey="id" />
+        <Table
+          dataSource={filteredData.slice().reverse()}
+          columns={columns}
+          rowKey="_id"
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: false,
+          }}
+        />
       </Card>
     </div>
   );

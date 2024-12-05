@@ -100,7 +100,12 @@ const CategoryAdd = () => {
           <Form.Item
             label="Tên danh mục"
             name="name"
-            rules={[{ required: true, message: "Vui lòng nhập tên danh mục" }]}
+            rules={[{ required: true, message: "Vui lòng nhập tên danh mục" },
+            {
+              pattern: /[a-zA-Z0-9\s]{6,}$/,
+              message: "Tên danh mục phải có ít nhất 3 ký tự gồm chữ cái và số",
+            },
+            ]}
           >
             <Input type="text" placeholder="Nhập tên danh mục" />
           </Form.Item>
