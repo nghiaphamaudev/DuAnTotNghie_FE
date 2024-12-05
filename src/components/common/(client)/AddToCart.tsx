@@ -25,6 +25,7 @@ import { useCart } from "../../../contexts/CartContext";
 import { Navigation, Pagination } from "swiper/modules";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
+import { useProduct } from "../../../contexts/ProductContext";
 
 interface AddToCartProps {
   isModalVisible: boolean;
@@ -43,6 +44,8 @@ const AddToCart: React.FC<AddToCartProps> = ({
   //context
   const { addItemToCart, cartData } = useCart();
   const { isLogin, token } = useAuth();
+  const { product, getDataProductById } = useProduct();
+
   //state
   const [inventory, setInventory] = useState(item?.variants[0]?.inventory);
   const [color, setColor] = useState<string>(item?.variants[0]?.id);
@@ -144,6 +147,8 @@ const AddToCart: React.FC<AddToCartProps> = ({
 
   const handleAddItemToCart = async (id: string) => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
+    const newProduct = await getDataProductById(id)
+    const newVariants = newProduct?.data?.variants
     if (!token || !isLogin) {
       notification.error({
         message: "Vui lòng đăng nhập để tiếp tục",
@@ -152,6 +157,14 @@ const AddToCart: React.FC<AddToCartProps> = ({
       });
       setIsModalVisible(false);
       return;
+    }
+    if(!newProduct.data.isActive) {
+      notification.error({
+        message: "Sản phẩm không còn tồn tại. Vui lòng chọn sản phẩm khác",
+        placement: "topRight",
+        duration: 2
+      });
+      return
     }
     if (quantity > inventory) {
       notification.error({
@@ -170,15 +183,6 @@ const AddToCart: React.FC<AddToCartProps> = ({
       });
       return;
     }
-
-    // if (quantity > inventory - quantityCart) {
-    //   notification.error({
-    //     message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
-    //     placement: "topRight",
-    //     duration: 2
-    //   });
-    //   return
-    // }
 
     const payload = {
       productId: id,
@@ -204,7 +208,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
       });
     }
   };
-  // console.log(inventory);
+  
   return (
     <Modal
       open={isModalVisible}

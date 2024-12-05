@@ -47,7 +47,7 @@ const FooterClient = () => {
             </p>
             <p className="text-sm text-[#9a9a9a]">
               <span className="font-bold text-[#000]">Điện thoại:</span>{" "}
-              0987651781
+              0984282598
             </p>
           </div>
 

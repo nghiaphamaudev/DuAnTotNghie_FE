@@ -1,5 +1,6 @@
 import {
   DownloadOutlined,
+  EditOutlined,
   EyeOutlined,
   PlusCircleFilled
 } from "@ant-design/icons";
@@ -153,12 +154,12 @@ export default function CategoryDetail() {
       key: "key",
       width: "20%",
       render: (_, record) => (
-        <div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
           <Link to={`/admin/product/${record.id}`}>
-            <EyeOutlined style={{ fontSize: "20px", color: "#1890ff" }} />
+            <EditOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
           </Link>
           <Link to={`/admin/product/detail/${record.id}`}>
-            Chi tiết sản phẩm
+            <EyeOutlined style={{ fontSize: "20px", color: "#1890ff" }} />
           </Link>
         </div>
       )
