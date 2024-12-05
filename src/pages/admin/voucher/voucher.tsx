@@ -257,7 +257,15 @@ export default function Voucher() {
         </Row>
       </Card>
       <Card style={{ marginTop: "12px" }}>
-        <Table dataSource={filteredData.slice().reverse()} columns={columns} rowKey="id" />
+        <Table
+          dataSource={filteredData.slice().reverse()}
+          columns={columns}
+          rowKey="_id"
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: false,
+          }}
+        />
       </Card>
     </div>
   );
