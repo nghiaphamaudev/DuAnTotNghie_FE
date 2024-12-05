@@ -229,9 +229,13 @@ const AddressModal: React.FC<AddressModalProps> = ({
                 <Form.Item
                   name="name"
                   label="Họ tên"
-                  rules={[{ required: true, message: "Tên là bắt buộc" }]}
+                  rules={[
+                    { required: true, message: "Tên là bắt buộc" },
+                    { min: 7, message: "Họ tên phải dài hơn 7 kí tự" },
+                    { max: 50, message: "Họ tên phải ngắn hơn 50 kí tự" },
+                  ]}
                 >
-                  <Input placeholder="Nhập họ và tên" />
+                  <Input placeholder="Nhập họ và tên" maxLength={50} />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -332,9 +336,16 @@ const AddressModal: React.FC<AddressModalProps> = ({
                       min: 9,
                       message: "Địa chỉ chi tiết phải có ít nhất 9 ký tự",
                     },
+                    {
+                      max: 50,
+                      message: "Địa chỉ chi tiết không được vượt quá 50 ký tự",
+                    },
                   ]}
                 >
-                  <Input placeholder="Tòa nhà, số nhà, tên đường" />
+                  <Input
+                    placeholder="Tòa nhà, số nhà, tên đường"
+                    maxLength={50}
+                  />
                 </Form.Item>
               </Col>
             </Row>

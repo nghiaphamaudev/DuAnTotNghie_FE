@@ -68,12 +68,11 @@ const MenuAccount = () => {
           <div className="col-span-12 md:col-span-3 bg-white shadow-lg rounded-lg p-6">
             <div className="flex flex-col items-center mb-6">
               <label className="w-20 h-20 bg-gray-200 rounded-full mb-3 flex items-center justify-center cursor-pointer overflow-hidden">
-                {userData && userData.fullName ? (
-                  <span className="font-semibold text-xl text-white">
-                    {userData.fullName.charAt(0).toUpperCase()}{" "}
-                  </span>
-                ) : (
-                  <span className="font-semibold text-xl text-white">?</span>
+                {userData && (
+                  // <span className="font-semibold text-sm mr-2">
+                  //   {userData.avatar}
+                  // </span>
+                  <img src={userData.avatar} alt="" />
                 )}
               </label>
               <div className="flex items-center">

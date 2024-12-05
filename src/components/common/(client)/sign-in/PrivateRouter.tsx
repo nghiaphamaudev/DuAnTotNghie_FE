@@ -17,7 +17,7 @@ const PrivateRoute = ({
     return <Navigate to="/login" />;
   }
 
-  if (requireAdmin && user.role !== "admin") {
+  if (requireAdmin && !["admin", "superadmin"].includes(user.role)) {
     return <Navigate to="/home" />;
   }
 

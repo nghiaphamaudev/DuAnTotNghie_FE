@@ -63,10 +63,6 @@ const ResetPassword = () => {
                 message: "Mật khẩu ít nhất phải có một chữ thường",
               },
               {
-                pattern: /[A-Z]/,
-                message: "Mật khẩu ít nhất phải có một chữ hoa",
-              },
-              {
                 pattern: /[\d]/,
                 message: "Mật khẩu ít nhất phải có một số",
               },

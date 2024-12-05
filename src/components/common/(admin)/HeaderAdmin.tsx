@@ -10,10 +10,17 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { ClockCircleOutlined, HomeOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  ClockCircleOutlined,
+  HomeOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import AdminMenu from "./AdminMenu";
 import "./HeaderAdmin.css";
-import { ACCESS_TOKEN_STORAGE_KEY, USER_INFO_STORAGE_KEY } from "../../../services/constants";
+import {
+  ACCESS_TOKEN_STORAGE_KEY,
+  USER_INFO_STORAGE_KEY,
+} from "../../../services/constants";
 
 dayjs.extend(relativeTime);
 
@@ -39,9 +46,8 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
   const screens = useBreakpoint();
 
   const handleLogout = () => {
-    localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
-    localStorage.removeItem(USER_INFO_STORAGE_KEY);
-    navigate("/home");
+    localStorage.clear();
+    navigate("/loginadmin");
   };
 
   const menu = (
@@ -140,13 +146,15 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
                         <ClockCircleOutlined
                           style={{
                             width: screens.xs ? "14px" : "17px", // Adjust size for responsiveness
-                            color: noti.status === "HOAT_DONG" ? "#FC7C27" : "gray",
+                            color:
+                              noti.status === "HOAT_DONG" ? "#FC7C27" : "gray",
                             marginRight: "5px",
                           }}
                         />
                         <span
                           style={{
-                            color: noti.status === "HOAT_DONG" ? "#FC7C27" : "gray",
+                            color:
+                              noti.status === "HOAT_DONG" ? "#FC7C27" : "gray",
                           }}
                         >
                           {dayjs(noti.createdAt).fromNow()}
@@ -178,7 +186,9 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
                 </Row>
               </div>
             </Menu.Item>
-            {index < notification.length - 1 && <hr style={{ padding: 0, margin: 0 }} />}
+            {index < notification.length - 1 && (
+              <hr style={{ padding: 0, margin: 0 }} />
+            )}
           </React.Fragment>
         ))}
     </Menu>
@@ -243,7 +253,8 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
             <Dropdown overlay={notificationMenu} trigger={["click"]}>
               <Badge
                 count={
-                  notification.filter((item) => item.status === "HOAT_DONG").length
+                  notification.filter((item) => item.status === "HOAT_DONG")
+                    .length
                 }
               />
             </Dropdown>

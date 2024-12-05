@@ -1,5 +1,6 @@
 import {
   ForgotPasswordRequest,
+  RegisterAdminRequest,
   ResetPasswordRequest,
   UpdatePasswordRequest,
 } from "./../common/types/User";
@@ -86,7 +87,11 @@ export const addAddress = async (payload: AddressRequest) => {
 
 export const updateProfile = async (payload: User) => {
   try {
-    const { data } = await instance.patch("/users/updateMe", payload);
+    const { data } = await instance.patch("/users/updateMe", payload, {
+      headers: {
+        "Content-Type": "multipart/form-data", // Đảm bảo header là multipart
+      },
+    });
     return data;
   } catch (error) {
     throw error;
@@ -128,9 +133,28 @@ export const deleteAddress = async (payload: { id: string }) => {
   }
 };
 
-export const getAllUser = async () => {
+export const getAllUserAccounts = async () => {
   try {
-    const { data } = await instance.get("/users/admin");
+    const { data } = await instance.get("/superadmins/users");
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getSuperAndAdmin = async () => {
+  try {
+    const { data } = await instance.get("/superadmins/manage-account");
+    console.log(data);
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const loginAdmin = async (payload: UserLoginRequest) => {
+  try {
+    const { data } = await instance.post("/superadmins/login", payload);
     return data;
   } catch (error) {
     throw error;
@@ -138,16 +162,16 @@ export const getAllUser = async () => {
 };
 
 export const toggleBlockUser = async (payload: {
-  userId: string;
-  shouldBlock: boolean;
+  idUser: string;
+  status: boolean;
   note?: string;
 }) => {
   try {
     const { data } = await instance.patch(
-      `/users/admin/${payload.userId}/toggle-block`, // Endpoint API
+      `/superadmins/blocked-account-user/${payload.idUser}`,
       {
-        shouldBlock: payload.shouldBlock,
-        note: payload.note, // Truyền lý do chặn
+        status: payload.status,
+        note: payload.note,
       }
     );
     return data;
@@ -156,12 +180,37 @@ export const toggleBlockUser = async (payload: {
   }
 };
 
+export const toggleBlockAdmin = async (payload: { idAdmin: string; status: boolean }) => {
+  try {
+    const { data } = await instance.patch(
+      `/superadmins/blocked-account/${payload.idAdmin}`, 
+      {
+        status: payload.status, // Đảm bảo status được gửi đúng (false trong trường hợp này)
+      }
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+export const registerAdmin = async (payload: RegisterAdminRequest) => {
+  try {
+    const { data } = await instance.post("/superadmins/create-account", payload);
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
 export const updateRoleUser = async (userId: string, role: string) => {
   try {
     const { data } = await instance.patch(
       `/users/admin/${userId}/change-user-role`,
       {
-        role, 
+        role,
       }
     );
     return data;
