@@ -7,7 +7,8 @@ export const UserProfileSchema = z.object({
   fullName: z
     .string()
     .nonempty("Vui lòng nhập tên người dùng")
-    .min(7, "Tên người dùng phải dài hơn 7 kí tự "),
+    .min(7, "Tên người dùng phải dài hơn 7 kí tự ")
+    .max(50, "Tên người dùng không được vượt quá 50 kí tự "),
   phoneNumber: z
     .string()
     .nonempty("Vui lòng nhập số điện thoại")
@@ -15,4 +16,5 @@ export const UserProfileSchema = z.object({
       /^0\d{9}$/,
       "Số điện thoại phải bắt đầu bằng số 0 và bao gồm 10 chữ số"
     ),
+  avatar: z.string().nonempty("Vui lòng nhập ảnh đại diện"),
 });

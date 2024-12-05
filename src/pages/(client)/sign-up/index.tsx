@@ -54,6 +54,7 @@ const RegisterPage = () => {
                 id="fullName"
                 placeholder="Nhập họ tên"
                 {...register("fullName")}
+                maxLength={50}
               />
               {errors.fullName && (
                 <span className="text-red-500 text-xs-mt-1">
@@ -93,7 +94,7 @@ const RegisterPage = () => {
                   errors.phoneNumber ? "border-red-500" : "border-gray-300"
                 }`}
                 id="phoneNumber"
-                max={10}
+                maxLength={10}
                 placeholder="Nhập số điện thoại"
                 {...register("phoneNumber")}
               />

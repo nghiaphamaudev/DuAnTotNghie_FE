@@ -8,9 +8,11 @@ import {
   CommentOutlined,
   ProductOutlined,
   UnorderedListOutlined,
+  LockOutlined,
   GiftOutlined
 } from "@ant-design/icons";
 import CategoryDropdown from "../../../pages/admin/category/CategoryDropdown";
+import { useAuth } from "../../../contexts/AuthContext";
 
 type Props = {
   small: boolean;
@@ -19,6 +21,7 @@ type Props = {
 export default function AdminMenu({ small }: Props) {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleClickMenu = (e: { key: string }) => {
     const key = e.key;
@@ -89,16 +92,25 @@ export default function AdminMenu({ small }: Props) {
       icon: <GiftOutlined />,
       label: <Link to="/admin/voucher">Mã giảm giá</Link>
     },
-    {
-      key: "users",
-      icon: <UserOutlined />,
-      label: <Link to="/admin/users">User</Link>
-    },
+    ...(user?.role === "superadmin"
+      ? [
+          {
+            key: "users",
+            icon: <UserOutlined />,
+            label: <Link to="/admin/users">User</Link>,
+          },
+        ]
+      : []), 
     {
       key: "comments",
       icon: <CommentOutlined />,
-      label: <Link to="/admin/comments">Bình luận</Link>
-    }
+      label: <Link to="/admin/comments">Bình luận</Link>,
+    },
+    {
+      key: "updatepassword",
+      icon: <LockOutlined />,
+      label: <Link to="/admin/updatepassword">Đổi mật khẩu</Link>,
+    },
   ];
 
   return (

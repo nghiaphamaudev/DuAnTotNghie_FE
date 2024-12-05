@@ -17,7 +17,6 @@ import PromoCode from "../../../components/common/(client)/menu-account/PromoCod
 import ViewHistoty from "../../../components/common/(client)/menu-account/ViewHistoty";
 import { useAuth } from "../../../contexts/AuthContext";
 import UserProfile from "../../../components/common/(client)/menu-account/UserProfile";
-import ImageUploader from "../../../components/common/(client)/menu-account/ImageUploader";
 import UpdatePassword from "../../../components/common/(client)/menu-account/UpdatePassword";
 
 import { ScrollToTop } from "../../../ultils/client";
@@ -61,20 +60,21 @@ const MenuAccount = () => {
     }
   };
 
-  const handleImageUploadSuccess = () => {
-    console.log("Hình ảnh đã được upload thành công.");
-  };
-    
-
   return (
     <>
-    
       <ScrollToTop />
-      <div className="min-h-screen bg-gray-50 flex justify-center py-10">
-        <div className="grid grid-cols-12 gap-4 w-full max-w-7xl">
+      <div className="min-h-screen bg-gray-50 flex justify-center py-10 ">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 w-full max-w-7xl mt-14">
           <div className="col-span-12 md:col-span-3 bg-white shadow-lg rounded-lg p-6">
             <div className="flex flex-col items-center mb-6">
-              <ImageUploader onUploadSuccess={handleImageUploadSuccess} />
+              <label className="w-20 h-20 bg-gray-200 rounded-full mb-3 flex items-center justify-center cursor-pointer overflow-hidden">
+                {userData && (
+                  // <span className="font-semibold text-sm mr-2">
+                  //   {userData.avatar}
+                  // </span>
+                  <img src={userData.avatar} alt="" />
+                )}
+              </label>
               <div className="flex items-center">
                 <span className="text-lg font-semibold">
                   {userData && (
@@ -93,7 +93,9 @@ const MenuAccount = () => {
             <div className="text-white rounded-lg p-4 flex justify-between items-center mb-6">
               <Card
                 className="rounded-lg shadow-md w-full max-w-md lg:max-w-lg xl:max-w-xl"
-                style={{ background: "linear-gradient(90deg, #2AB573, #3BA875)" }}
+                style={{
+                  background: "linear-gradient(90deg, #2AB573, #3BA875)",
+                }}
               >
                 <div className="flex justify-between text-white">
                   <div>

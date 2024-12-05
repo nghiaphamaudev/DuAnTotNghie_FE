@@ -1,27 +1,21 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 
-interface PrivateRouteProps {
+interface PrivateRouterProps {
   children: ReactNode;
-  requireAdmin?: boolean;
 }
 
-const PrivateRoute = ({
-  children,
-  requireAdmin = false
-}: PrivateRouteProps) => {
+const PrivateRouter = ({ children }: PrivateRouterProps) => {
   const userData = localStorage.getItem("user");
   const user = userData ? JSON.parse(userData) : null;
 
   if (!user) {
+    // Nếu không có thông tin người dùng, chuyển hướng đến trang login
     return <Navigate to="/login" />;
   }
 
-  if (requireAdmin && !["admin", "superadmin"].includes(user.role)) {
-    return <Navigate to="/home" />;
-  }
-
+  // Nếu đã đăng nhập, hiển thị component con
   return <>{children}</>;
 };
 
-export default PrivateRoute;
+export default PrivateRouter;
