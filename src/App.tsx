@@ -19,6 +19,8 @@ import MenuAccount from "./pages/(client)/my-account";
 import { ScrollToTop } from "./ultils/client";
 import OrderDetail from "./components/common/(client)/menu-account/OrderDetail";
 import ResetPassword from "./components/common/(client)/sign-in/ResetPassword";
+import NotFound from "./pages/(client)/404";
+import AboutUs from "./pages/(client)/about-us";
 
 const routeConfig = [
   {
@@ -72,8 +74,16 @@ const routeConfig = [
       {
         path: "resetPassword/:resetToken",
         element: <ResetPassword />
+      },
+      {
+        path: "aboutus",
+        element: <AboutUs />
       }
     ]
+  },
+  {
+    path: "*",
+    element: <NotFound />
   },
   {
     path: "/admin/*",

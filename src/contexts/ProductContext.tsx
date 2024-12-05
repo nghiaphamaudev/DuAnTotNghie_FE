@@ -31,7 +31,7 @@ export const ProductProvider = ({
   const [allProduct, setAllProduct] = useState<Products[]>([]);
   const [product, setProduct] = useState<Products | null>(null);
 
-   useQuery({
+  useQuery({
     queryKey: ['products'],
     queryFn: async () => {
       const data = await getAllProduct();
@@ -44,9 +44,13 @@ export const ProductProvider = ({
 
   const { mutateAsync: getDataProductById } = useMutation({
     mutationFn: async (id: string) => {
-      const data = await getProductById(id);
-      setProduct(data);
-      return data;
+      try {
+        const data = await getProductById(id);
+        setProduct(data);
+        return data;
+      } catch (error) {
+        nav('*')
+      }
     }
   });
 

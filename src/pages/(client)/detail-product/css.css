@@ -52,7 +52,7 @@ body {
 
 .right-column {
     flex: 0.8;
-    margin-top: 100px;
+    margin-top: 50px;
     margin-left: 10px;
 }
 
@@ -61,10 +61,10 @@ body {
 }
 
 .image-gallery {
+    width: 100%;
     margin-top: 20px;
     display: flex;
     flex-direction: row;
-    margin-left: 80px;
 }
 
 .main-image {
@@ -272,8 +272,6 @@ body {
 
 
 .action-button2 {
-    padding-bottom: 20px;
-    padding-top: 30px;
     display: flex;
     gap: 40px;
     margin: 10px 0;
@@ -544,13 +542,15 @@ body {
 }
 
 .product-list {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     position: relative;
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
+    gap: 20px
 }
 
 .fa-chevron-left,
