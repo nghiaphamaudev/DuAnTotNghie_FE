@@ -173,22 +173,19 @@ const ProductEdit: React.FC = () => {
       setImagesToDelete(updatedRemovedImages);
     }
   };
-
-
-
-
-
-
-  // Validate for duplicate color
+  //validate màu
   const validateUniqueColor = (_: any, value: string) => {
     const variants = form.getFieldValue('variants') || [];
-    const colors = variants.map((variant: any) => variant?.color).filter(Boolean);
-    if (colors.filter((color: string) => color === value).length > 1) {
+    // Chuẩn hóa màu sang chữ thường và lọc các giá trị hợp lệ
+    const colors = variants
+      .map((variant: any) => variant?.color?.toLowerCase())
+      .filter(Boolean);
+    // Kiểm tra trùng lặp không phân biệt chữ hoa chữ thường
+    if (colors.filter((color: string) => color === value?.toLowerCase()).length > 1) {
       return Promise.reject(new Error('Màu sắc đã tồn tại! Vui lòng chọn màu khác.'));
     }
     return Promise.resolve();
   };
-
   // Validate for duplicate size
   const validateUniqueSize = (variantIndex: number) => (_: any, value: string) => {
     const variants = form.getFieldValue('variants') || [];

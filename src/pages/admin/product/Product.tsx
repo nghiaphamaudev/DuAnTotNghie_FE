@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { Button, Card, Col, Row, Switch, Table, Radio, Input } from "antd";
-import { DownloadOutlined, EditOutlined, EyeOutlined, PlusCircleFilled } from "@ant-design/icons";
+import { DownloadOutlined, EditOutlined, EyeOutlined, LoadingOutlined, PlusCircleFilled } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { deleteProductStatus, getAllProduct } from '../../../services/productServices';
 import { Products, ProductVariant } from '../../../common/types/Product';
@@ -15,6 +15,7 @@ export default function Product() {
   const [statusFilter, setStatusFilter] = useState(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const { Search } = Input;
+
   // Fetch products function
   const { data, isError, isLoading } = useQuery<{ status: string; data: Products[] }, Error>({
     queryKey: ["products"],
@@ -26,20 +27,26 @@ export default function Product() {
       setDataSource(data.data);
     }
   }, [data]);
+  console.log(dataSource);
+  console.log(data);
+  
 
   const filteredData = dataSource
     .filter(product => {
-      // Lọc theo trạng thái
-      if (statusFilter === 2) return product.isActive === true; 
-      if (statusFilter === 3) return product.isActive === false; 
-      return true; 
+      if (statusFilter === 2) return product.isActive === true;
+      if (statusFilter === 3) return product.isActive === false;
+      return true;
     })
     .filter(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) 
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
   const handleSearch = (value: string) => {
     setSearchTerm(value.toLowerCase().trim());
   };
+console.log(filteredData);
+  console.log("Total Products: ", dataSource.length);
+  console.log("Filtered Products: ", filteredData.length);
   const handleStatusChange = async (checked: boolean, id: string) => {
     try {
       const productData = await deleteProductStatus(id, checked);
@@ -52,19 +59,20 @@ export default function Product() {
         );
       }
     } catch (error) {
-      console.error('Lỗi khi cập nhật trạng thái sản phẩm:', error);
+      console.error('Error updating product status:', error);
     }
   };
+
   const handleStatusFilterChange = (e: any) => {
     setStatusFilter(e.target.value);
   };
+
   if (isLoading) {
-    <div>...Loading</div>;
-  };
+    return <div><LoadingOutlined /></div>;
+  }
   if (isError) {
     return <div>Error fetching data</div>;
-  };
-
+  }
 
   const columns: ColumnType<Products>[] = [
     {
@@ -79,9 +87,6 @@ export default function Product() {
       key: "name",
       width: "20%",
       align: "center",
-      onFilter: (_value: any, record: any) => {
-        return record.name.toLowerCase().includes(searchTerm.toLowerCase());
-      },
     },
     {
       title: 'Ảnh đại diện',
@@ -105,22 +110,10 @@ export default function Product() {
       width: "10%",
       align: "center",
       render: (variants: ProductVariant[]) => {
-        if (!Array.isArray(variants)) {
-          return 0;
-        }
-
         const totalQuantity = variants.reduce((total, variant) => {
-          if (!variant || !Array.isArray(variant.sizes)) {
-            return total;
-          }
-
-          const variantQuantity = variant.sizes.reduce((sum, size) => {
-            return sum + (size.inventory || 0);
-          }, 0);
-
+          const variantQuantity = variant.sizes.reduce((sum, size) => sum + (size.inventory || 0), 0);
           return total + variantQuantity;
         }, 0);
-
         return totalQuantity;
       },
     },
@@ -133,8 +126,6 @@ export default function Product() {
       render: (isActive, record) => (
         <Switch
           checked={isActive === true}
-          checkedChildren=""
-          unCheckedChildren=""
           onChange={(checked) => handleStatusChange(checked, record.id)}
         />
       ),
@@ -142,8 +133,7 @@ export default function Product() {
     {
       title: "Chi tiết",
       align: "center",
-      dataIndex: "key",
-      key: "key",
+      key: "actions",
       width: "20%",
       render: (_, record) => (
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
@@ -156,7 +146,6 @@ export default function Product() {
         </div>
       ),
     }
-
   ];
 
   const handleExportExcel = () => {
@@ -215,9 +204,13 @@ export default function Product() {
           </Col>
         </Row>
       </Card>
-
       <Card style={{ marginTop: "12px" }}>
-        <Table dataSource={filteredData.slice().reverse()} columns={columns} rowKey="id" />
+        <Table
+          dataSource={filteredData.slice().reverse()}
+          columns={columns}
+          rowKey="id"
+          pagination={{ pageSize: 10, showSizeChanger: false }}
+        />
       </Card>
     </div>
   );
