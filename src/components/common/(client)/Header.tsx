@@ -183,10 +183,7 @@ const HeaderClient = () => {
       >
         <ul className="flex flex-col space-y-4">
           <li className="block text-[15px] font-semibold whitespace-nowrap">
-            <a href="#">Sản phẩm mới</a>
-          </li>
-          <li className="block text-[15px] font-semibold whitespace-nowrap">
-            <a href="#">Sản phẩm </a>
+            <Link to="/product">Sản phẩm mới</Link>
           </li>
           <li className="block text-[15px] font-semibold whitespace-nowrap">
             <a href="#">Bộ sưu tập</a>

@@ -111,7 +111,10 @@ const AddressComponent: React.FC = () => {
                 key={index}
                 className="border border-gray-300 rounded-lg p-4 relative mb-4"
               >
-                <Title className="block text-md font-semibold text-black-500 mb-4" level={4}>
+                <Title
+                  className="block text-md font-semibold text-black-500 mb-4"
+                  level={4}
+                >
                   {address.detailAddressReceiver},{" "}
                   {address.addressReceiver.ward.name},{" "}
                   {address.addressReceiver.district.name},{" "}
@@ -120,14 +123,16 @@ const AddressComponent: React.FC = () => {
                 <Title className="mb-4 text-sm" level={5}>
                   {address.nameReceiver} | {address.phoneNumberReceiver}
                 </Title>
-                <div className="flex justify-end items-center gap-4 mt-4 md:mt-0">
-                  <Dropdown menu={{ items }}>
-                    <a onClick={(e) => e.preventDefault()}>
-                      <div className="font-semibold text-sm cursor-pointer">
-                        <Menu size={16} />
-                      </div>
-                    </a>
-                  </Dropdown>
+                <div className="absolute top-4 right-4">
+                  <div className="flex justify-end items-center gap-4 mt-4 md:mt-0">
+                    <Dropdown menu={{ items }}>
+                      <a onClick={(e) => e.preventDefault()}>
+                        <div className="font-semibold text-sm cursor-pointer">
+                          <Menu size={16} />
+                        </div>
+                      </a>
+                    </Dropdown>
+                  </div>
                 </div>
                 {address.isDefault && (
                   <div className="block text-sm font-light text-red-500 mb-4">

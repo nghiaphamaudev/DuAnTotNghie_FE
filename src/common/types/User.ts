@@ -1,5 +1,6 @@
 
 export type User = {
+  image: any;
   email: string;
   fullName: string;
   phoneNumber: string;
@@ -16,9 +17,25 @@ export type User = {
   gender: boolean;
   birthday: Date;
 };
+
+export type UpdateUser = {
+  email: string;
+  fullName: string;
+  phoneNumber: string;
+  avatar: string;
+  active: boolean;
+  _id: string;
+  id: string;
+  gender: boolean;
+  image: string
+};
+
 export type UserResponse = {
   accessToken: string;
-  data: User; // Thông tin người dùng
+  data: User;
+  adminToken: string
+  avatar: string;
+  user: string // Thông tin người dùng
 };
 
 export type UserLoginRequest = {
@@ -32,6 +49,13 @@ export type UserRegisterRequest = {
   phoneNumber?: string;
   confirmPassword?: string;
   fullName?: string;
+};
+
+export type RegisterAdminRequest = {
+  email: string;
+  password: string;
+  fullName?: string;
+  role:string
 };
 
 export type UpdatePasswordRequest = {
@@ -59,13 +83,16 @@ export type ApiError = {
 }
 
 export type UserAdmin = {
+  _id:string
+  idAdmin:string;
   key: string;
   id: string;
   email: string;
   fullName: string;
-  role: 'admin' | 'user';
+  role: 'superadmin' | 'admin' | 'user';
   createdAt: string;
   active: boolean;
+  
 };
 
 
