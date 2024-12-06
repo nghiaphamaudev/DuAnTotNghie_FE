@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, Input, Modal, notification, Switch, Table } from "antd";
+import { Card, Col, Input, Modal, notification, Radio, RadioChangeEvent, Row, Switch, Table } from "antd";
 import dayjs from "dayjs";
 import { useMemo, useState } from "react";
 import { UserAdmin } from "../../../common/types/User";
@@ -15,6 +15,7 @@ export default function Users() {
   const [reason, setReason] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<number>(1);
 
   const showBlockModal = (idUser: string) => {
     setSelectedUserId(idUser);
@@ -63,11 +64,28 @@ export default function Users() {
   });
 
   const filteredAdmins = useMemo(() => {
-    if (!searchKeyword) return userAccountsData;
-    return userAccountsData.filter((user) =>
-      user.fullName.toLowerCase().includes(searchKeyword.toLowerCase())
-    );
-  }, [searchKeyword, userAccountsData]);
+    let filteredData = userAccountsData;
+  
+    // Lọc theo trạng thái
+    if (statusFilter === 2) { // Hoạt động
+      filteredData = filteredData.filter((user) => user.active);
+    } else if (statusFilter === 3) { // Ngưng hoạt động
+      filteredData = filteredData.filter((user) => !user.active);
+    }
+  
+    // Lọc theo từ khóa tìm kiếm
+    if (searchKeyword) {
+      filteredData = filteredData.filter((user) =>
+        user.fullName.toLowerCase().includes(searchKeyword.toLowerCase())
+      );
+    }
+  
+    return filteredData;
+  }, [statusFilter, searchKeyword, userAccountsData]);
+
+  const handleStatusFilterChange = (e: RadioChangeEvent) => {
+    setStatusFilter(e.target.value); // Cập nhật trạng thái bộ lọc
+  };
 
   const handleSearch = (value: string) => {
     setSearchKeyword(value);
@@ -127,7 +145,7 @@ export default function Users() {
         dayjs(createdAt).format("DD/MM/YYYY HH:mm:ss"),
     },
     {
-      title: "Hành động",
+      title: "Trạng thái",
       dataIndex: "key",
       key: "action",
       align: "center",
@@ -143,6 +161,13 @@ export default function Users() {
           }}
         />
       ),
+    },
+    {
+      title:"Lý do chặn",
+      dataIndex: "blockReason",
+      key:"blockReason",
+      align: "center",
+      width: 120,
     }
   ];
 
@@ -151,6 +176,19 @@ export default function Users() {
       <BreadcrumbsCustom listLink={[]} nameHere={""} />
       <Card style={{ border: "none" }}>
         <SearchCustomer onSearch={handleSearch} dataToExport={filteredAdmins} />
+        <Row gutter={16} style={{ marginTop: "12px" }}>
+          <Col span={12}>
+            <span>Trạng thái: </span>
+            <Radio.Group
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+            >
+              <Radio value={1}>Tất cả</Radio>
+              <Radio value={2}>Hoạt động</Radio>
+              <Radio value={3}>Ngưng hoạt động</Radio>
+            </Radio.Group>
+          </Col>
+        </Row>
         <div className="relative overflow-x-auto mt-6">
           <Table
             columns={columns}
