@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Table, Button, Space, Tag, Tabs, Card, Row, Col } from "antd";
 import { Link } from "react-router-dom";
 import { Search, View } from "lucide-react";
-import { getAllOrdersService } from "../../../services/orderService";
+import {
+  getAllOrdersService,
+  getAllOrdersServiceForAdmin
+} from "../../../services/orderService";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 
 const Orders = () => {
@@ -10,7 +13,7 @@ const Orders = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      const response = await getAllOrdersService();
+      const response = await getAllOrdersServiceForAdmin();
       console.log("orders: ", response);
 
       if (response?.data) {

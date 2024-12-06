@@ -9,11 +9,12 @@ import {
   Spin,
   Button,
   Modal,
-  message
+  message,
+  Tooltip
 } from "antd";
 import {
-  getOrderDetailService,
-  updateOrderService
+  getOrderDetailServiceForAdmin,
+  updateOrderServiceForAdmin
 } from "../../../services/orderService";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 
@@ -31,7 +32,6 @@ const AdminOrderDetail = () => {
     "Đóng gói chờ vận chuyển",
     "Đang giao hàng",
     "Đã giao hàng",
-    "Hoàn thành",
     "Hoàn đơn",
     "Đã hủy"
   ];
@@ -59,7 +59,7 @@ const AdminOrderDetail = () => {
         throw new Error("Không tìm thấy mã đơn hàng."); // Trường hợp không có orderId
       }
 
-      const response = await getOrderDetailService(orderId);
+      const response = await getOrderDetailServiceForAdmin(orderId);
 
       if (!response || !response.data) {
         throw new Error("Không thể tải thông tin đơn hàng."); // Trường hợp dữ liệu trả về không hợp lệ
@@ -78,13 +78,25 @@ const AdminOrderDetail = () => {
   const handleStatusChange = async (status, note = "") => {
     setIsProcessing(true);
     try {
-      if (["Đã hủy", "Hoàn đơn"].includes(status) && !note.trim()) {
-        message.warning(
-          "Vui lòng nhập lý do trước khi thực hiện hành động này."
-        );
-        return;
+      if (["Đã hủy", "Hoàn đơn"].includes(status)) {
+        if (
+          ["Đóng gói chờ vận chuyển", "Đang giao hàng", "Hoàn thành"].includes(
+            orderInfor?.status
+          )
+        ) {
+          message.warning(
+            "Trạng thái hiện tại không cho phép thực hiện hành động này."
+          );
+          return;
+        }
+        if (!note.trim()) {
+          message.warning(
+            "Vui lòng nhập lý do trước khi thực hiện hành động này."
+          );
+          return;
+        }
       }
-      const response = await updateOrderService(orderId, status, note);
+      const response = await updateOrderServiceForAdmin(orderId, status, note);
       if (response?.status) {
         message.success(`Đơn hàng đã chuyển sang trạng thái "${status}"`);
         await fetchOrderDetail();
@@ -188,22 +200,30 @@ const AdminOrderDetail = () => {
       <Card>
         <div className="flex gap-2">
           {statusOrder.map((status, index) => (
-            <Button
-              key={status}
-              variant="outlined"
-              loading={isProcessing && newStatus === status}
-              disabled={
-                ["Đã hủy", "Hoàn đơn"].includes(orderInfor?.status) || // Không cho phép nếu đã hủy hoặc hoàn
-                (index !== currentStatusIndex + 1 &&
-                  !["Hoàn đơn", "Đã hủy"].includes(status))
+            <Tooltip
+              title={
+                statusOrder.indexOf(status) <= currentStatusIndex
+                  ? "Trạng thái này đã được thực hiện."
+                  : ""
               }
-              onClick={() => {
-                setNewStatus(status);
-                setIsModalOpen(true);
-              }}
             >
-              {status}
-            </Button>
+              <Button
+                key={status}
+                loading={isProcessing && newStatus === status}
+                disabled={
+                  isProcessing ||
+                  status === "Đã hủy" ||
+                  status === "Hoàn đơn" ||
+                  statusOrder.indexOf(status) <= currentStatusIndex
+                }
+                onClick={() => {
+                  setNewStatus(status);
+                  setIsModalOpen(true);
+                }}
+              >
+                {status}
+              </Button>
+            </Tooltip>
           ))}
         </div>
 
