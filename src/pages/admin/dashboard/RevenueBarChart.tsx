@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Select, Button, Input, Space, Typography, Spin } from 'antd';
+import { Select, Button, Input, Space, Typography, Spin, message } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { getRevenueProducts } from '../../../services/servicesdashboard/revenueProduct';
 
@@ -14,7 +14,7 @@ const RevenueBarChart = () => {
     const [startDate, setStartDate] = useState<string | undefined>();
     const [endDate, setEndDate] = useState<string | undefined>();
 
-    const fetchData = async () => {
+    const fetchData = async (_p0: string, startDate: string, endDate: string) => {
         setLoading(true);
         try {
             const result = await getRevenueProducts(timeRange, startDate, endDate);
@@ -28,13 +28,28 @@ const RevenueBarChart = () => {
 
     useEffect(() => {
         fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [timeRange, startDate, endDate]);
+    const handleFilter = () => {
+        if (timeRange === 'range') {
+            if (!startDate || !endDate) {
+                message.error('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc.');
+                return;
+            }
 
+            if (new Date(endDate) < new Date(startDate)) {
+                message.error('Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
+                return;
+            }
+
+            fetchData('range', startDate, endDate);
+        }
+    };
     return (
-        <div style={{ padding: '20px', backgroundColor: '#fff', borderRadius: '8px' }}>
+        <div style={{ backgroundColor: '#fff', borderRadius: '8px' }}>
             <Title level={4}>Thống Kê Doanh Thu</Title>
             {/* Bộ lọc */}
-            <Space style={{ marginBottom: '16px' }}>
+            <Space >
                 <Select
                     value={timeRange}
                     onChange={(value) => setTimeRange(value as TimeRange)}
@@ -58,7 +73,11 @@ const RevenueBarChart = () => {
                             onChange={(e) => setEndDate(e.target.value)}
                             value={endDate}
                         />
-                        <Button type="primary" onClick={fetchData}>
+                        <Button
+                            type="primary"
+                            onClick={handleFilter}
+                            className="filter-button"
+                        >
                             Lọc
                         </Button>
                     </Space>
@@ -71,15 +90,15 @@ const RevenueBarChart = () => {
                     <Spin indicator={<LoadingOutlined spin />} />
                 </div>
             ) : data.length > 0 ? (
-                <ResponsiveContainer width="100%" height={400}>
+                <ResponsiveContainer width="100%" height={382} style={{marginTop:'18px'}}>
                     <BarChart data={data}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="date" />
                         <YAxis />
                         <Tooltip />
-                            <Bar dataKey="totalRevenue" fill="#82ca9d" />
-                            <Bar dataKey="totalRefund" fill="#0088FE" />
-                            <Bar dataKey="totalRealRevenue" fill="#00C49F" />
+                            <Bar dataKey="totalRevenue" name="Tổng Doanh Thu" fill="#82ca9d" />
+                            <Bar dataKey="totalRefund" name="Hoàn Tiền" fill="#0088FE" />
+                            <Bar dataKey="totalRealRevenue" name="Doanh Thu Thực" fill="#00C49F" />
                     </BarChart>
                 </ResponsiveContainer>
             ) : (

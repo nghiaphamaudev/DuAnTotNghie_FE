@@ -12,7 +12,7 @@ export const getRevenueProducts = async (
     try {
         let url = `/statements/revenue-and-refunds/${timeRange}`;
         if (timeRange === 'range' && startDate && endDate) {
-            url += `?start=${startDate}&end=${endDate}`;
+            url += `?startDate=${startDate}&endDate=${endDate}`;
         }
 
         const response = await instance.get(url);

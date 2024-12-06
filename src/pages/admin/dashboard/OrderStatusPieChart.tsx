@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { getOrderStatuses } from '../../../services/servicesdashboard/OrderStatusTable';
 import { PieChart, Pie, Tooltip, Cell, Legend } from 'recharts';
 import { LoadingOutlined } from '@ant-design/icons';
-import { Button, Select, Space, Input, Typography, Spin } from 'antd';
+import { Button, Select, Space, Input, Typography, Spin, message } from 'antd';
 // import './OrderStatusPieChart.css'; // Thêm tệp CSS để làm đẹp
 
 const { Title } = Typography;
@@ -41,12 +41,25 @@ const OrderStatusPieChart = () => {
 
     // Màu sắc cho các phân đoạn của biểu đồ tròn
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6666', '#8E44AD', '#3498DB', '#2ECC71'];
+    const handleFilter = () => {
+        if (timeRange === 'range') {
+            if (!startDate || !endDate) {
+                message.error('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc.');
+                return;
+            }
+
+            if (new Date(endDate) < new Date(startDate)) {
+                message.error('Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
+                return;
+            }
+
+            fetchData('range', startDate, endDate);
+        }
+    };
 
     return (
         <div className="chart-container">
             <Title level={4}>Thống Kê Trạng Thái Đơn Hàng</Title>
-
-            {/* Phần lọc thời gian */}
             <Space className="filter-space">
                 <Select
                     value={timeRange}
@@ -58,6 +71,7 @@ const OrderStatusPieChart = () => {
                     <Select.Option value="week">Tuần Này</Select.Option>
                     <Select.Option value="month">Tháng Này</Select.Option>
                     <Select.Option value="year">Năm Nay</Select.Option>
+                    <Select.Option value="range">Tùy Chọn</Select.Option>
                 </Select>
                 {timeRange === 'range' && (
                     <Space>
@@ -75,7 +89,7 @@ const OrderStatusPieChart = () => {
                         />
                         <Button
                             type="primary"
-                            onClick={() => fetchData('range', startDate, endDate)}
+                            onClick={handleFilter}
                             className="filter-button"
                         >
                             Lọc

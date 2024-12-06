@@ -1,4 +1,4 @@
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Table, Typography, Spin, message, Select, DatePicker, Space, Button } from 'antd';
 import dayjs from 'dayjs';
 import { getTopProducts } from '../../../services/servicesdashboard/topProduct';
@@ -42,8 +42,8 @@ const TopProductsTable = () => {
 
     const handleFilter = () => {
         if (timeRange === 'range' && dateRange.length === 2) {
-            const startDate = dayjs(dateRange[0]).format('YYYY-MM-DD');
-            const endDate = dayjs(dateRange[1]).format('YYYY-MM-DD');
+            const startDate = dayjs(dateRange[0]).toISOString();
+            const endDate = dayjs(dateRange[1]).toISOString();
             fetchTopProducts('range', startDate, endDate);
         }
     };
@@ -55,17 +55,29 @@ const TopProductsTable = () => {
             key: 'name',
         },
         {
+            title: 'Ảnh sản phẩm',
+            dataIndex: ['productInfo', 'coverImg'],
+            align: "center",
+            render: (src: string) => (
+                <div className="image-container">
+                    <img src={src} alt="product" style={{ width: 100 }} />
+                </div>
+            ),
+        },
+        {
             title: 'Số lượng bán',
+            align: "center",
             dataIndex: 'totalSold',
             key: 'totalSold',
         },
-        {
-            title: 'Tổng doanh thu',
-            dataIndex: 'totalAmount',
-            key: 'totalAmount',
-            render: (value: number | undefined) =>
-                `${(value || 0).toLocaleString()} VND` // Định dạng số
-        },
+
+        // {
+        //     title: 'Tổng doanh thu',
+        //     dataIndex: 'totalAmount',
+        //     key: 'totalAmount',
+        //     render: (value: number | undefined) =>
+        //         `${(value || 0).toLocaleString()} VND` // Định dạng số
+        // },
     ];
 
     return (
@@ -78,7 +90,8 @@ const TopProductsTable = () => {
                     <Option value="day">Hôm nay</Option>
                     <Option value="week">Tuần này</Option>
                     <Option value="month">Tháng này</Option>
-                    <Option value="year">Năm nay</Option>    
+                    <Option value="year">Năm nay</Option>
+                    <Select.Option value="range">Tùy Chọn</Select.Option>
                 </Select>
                 {timeRange === 'range' && (
                     <RangePicker onChange={handleDateChange} style={{ width: 300 }} />

@@ -56,7 +56,7 @@ export default function Voucher() {
           return { ...voucher, status: isExpired ? "inactive" : voucher.status };
         });
         setFilteredData(updatedData);
-      }, 60000); // 1 phút cập nhật một lần
+      }, 3000); // 1 phút cập nhật một lần
 
       // Xóa interval khi component unmount
       return () => clearInterval(interval);
