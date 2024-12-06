@@ -190,7 +190,7 @@ const DetailProduct = () => {
       });
     } else {
       notification.error({
-        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho1!",
         placement: "topRight",
         duration: 2,
       });
@@ -198,6 +198,7 @@ const DetailProduct = () => {
   };
 
   const handleAddToCart = async (option?: string) => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
     queryClient.invalidateQueries({ queryKey: ["carts"] });
 
     const productId = product?.data?.id;
@@ -230,22 +231,28 @@ const DetailProduct = () => {
       } else {
         if (newSizeObjectInventory === 0) {
           notification.error({
-            message: "Sản phẩm không còn tồn tại!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 4,
           });
+          nav('/home')
+
         } else if (newSizeObjectInventory < quantity) {
           notification.error({
-            message: "Số lượng sản phẩm yêu cầu được chọn vượt quá số lượng tồn kho!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 4,
           });
+          nav('/home')
+
         } else if (quantity > inventory - quantityCart) {
           notification.error({
-            message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 2
           });
+          nav('/home')
+
           return
         } else {
           const productData = {
@@ -266,7 +273,6 @@ const DetailProduct = () => {
                 duration: 2,
               });
             }
-
 
           } else {
             notification.error({
@@ -312,7 +318,6 @@ const DetailProduct = () => {
   });
 
   //end
-
 
 
 
@@ -388,25 +393,15 @@ const DetailProduct = () => {
                     padding: 0,
                     margin: '5px',
                     border: selectedColor === variant.color ? '2px solid #000' : '1px solid #ccc',
-                    borderRadius: '50%',
-                    width: '40px',
+                    width: '60px',
                     height: '40px',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
-                  {variant.images?.[0] ? (
-                    <img
-                      src={variant.images[0]}
-                      alt={variant.color}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                      }}
-                    />
+                  {variant.color?.[0] ? (
+                    <div>{variant.color}</div>
                   ) : (
                     <div style={{ width: '100%', height: '100%', borderRadius: '50%', backgroundColor: '#ccc' }}></div>
                   )}
@@ -417,7 +412,7 @@ const DetailProduct = () => {
             <label className="product-options1" htmlFor="size">Kích Thước</label>
             <div className="size-options">
               {product?.data?.variants
-                ?.find(variant => variant.color === selectedColor)?.sizes.map(size => (
+                ?.find(variant => variant.color === selectedColor)?.sizes.filter(item => item.status === true).map(size => (
                   <Button
                     key={size._id}
                     onClick={() => handleSizeSelect(size.nameSize)}

@@ -1,5 +1,7 @@
+import { useNavigate } from "react-router-dom"
 
 const AboutUs = () => {
+    const nav = useNavigate();
     return (
         <>
             <div>
@@ -19,11 +21,18 @@ const AboutUs = () => {
                 <section className="py-16 px-4 bg-gray-900 md:px-20">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                         <div>
-                            <h2 className="text-3xl font-semibold text-white">Our Story</h2>
-                            <p className="mt-4 text-gray-400">
-                                Our journey began with a passion for fashion and a commitment to sustainability. From a small local shop, we’ve grown into a brand loved by many.
-                                Join us as we redefine the future of fashion.
-                            </p>
+                            <div>
+                                <h2 className="text-3xl font-semibold text-white">Câu Chuyện Của Fshirt</h2>
+                                <p className="mt-4 text-gray-400">
+                                    Fshirt ra đời với một sứ mệnh đơn giản nhưng đầy ý nghĩa: mang đến những chiếc áo chất lượng, phong cách và phù hợp với mọi cá tính. Chúng tôi tin rằng mỗi chiếc áo không chỉ là trang phục, mà còn là cách bạn kể câu chuyện của chính mình.
+                                </p>
+                            </div>
+                            <div className="mt-10">
+                                <h2 className="text-3xl font-semibold text-white">Khởi Nguồn Đam Mê</h2>
+                                <p className="mt-4 text-gray-400">
+                                    Bắt đầu từ niềm đam mê dành cho những chiếc áo, Fshirt được tạo ra để trở thành thương hiệu dành riêng cho những ai yêu thích sự thoải mái và tự tin trong từng khoảnh khắc. Chúng tôi cam kết mang đến những sản phẩm với chất liệu tốt nhất, thiết kế tinh tế, và phù hợp với xu hướng hiện đại.
+                                </p>
+                            </div>
                         </div>
                         <div>
                             <img src="https://media.istockphoto.com/id/1257563298/vi/anh/qu%E1%BA%A7n-%C3%A1o-th%E1%BB%9Di-trang-tr%C3%AAn-gi%C3%A1-trong-n%E1%BB%81n-s%C3%A1ng-trong-nh%C3%A0-v%E1%BB%8B-tr%C3%AD-cho-v%C4%83n-b%E1%BA%A3n.jpg?s=612x612&w=0&k=20&c=Mr5Q7fJiO3DBnd5gtan8j3B0Y6a5dDdkjkC4NTVV8Go=" alt="Our Brand" className="rounded-lg shadow-lg" />
@@ -51,6 +60,9 @@ const AboutUs = () => {
                         </div>
                     </div>
                 </section>
+                <div className="w-full flex items-center justify-center">
+                    <button onClick={() => nav('/product')} className="px-10 rounded-md bg-black text-white py-5">Tìm hiều ngay</button>
+                </div>
                 {/* Section 4: Team */}
                 {/* <section className="py-16 px-4 bg-gray-900 md:px-20">
                     <h2 className="text-3xl font-semibold text-center text-white">Meet Our Team</h2>
