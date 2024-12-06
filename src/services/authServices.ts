@@ -1,8 +1,10 @@
+import { updatePassword } from "./authServices";
 import {
   ForgotPasswordRequest,
   RegisterAdminRequest,
   ResetPasswordRequest,
   UpdatePasswordRequest,
+  UpdatePasswordRequestAdmin,
 } from "./../common/types/User";
 /* eslint-disable no-useless-catch */
 import { AddressRequest } from "../common/types/Address";
@@ -145,7 +147,6 @@ export const getAllUserAccounts = async () => {
 export const getSuperAndAdmin = async () => {
   try {
     const { data } = await instance.get("/superadmins/manage-account");
-    console.log(data);
     return data;
   } catch (error) {
     throw error;
@@ -180,10 +181,13 @@ export const toggleBlockUser = async (payload: {
   }
 };
 
-export const toggleBlockAdmin = async (payload: { idAdmin: string; status: boolean }) => {
+export const toggleBlockAdmin = async (payload: {
+  idAdmin: string;
+  status: boolean;
+}) => {
   try {
     const { data } = await instance.patch(
-      `/superadmins/blocked-account/${payload.idAdmin}`, 
+      `/superadmins/blocked-account/${payload.idAdmin}`,
       {
         status: payload.status, // Đảm bảo status được gửi đúng (false trong trường hợp này)
       }
@@ -194,16 +198,56 @@ export const toggleBlockAdmin = async (payload: { idAdmin: string; status: boole
   }
 };
 
-
 export const registerAdmin = async (payload: RegisterAdminRequest) => {
   try {
-    const { data } = await instance.post("/superadmins/create-account", payload);
+    const { data } = await instance.post(
+      "/superadmins/create-account",
+      payload
+    );
     return data;
   } catch (error) {
     throw error;
   }
 };
 
+export const updatePasswordAdminAnhSuperAdmin = async (
+  payload: UpdatePasswordRequestAdmin
+) => {
+  try {
+    const { data } = await instance.patch(
+      "/superadmins/update-password",
+      payload
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getMeAdmin = async () => {
+  try {
+    const { data } = await instance.get("/superadmins/get-me");
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updatePasswordAdmin = async (payload: {
+  idAdmin: string;
+  assignedRole: string;
+  resetPassword: string;
+}) => {
+  try {
+    const { data } = await instance.patch(
+      `/superadmins/update-infor-admin/${payload.idAdmin}`,
+      payload
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
 
 export const updateRoleUser = async (userId: string, role: string) => {
   try {
