@@ -174,6 +174,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
         duration: 2
       });
       setIsModalVisible(false);
+      
       return;
     }
     if (inventory === 0) {
