@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from 'react';
 import { Table, Typography, Spin, message, Select, DatePicker, Space, Button } from 'antd';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import {  getTopEvenTory } from '../../../services/servicesdashboard/top_inventory';
 
 const { Title } = Typography;
@@ -13,7 +13,7 @@ const InventoryTable = () => {
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState([]);
     const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year' | 'range'>('day'); // Mặc định là 'day'
-    const [dateRange, setDateRange] = useState<[dayjs, dayjs] | []>([]);
+    const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | []>([]);
 
     useEffect(() => {
         fetchStockProducts(timeRange);
@@ -29,14 +29,16 @@ const InventoryTable = () => {
         } finally {
             setLoading(false);
         }
+        
     };
+    
 
     const handleRangeChange = (value: 'day' | 'week' | 'month' | 'year' | 'range') => {
         setTimeRange(value);
         if (value !== 'range') setDateRange([]); // Xóa ngày khi không dùng khoảng thời gian tùy chọn
     };
 
-    const handleDateChange = (dates: [dayjs, dayjs] | null) => {
+    const handleDateChange = (dates: [Dayjs, Dayjs] | null) => {
         if (dates) {
             setDateRange(dates);
         }
@@ -44,11 +46,16 @@ const InventoryTable = () => {
 
     const handleFilter = () => {
         if (timeRange === 'range' && dateRange.length === 2) {
-            const startDate = dayjs(dateRange[0]).format('YYYY-MM-DD');
-            const endDate = dayjs(dateRange[1]).format('YYYY-MM-DD');
+            const startDate = dayjs(dateRange[0]).toISOString();
+            const endDate = dayjs(dateRange[1]).toISOString();
             fetchStockProducts('range', startDate, endDate);
+           
+           
         }
+        
+        
     };
+
 
     const columns = [
         {
@@ -57,17 +64,29 @@ const InventoryTable = () => {
             key: 'name',
         },
         {
-            title: 'Số lượng tồn kho',
-            dataIndex: 'totalInventory',
-            key: 'totalInventory',
+            title: 'Ảnh sản phẩm',
+            dataIndex: 'coverImg',
+            align: "center",
+            render: (src: string) => (
+                <div className="image-container">
+                    <img src={src} alt="product" style={{ width: 100 }} />
+                </div>
+            ),
         },
         {
-            title: 'Tổng doanh thu',
-            dataIndex: 'totalAmount',
-            key: 'totalAmount',
-            render: (value: number | undefined) =>
-                `${(value || 0).toLocaleString()} VND`// Định dạng số
+            title: 'Số lượng tồn kho',
+            dataIndex: 'totalInventory',
+            align: "center",
+            key: 'totalInventory',
         },
+       
+        // {
+        //     title: 'Tổng doanh thu',
+        //     dataIndex: 'totalAmount',
+        //     key: 'totalAmount',
+        //     render: (value: number | undefined) =>
+        //         `${(value || 0).toLocaleString()} VND`// Định dạng số
+        // },
     ];
 
     return (
@@ -81,6 +100,7 @@ const InventoryTable = () => {
                     <Option value="week">Tuần này</Option>
                     <Option value="month">Tháng này</Option>
                     <Option value="year">Năm nay</Option>
+                    <Select.Option value="range">Tùy Chọn</Select.Option>
                 </Select>
                 {timeRange === 'range' && (
                     <RangePicker onChange={handleDateChange} style={{ width: 300 }} />
