@@ -12,7 +12,7 @@ export const getTopEvenTory = async (
     try {
         let url = `/statements/top-products-inventory/${timeRange}`;
         if (timeRange === 'range' && startDate && endDate) {
-            url += `?start=${startDate}&end=${endDate}`;
+            url += `?startDate=${startDate}&endDate=${endDate}`;
         }
 
         const response = await instance.get(url);

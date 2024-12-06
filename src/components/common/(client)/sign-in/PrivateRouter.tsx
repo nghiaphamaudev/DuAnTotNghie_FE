@@ -14,7 +14,7 @@ const PrivateRoute = ({
   const user = userData ? JSON.parse(userData) : null;
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/loginadmin" />;
   }
 
   if (requireAdmin && !["admin", "superadmin"].includes(user.role)) {

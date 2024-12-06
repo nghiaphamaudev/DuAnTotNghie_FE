@@ -14,7 +14,7 @@ export const getOrderStatuses = async (
     try {
         let url = `/statements/order-status-ratio/${timeRange}`;
         if (timeRange === 'range' && startDate && endDate) {
-            url += `?start=${startDate}&end=${endDate}`;
+            url += `?startDate=${startDate}&endDate=${endDate}`;
         }
 
         const response = await instance.get(url);

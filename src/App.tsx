@@ -24,6 +24,7 @@ import { PrivateLoginRegister } from "./components/common/(client)/sign-in/Priva
 import LoginAdmin from "./pages/admin/users/LoginAdmin";
 import NotFound from "./pages/(client)/404";
 import AboutUs from "./pages/(client)/about-us";
+import { PrivateRouteAdmin } from "./pages/admin/users/PrivateRouteAdmin";
 
 const routeConfig = [
   {
@@ -102,7 +103,11 @@ const routeConfig = [
   },
   {
     path: "/loginadmin",
-    element: <LoginAdmin />,
+    element: (
+      <PrivateRouteAdmin>
+        <LoginAdmin />
+      </PrivateRouteAdmin>
+    ),
   },
   
 ];

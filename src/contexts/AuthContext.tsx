@@ -11,9 +11,11 @@ import { AddressRequest } from "../common/types/Address";
 import {
   ApiError,
   ForgotPasswordRequest,
+  GetMeAdmin,
   RegisterAdminRequest,
   ResetPasswordRequest,
   UpdatePasswordRequest,
+  UpdatePasswordRequestAdmin,
   User,
   UserAdmin,
   UserLoginRequest,
@@ -24,6 +26,7 @@ import {
   addAddress,
   deleteAddress,
   forgotPassword,
+  getMeAdmin,
   getProfile,
   loginAccount,
   loginAdmin,
@@ -34,6 +37,8 @@ import {
   toggleBlockUser,
   updateAddress,
   updatePassword,
+  updatePasswordAdmin,
+  updatePasswordAdminAnhSuperAdmin,
   updateProfile,
   updateRoleUser,
   updateStatusAddress,
@@ -52,6 +57,7 @@ type AuthContextProps = {
   updateMyAddress: (formData: AddressRequest) => void;
   deleteMyAddress: (id: string) => void;
   userData: User;
+  userDataAdmin: GetMeAdmin;
   handleRefetchUser: () => void;
   isFetching: boolean;
   isPendingAddAddress: boolean;
@@ -60,6 +66,7 @@ type AuthContextProps = {
   token: string | null;
   showDeleteModal: (addressId: string) => void;
   updateMyPassword: (formData: UpdatePasswordRequest) => void;
+  IupdatePasswordAdmin: (formData: UpdatePasswordRequestAdmin) => void;
   updatestatusAddress: (formData: AddressRequest) => void;
   forgotMyPassword: (formData: ForgotPasswordRequest) => void;
   resetMyPassword: (params: {
@@ -78,10 +85,21 @@ type AuthContextProps = {
     { idAdmin: string; status: boolean },
     unknown
   >;
+
   UnblockUser: (id: string) => void;
   UnblockAdmin: (id: string) => void;
-  IregisterAdmin:(formData: RegisterAdminRequest) => void;
+  IregisterAdmin: (formData: RegisterAdminRequest) => void;
   updateroleUser: (data: { userId: string; role: string }) => Promise<void>;
+  changePasswordAdmin: UseMutateAsyncFunction<
+    any,
+    ApiError,
+    {
+      idAdmin: string;
+      assignedRole: string;
+      resetPassword: string;
+    },
+    unknown
+  >;
 };
 
 const AuthContext = createContext({} as AuthContextProps);
@@ -528,8 +546,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["AdminAccount"] });
       notification.success({
-        message: "Đăng ký tài khoản Admin thành công",
-        description: "Tài khoản của bạn đã được tạo thành công!",
+        message: "Đăng ký thành công",
+        description: "Tài khoản đã được tạo thành công!",
+        placement: "topRight",
+      });
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Đăng ký thất bại",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
+  });
+
+  //get me admin
+  const { data: userDataAdmin } = useQuery({
+    queryKey: ["userDataAdmin"],
+    queryFn: async () => {
+      const res = await getMeAdmin();
+      return res.data;
+    },
+    enabled: !!token,
+  });
+
+  const { mutateAsync: changePasswordAdmin } = useMutation({
+    mutationFn: (payload: {
+      idAdmin: string;
+      assignedRole: string;
+      resetPassword: string;
+    }) => updatePasswordAdmin(payload),
+
+    onSuccess: () => {
+      notification.success({
+        message: "Đổi mật khẩu tài khoản Admin thành công",
         placement: "topRight",
       });
     },
@@ -559,6 +610,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       notification.error({
         message: "Có lỗi xảy ra khi cập nhật vai trò",
         description: errorMessage,
+      });
+    },
+  });
+
+  const { mutateAsync: IupdatePasswordAdmin } = useMutation({
+    mutationFn: async (formData: UpdatePasswordRequestAdmin) => {
+      const data = await updatePasswordAdminAnhSuperAdmin(formData);
+      return data;
+    },
+    onSuccess: () => {
+      notification.success({
+        message: "Đổi mật khẩu thành công!",
+        description: "Vui lòng đăng nhập lại để tiếp tục.",
+        placement: "topRight",
+      });
+      setIsLogin(false);
+      setUser(null);
+      localStorage.clear();
+      nav("loginadmin");
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Đổi mật khẩu thất bại",
+        description: errorMessage,
+        placement: "topRight",
       });
     },
   });
@@ -598,6 +675,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         handleLogout,
         addMyAddress,
         updateUser,
+        userDataAdmin,
         userData,
         updateMyAddress,
         updatestatusAddress,
@@ -618,7 +696,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loginadmin,
         IblockAdmin,
         UnblockAdmin,
-        IregisterAdmin
+        IregisterAdmin,
+        IupdatePasswordAdmin,
+        changePasswordAdmin,
       }}
     >
       {children}

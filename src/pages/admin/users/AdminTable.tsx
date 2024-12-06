@@ -1,20 +1,38 @@
 import { PlusCircleFilled } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, Form, Input, Modal, Select, Switch, Table } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  Input,
+  Modal,
+  Row,
+  Select,
+  Switch,
+  Table,
+} from "antd";
 import dayjs from "dayjs";
 import React, { useMemo, useState } from "react";
 import { RegisterAdminRequest, UserAdmin } from "../../../common/types/User";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getSuperAndAdmin } from "../../../services/authServices";
 import SearchCustomer from "./SearchCustoms";
+import { Radio } from "antd";
+import { RadioChangeEvent } from "antd/lib";
 
 const { Option } = Select;
 
 const AdminTable: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+  const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
+  const [passwordForm] = Form.useForm();
   const [form] = Form.useForm();
-  const { IblockAdmin, UnblockAdmin, IregisterAdmin } = useAuth();
+  const { IblockAdmin, UnblockAdmin, IregisterAdmin, changePasswordAdmin } =
+    useAuth();
   const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<number>(1);
 
   const { data: adminAccount = [] } = useQuery<UserAdmin[]>({
     queryKey: ["AdminAccount"],
@@ -25,11 +43,25 @@ const AdminTable: React.FC = () => {
   });
 
   const filteredAdmins = useMemo(() => {
-    if (!searchKeyword) return adminAccount;
-    return adminAccount.filter((admin) =>
-      admin.fullName.toLowerCase().includes(searchKeyword.toLowerCase())
-    );
-  }, [searchKeyword, adminAccount]);
+    let admins = adminAccount;
+
+    if (searchKeyword) {
+      admins = admins.filter((admin) =>
+        admin.fullName.toLowerCase().includes(searchKeyword.toLowerCase())
+      );
+    }
+
+    if (statusFilter === 2) {
+      admins = admins.filter((admin) => admin.active); // Hoạt động
+    } else if (statusFilter === 3) {
+      admins = admins.filter((admin) => !admin.active); // Ngưng hoạt động
+    }
+
+    return admins;
+  }, [searchKeyword, statusFilter, adminAccount]);
+  const handleStatusFilterChange = (e: RadioChangeEvent) => {
+    setStatusFilter(e.target.value);
+  };
 
   const handleSearch = (value: string) => {
     setSearchKeyword(value);
@@ -49,6 +81,22 @@ const AdminTable: React.FC = () => {
     await IregisterAdmin(data);
     form.resetFields();
     setIsModalVisible(false);
+  };
+
+  const openPasswordModal = (adminId: string) => {
+    setSelectedAdminId(adminId);
+    setIsPasswordModalVisible(true);
+  };
+
+  const handleChangePassword = async (values: { resetPassword: string }) => {
+    if (!selectedAdminId) return;
+    await changePasswordAdmin({
+      idAdmin: selectedAdminId,
+      assignedRole: "manage-users",
+      resetPassword: values.resetPassword,
+    });
+    setIsPasswordModalVisible(false);
+    passwordForm.resetFields();
   };
 
   const columnsAdmin = [
@@ -104,7 +152,7 @@ const AdminTable: React.FC = () => {
         dayjs(createdAt).format("DD/MM/YYYY HH:mm:ss"),
     },
     {
-      title: "Hành động",
+      title: "Trạng thái",
       dataIndex: "action",
       key: "action",
       align: "center",
@@ -117,9 +165,18 @@ const AdminTable: React.FC = () => {
             } else {
               await handleBlock(record._id);
             }
-            console.log(record);
           }}
         />
+      ),
+    },
+    {
+      title: "Hành động",
+      align: "center",
+      width: 120,
+      render: (_: string, record: UserAdmin) => (
+        <Button type="link" onClick={() => openPasswordModal(record._id)}>
+          Đổi mật khẩu
+        </Button>
       ),
     },
   ];
@@ -128,6 +185,19 @@ const AdminTable: React.FC = () => {
     <>
       <Card style={{ border: "none" }}>
         <SearchCustomer onSearch={handleSearch} dataToExport={filteredAdmins} />
+        <Row gutter={16} style={{ marginTop: "12px" }}>
+          <Col span={12}>
+            <span>Trạng thái: </span>
+            <Radio.Group
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+            >
+              <Radio value={1}>Tất cả</Radio>
+              <Radio value={2}>Hoạt động</Radio>
+              <Radio value={3}>Ngưng hoạt động</Radio>
+            </Radio.Group>
+          </Col>
+        </Row>
         <div className="mt-4 flex absolute top-14 right-6">
           <Button
             type="primary"
@@ -185,7 +255,22 @@ const AdminTable: React.FC = () => {
           <Form.Item
             name="password"
             label="Password"
-            rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập mật khẩu mới" },
+              { min: 6, message: "Mật khẩu phải dài ít nhất 6 ký tự" },
+              {
+                pattern: /[a-z]/,
+                message: "Mật khẩu ít nhất phải có một chữ thường",
+              },
+              {
+                pattern: /[\d]/,
+                message: "Mật khẩu ít nhất phải có một số",
+              },
+              {
+                pattern: /[!@#$%^&*(),.?":{}|<>]/,
+                message: "Mật khẩu phải chứa ít nhất một ký tự đặc biệt",
+              },
+            ]}
           >
             <Input.Password />
           </Form.Item>
@@ -194,21 +279,49 @@ const AdminTable: React.FC = () => {
             name="role"
             label="Vai trò"
             initialValue="admin"
-            rules={[
-              { required: true, message: "Vui lòng chọn vai trò!" },
-              () => ({
-                validator(_, value) {
-                  if (value === "admin") return Promise.resolve();
-                  return Promise.reject(
-                    new Error("Vai trò chỉ được phép là Admin!")
-                  );
-                },
-              }),
-            ]}
+            rules={[{ required: true, message: "Vui lòng chọn vai trò!" }]}
           >
             <Select disabled>
               <Option value="admin">Admin</Option>
             </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Đổi Mật Khẩu"
+        visible={isPasswordModalVisible}
+        onCancel={() => setIsPasswordModalVisible(false)}
+        cancelText="Hủy"
+        okText="Đổi mật khẩu"
+        onOk={() => passwordForm.submit()}
+      >
+        <Form
+          form={passwordForm}
+          layout="vertical"
+          onFinish={handleChangePassword}
+        >
+          <Form.Item
+            name="resetPassword"
+            label="Mật khẩu mới"
+            rules={[
+              { required: true, message: "Vui lòng nhập mật khẩu mới" },
+              { min: 6, message: "Mật khẩu phải dài ít nhất 6 ký tự" },
+              {
+                pattern: /[a-z]/,
+                message: "Mật khẩu ít nhất phải có một chữ thường",
+              },
+              {
+                pattern: /[\d]/,
+                message: "Mật khẩu ít nhất phải có một số",
+              },
+              {
+                pattern: /[!@#$%^&*(),.?":{}|<>]/,
+                message: "Mật khẩu phải chứa ít nhất một ký tự đặc biệt",
+              },
+            ]}
+          >
+            <Input.Password />
           </Form.Item>
         </Form>
       </Modal>

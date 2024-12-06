@@ -18,6 +18,18 @@ export type User = {
   birthday: Date;
 };
 
+export type GetMeAdmin = {
+  _id: string;
+  fullName: string;
+  email: string;
+  active: boolean;
+  password: string;
+  role: string;
+  coverImg: string;
+  createdAt: string;
+  __v: number;
+};
+
 export type UpdateUser = {
   email: string;
   fullName: string;
@@ -63,6 +75,12 @@ export type UpdatePasswordRequest = {
   password: string;
   passwordConfirm: string;
 }
+
+export type UpdatePasswordRequestAdmin = {
+  resetPassword: string;
+  resetPasswordConfirm: string;
+}
+
 
 export type ResetPasswordRequest = {
   password: string;
