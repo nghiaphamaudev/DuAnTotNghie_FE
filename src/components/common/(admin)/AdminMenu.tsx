@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { Menu } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  DashboardOutlined,
-  FileDoneOutlined,
-  UserOutlined,
   CommentOutlined,
-  ProductOutlined,
   UnorderedListOutlined,
   LockOutlined,
-  GiftOutlined
+  GiftOutlined,
+  TeamOutlined,
+  FundOutlined,
+  ProfileOutlined,
+  SkinOutlined
 } from "@ant-design/icons";
 import CategoryDropdown from "../../../pages/admin/category/CategoryDropdown";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -54,17 +54,17 @@ export default function AdminMenu({ small }: Props) {
   const menuItems = [
     {
       key: "dashboard",
-      icon: <DashboardOutlined />,
+      icon: <FundOutlined />,
       label: <Link to="/admin/dashboard">Thống kê</Link>
     },
     {
       key: "bill",
-      icon: <FileDoneOutlined />,
+      icon: <ProfileOutlined />,
       label: <Link to="/admin/bill">Đơn hàng</Link>
     },
     {
       key: "product",
-      icon: <ProductOutlined />,
+      icon: <SkinOutlined />,
       label: <Link to="/admin/product">Sản phẩm</Link>
     },
     {
@@ -82,11 +82,7 @@ export default function AdminMenu({ small }: Props) {
         }
       ]
     },
-    // {
-    //   key: "size",
-    //   icon: <FontSizeOutlined />,
-    //   label: <Link to="/admin/size">Kích cỡ</Link>,
-    // },
+   
     {
       key: "voucher",
       icon: <GiftOutlined />,
@@ -96,7 +92,7 @@ export default function AdminMenu({ small }: Props) {
       ? [
           {
             key: "users",
-            icon: <UserOutlined />,
+          icon: <TeamOutlined/>,
             label: <Link to="/admin/users">User</Link>,
           },
         ]
@@ -117,6 +113,7 @@ export default function AdminMenu({ small }: Props) {
     <Menu
       className="admin-menu"
       mode="inline"
+      
       defaultSelectedKeys={["dashboard"]}
       defaultOpenKeys={openKeys}
       selectedKeys={[]}
@@ -124,7 +121,8 @@ export default function AdminMenu({ small }: Props) {
       onOpenChange={handleOpenChange}
       items={menuItems}
       style={{
-        fontSize: "20px"
+        fontSize: "20px",
+        fontFamily:'serif'
       }}
     />
   );

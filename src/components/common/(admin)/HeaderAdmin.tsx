@@ -5,7 +5,6 @@ import {
   AiOutlineMenuFold,
   AiOutlineMenuUnfold,
   AiOutlineLogout,
-  AiOutlineKey,
 } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -17,10 +16,6 @@ import {
 } from "@ant-design/icons";
 import AdminMenu from "./AdminMenu";
 import "./HeaderAdmin.css";
-import {
-  ACCESS_TOKEN_STORAGE_KEY,
-  USER_INFO_STORAGE_KEY,
-} from "../../../services/constants";
 
 dayjs.extend(relativeTime);
 
@@ -52,16 +47,6 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
 
   const menu = (
     <Menu>
-      <Menu.Item key="1">
-        <Link to={`/admin/infomation/`}>
-          <Avatar /> Tài khoản của tôi
-        </Link>
-      </Menu.Item>
-      <Menu.Item key="2">
-        <Link to={`/admin/change-password`}>
-          <AiOutlineKey style={{ marginRight: "8px" }} /> Đổi mật khẩu
-        </Link>
-      </Menu.Item>
       <Menu.Item key="3" onClick={() => handleLogout()}>
         <AiOutlineLogout style={{ marginRight: "8px" }} /> Đăng xuất
       </Menu.Item>
