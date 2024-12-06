@@ -190,7 +190,7 @@ const DetailProduct = () => {
       });
     } else {
       notification.error({
-        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho1!",
         placement: "topRight",
         duration: 2,
       });
@@ -230,22 +230,28 @@ const DetailProduct = () => {
       } else {
         if (newSizeObjectInventory === 0) {
           notification.error({
-            message: "Sản phẩm không còn tồn tại!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 4,
           });
+          nav('/home')
+
         } else if (newSizeObjectInventory < quantity) {
           notification.error({
-            message: "Số lượng sản phẩm yêu cầu được chọn vượt quá số lượng tồn kho!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 4,
           });
+          nav('/home')
+
         } else if (quantity > inventory - quantityCart) {
           notification.error({
-            message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 2
           });
+          nav('/home')
+
           return
         } else {
           const productData = {
@@ -266,7 +272,6 @@ const DetailProduct = () => {
                 duration: 2,
               });
             }
-
 
           } else {
             notification.error({
