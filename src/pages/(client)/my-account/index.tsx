@@ -137,18 +137,18 @@ const MenuAccount = () => {
                   label: "Sổ địa chỉ",
                   onClick: () => handleMenuClick("3"),
                 },
-                {
-                  key: "4",
-                  icon: <HeartOutlined />,
-                  label: "Yêu thích",
-                  onClick: () => handleMenuClick("4"),
-                },
-                {
-                  key: "5",
-                  icon: <EyeOutlined />,
-                  label: "Đã xem gần đây",
-                  onClick: () => handleMenuClick("5"),
-                },
+                // {
+                //   key: "4",
+                //   icon: <HeartOutlined />,
+                //   label: "Yêu thích",
+                //   onClick: () => handleMenuClick("4"),
+                // },
+                // {
+                //   key: "5",
+                //   icon: <EyeOutlined />,
+                //   label: "Đã xem gần đây",
+                //   onClick: () => handleMenuClick("5"),
+                // },
                 {
                   key: "6",
                   icon: <LockOutlined />,
