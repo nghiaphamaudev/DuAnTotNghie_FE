@@ -158,7 +158,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
       setIsModalVisible(false);
       return;
     }
-    if(!newProduct.data.isActive) {
+    if (!newProduct.data.isActive) {
       notification.error({
         message: "Sản phẩm không còn tồn tại. Vui lòng chọn sản phẩm khác",
         placement: "topRight",
@@ -208,7 +208,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
       });
     }
   };
-  
+
   return (
     <Modal
       open={isModalVisible}
@@ -275,9 +275,8 @@ const AddToCart: React.FC<AddToCartProps> = ({
               <div
                 onClick={() => handleThumbnailClick(index)}
                 key={index}
-                className={`w-1/4 aspect-w-1 aspect-h-1 cursor-pointer ${
-                  index === activeIndex ? "border border-blue-500" : ""
-                }`}
+                className={`w-1/4 aspect-w-1 aspect-h-1 cursor-pointer ${index === activeIndex ? "border border-blue-500" : ""
+                  }`}
               >
                 <img
                   src={image}

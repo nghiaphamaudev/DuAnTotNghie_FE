@@ -915,13 +915,13 @@ body {
     width: 100%;
     padding: 20px;
     margin: 0 auto;
-    padding-left: 200px; 
+    padding-left: 95px; 
     padding-right: 30px; 
 }
 
 .product-feedbacks {
     padding: 20px; 
-    width: 1000px;
+    width: 900px;
     margin: 20px auto; 
     align-items: center;
 }
