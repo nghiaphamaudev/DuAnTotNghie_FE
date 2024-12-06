@@ -96,9 +96,9 @@ const RevenueBarChart = () => {
                         <XAxis dataKey="date" />
                         <YAxis />
                         <Tooltip />
-                            <Bar dataKey="totalRevenue" name="Tổng Doanh Thu" fill="#82ca9d" />
-                            <Bar dataKey="totalRefund" name="Hoàn Tiền" fill="#0088FE" />
-                            <Bar dataKey="totalRealRevenue" name="Doanh Thu Thực" fill="#00C49F" />
+                            <Bar dataKey="totalRevenue" name="Tổng Doanh Thu" fill="#1890FF" />
+                            <Bar dataKey="totalRefund" name="Hoàn Tiền" fill="#FF4D4F" />
+                            <Bar dataKey="totalRealRevenue" name="Doanh Thu Thực" fill="#28A745" />
                     </BarChart>
                 </ResponsiveContainer>
             ) : (
