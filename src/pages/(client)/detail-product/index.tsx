@@ -190,7 +190,7 @@ const DetailProduct = () => {
       });
     } else {
       notification.error({
-        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho1!",
         placement: "topRight",
         duration: 2,
       });
@@ -198,6 +198,7 @@ const DetailProduct = () => {
   };
 
   const handleAddToCart = async (option?: string) => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
     queryClient.invalidateQueries({ queryKey: ["carts"] });
 
     const productId = product?.data?.id;
@@ -230,22 +231,28 @@ const DetailProduct = () => {
       } else {
         if (newSizeObjectInventory === 0) {
           notification.error({
-            message: "Sản phẩm không còn tồn tại!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 4,
           });
+          nav('/home')
+
         } else if (newSizeObjectInventory < quantity) {
           notification.error({
-            message: "Số lượng sản phẩm yêu cầu được chọn vượt quá số lượng tồn kho!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 4,
           });
+          nav('/home')
+
         } else if (quantity > inventory - quantityCart) {
           notification.error({
-            message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 2
           });
+          nav('/home')
+
           return
         } else {
           const productData = {
@@ -266,7 +273,6 @@ const DetailProduct = () => {
                 duration: 2,
               });
             }
-
 
           } else {
             notification.error({
@@ -315,7 +321,6 @@ const DetailProduct = () => {
 
 
 
-
   return (
     <>
       <div className="container mx-auto">
@@ -355,11 +360,13 @@ const DetailProduct = () => {
                 onClick={showModal}
               />
               <Modal open={isModalVisible} onCancel={handleCancel} footer={null} width={600}>
-
                 <Image src={mainImage || product?.data?.coverImg} preview={false} />
               </Modal>
-
-
+              {inventory - (quantityCart || 0) <= 0 && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 text-white rounded-[8px] text-sm px-4 py-2">
+                  Hết hàng
+                </div>
+              )}
               <div className="arrow-button right" onClick={() => handleArrowClick(1)}>&#8594;</div>
             </div>
           </div>
@@ -367,7 +374,7 @@ const DetailProduct = () => {
 
         <div className="right-column">
           <h1 className="product-title">{product?.data?.name}</h1>
-          <span>{inventory > 0 ? `Số lượng: ${inventory}` : "Hết hàng"}</span>
+          <Rate allowHalf disabled value={product?.data?.ratingAverage} />
           <hr />
           <div className="product-price">
             {price.toLocaleString()}₫
@@ -386,25 +393,15 @@ const DetailProduct = () => {
                     padding: 0,
                     margin: '5px',
                     border: selectedColor === variant.color ? '2px solid #000' : '1px solid #ccc',
-                    borderRadius: '50%',
-                    width: '40px',
+                    width: '60px',
                     height: '40px',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
-                  {variant.images?.[0] ? (
-                    <img
-                      src={variant.images[0]}
-                      alt={variant.color}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                      }}
-                    />
+                  {variant.color?.[0] ? (
+                    <div>{variant.color}</div>
                   ) : (
                     <div style={{ width: '100%', height: '100%', borderRadius: '50%', backgroundColor: '#ccc' }}></div>
                   )}
@@ -415,7 +412,7 @@ const DetailProduct = () => {
             <label className="product-options1" htmlFor="size">Kích Thước</label>
             <div className="size-options">
               {product?.data?.variants
-                ?.find(variant => variant.color === selectedColor)?.sizes.map(size => (
+                ?.find(variant => variant.color === selectedColor)?.sizes.filter(item => item.status === true).map(size => (
                   <Button
                     key={size._id}
                     onClick={() => handleSizeSelect(size.nameSize)}
@@ -427,6 +424,10 @@ const DetailProduct = () => {
                   </Button>
                 ))}
             </div>
+
+            <span style={{ marginTop: '10px', display: 'block' }}>
+              {inventory > 0 ? `Số lượng: ${inventory}` : "Hết hàng"}
+            </span>
 
 
             <Modal open={isSizeGuideVisible} onCancel={handleSizeGuideCancel} footer={null} width={600}>
@@ -484,14 +485,12 @@ const DetailProduct = () => {
 
           </div>
         </div>
-      </div>
-      <div className=''>
 
         <div>
           <div className="feedback-from">
             <div className="product-feedbacks">
               <h2>XEM BÌNH LUẬN</h2>
-              {feedbacks.map((feedback) => (
+              {feedbacks.filter(feedback => feedback.classify === true).map((feedback) => (
                 <div key={feedback.id} className="feedback-item">
                   <div className="feedback-header">
                     <img
@@ -524,7 +523,11 @@ const DetailProduct = () => {
           </div>
 
         </div>
+      </div>
+      <div className=''>
+
         <div className="product-like">
+          <h3 className="text-2xl font-bold my-5">Sản phẩm cùng loại</h3>
           <div className="product-list">
             <i
               className={`fas fa-chevron-left arrow ${startIndex === 0 ? 'disabled' : ''}`}
@@ -542,6 +545,7 @@ const DetailProduct = () => {
           </div>
 
         </div>
+
       </div>
     </>
 
