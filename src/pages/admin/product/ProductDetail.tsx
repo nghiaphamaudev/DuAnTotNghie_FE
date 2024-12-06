@@ -106,7 +106,7 @@ const ProductDetail: React.FC = () => {
             <div style={{ marginTop: "20px" }}>
               <h3>Đánh giá:</h3>
               <Rate allowHalf disabled value={product.ratingAverage || 0} />
-              <Text>{product.ratingQuantity || 0} lượt đánh giá</Text>
+              <Text>{product.ratingQuantity} lượt đánh giá</Text>
             </div>
           </Col>
         </Row>

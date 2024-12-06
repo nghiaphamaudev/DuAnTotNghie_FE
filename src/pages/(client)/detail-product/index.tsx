@@ -355,11 +355,13 @@ const DetailProduct = () => {
                 onClick={showModal}
               />
               <Modal open={isModalVisible} onCancel={handleCancel} footer={null} width={600}>
-
                 <Image src={mainImage || product?.data?.coverImg} preview={false} />
               </Modal>
-
-
+              {inventory - (quantityCart || 0) <= 0 && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 text-white rounded-[8px] text-sm px-4 py-2">
+                  Hết hàng
+                </div>
+              )}
               <div className="arrow-button right" onClick={() => handleArrowClick(1)}>&#8594;</div>
             </div>
           </div>
@@ -367,7 +369,7 @@ const DetailProduct = () => {
 
         <div className="right-column">
           <h1 className="product-title">{product?.data?.name}</h1>
-          <span>{inventory > 0 ? `Số lượng: ${inventory}` : "Hết hàng"}</span>
+          <Rate allowHalf disabled value={product?.data?.ratingAverage} />
           <hr />
           <div className="product-price">
             {price.toLocaleString()}₫
@@ -428,6 +430,10 @@ const DetailProduct = () => {
                 ))}
             </div>
 
+            <span style={{ marginTop: '10px', display: 'block' }}>
+              {inventory > 0 ? `Số lượng: ${inventory}` : "Hết hàng"}
+            </span>
+
 
             <Modal open={isSizeGuideVisible} onCancel={handleSizeGuideCancel} footer={null} width={600}>
               <Image
@@ -484,14 +490,12 @@ const DetailProduct = () => {
 
           </div>
         </div>
-      </div>
-      <div className=''>
 
         <div>
           <div className="feedback-from">
             <div className="product-feedbacks">
               <h2>XEM BÌNH LUẬN</h2>
-              {feedbacks.map((feedback) => (
+              {feedbacks.filter(feedback => feedback.classify === true).map((feedback) => (
                 <div key={feedback.id} className="feedback-item">
                   <div className="feedback-header">
                     <img
@@ -524,7 +528,11 @@ const DetailProduct = () => {
           </div>
 
         </div>
+      </div>
+      <div className=''>
+
         <div className="product-like">
+          <h3 className="text-2xl font-bold my-5">Sản phẩm cùng loại</h3>
           <div className="product-list">
             <i
               className={`fas fa-chevron-left arrow ${startIndex === 0 ? 'disabled' : ''}`}
@@ -542,6 +550,7 @@ const DetailProduct = () => {
           </div>
 
         </div>
+
       </div>
     </>
 
