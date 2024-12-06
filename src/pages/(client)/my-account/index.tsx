@@ -90,7 +90,7 @@ const MenuAccount = () => {
               </div>
             </div>
 
-            <div className="text-white rounded-lg p-4 flex justify-between items-center mb-6">
+            {/* <div className="text-white rounded-lg p-4 flex justify-between items-center mb-6">
               <Card
                 className="rounded-lg shadow-md w-full max-w-md lg:max-w-lg xl:max-w-xl"
                 style={{
@@ -113,7 +113,7 @@ const MenuAccount = () => {
                 </div>
                 <div className="mt-2 bg-white rounded-lg h-1"></div>
               </Card>
-            </div>
+            </div> */}
 
             <Menu
               mode="vertical"

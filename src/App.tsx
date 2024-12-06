@@ -91,6 +91,10 @@ const routeConfig = [
         path: "resetPassword/:resetToken",
         element: <ResetPassword />,
       },
+      {
+        path: "aboutus",
+        element: <AboutUs />,
+      }
     ],
   },
   {

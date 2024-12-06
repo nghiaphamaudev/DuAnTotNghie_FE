@@ -202,7 +202,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
     } else {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       notification.error({
-        message: "Sản phẩm không còn tồn tại. Vui lòng chọn sản phẩm khác",
+        message: `${res.message}`,
         placement: "topRight",
         duration: 2
       });
