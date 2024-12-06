@@ -116,7 +116,7 @@ const ShoppingCart: React.FC = () => {
                   <div className="flex items-start justify-end mt-2">
                     <Button
                       icon={<Minus size={16} />}
-                      onClick={() => handleQuantityChange(item?.id, "increase")}
+                      onClick={() => handleQuantityChange(item?.id, "decrease")}
                       disabled={item.quantity <= 1}
                     />
                     <Input
@@ -128,7 +128,7 @@ const ShoppingCart: React.FC = () => {
                     <Button
                       disabled={item.quantity === item?.inventory}
                       icon={<Plus size={16} />}
-                      onClick={() => handleQuantityChange(item?.id, "decrease")}
+                      onClick={() => handleQuantityChange(item?.id, "increase")}
                     />
                   </div>
                   <div className="flex justify-end items-center mt-5">
