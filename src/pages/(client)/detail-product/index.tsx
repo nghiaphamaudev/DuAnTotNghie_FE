@@ -198,6 +198,7 @@ const DetailProduct = () => {
   };
 
   const handleAddToCart = async (option?: string) => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
     queryClient.invalidateQueries({ queryKey: ["carts"] });
 
     const productId = product?.data?.id;
@@ -320,7 +321,6 @@ const DetailProduct = () => {
 
 
 
-
   return (
     <>
       <div className="container mx-auto">
@@ -393,25 +393,15 @@ const DetailProduct = () => {
                     padding: 0,
                     margin: '5px',
                     border: selectedColor === variant.color ? '2px solid #000' : '1px solid #ccc',
-                    borderRadius: '50%',
-                    width: '40px',
+                    width: '60px',
                     height: '40px',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
-                  {variant.images?.[0] ? (
-                    <img
-                      src={variant.images[0]}
-                      alt={variant.color}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                      }}
-                    />
+                  {variant.color?.[0] ? (
+                    <div>{variant.color}</div>
                   ) : (
                     <div style={{ width: '100%', height: '100%', borderRadius: '50%', backgroundColor: '#ccc' }}></div>
                   )}
@@ -422,7 +412,7 @@ const DetailProduct = () => {
             <label className="product-options1" htmlFor="size">Kích Thước</label>
             <div className="size-options">
               {product?.data?.variants
-                ?.find(variant => variant.color === selectedColor)?.sizes.map(size => (
+                ?.find(variant => variant.color === selectedColor)?.sizes.filter(item => item.status === true).map(size => (
                   <Button
                     key={size._id}
                     onClick={() => handleSizeSelect(size.nameSize)}
