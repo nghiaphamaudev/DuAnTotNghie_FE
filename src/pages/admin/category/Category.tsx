@@ -118,21 +118,6 @@ export default function Category() {
       ),
     },
     {
-      title: "Trạng thái",
-      dataIndex: "active",
-      key: "active",
-      align: "center",
-      width: "10%",
-      render: (active: boolean, record: any) => (
-        <Switch
-          checked={active === true}
-          checkedChildren=""
-          unCheckedChildren=""
-          onChange={(checked) => handleStatusChange(checked, record.id)}
-        />
-      ),
-    },
-    {
       title: "Cập nhật",
       key: "update",
       align: "center",
