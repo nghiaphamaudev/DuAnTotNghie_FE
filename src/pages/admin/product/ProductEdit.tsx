@@ -247,7 +247,6 @@ const ProductEdit: React.FC = () => {
     const variant = initialData.variants[variantIndex];
     if (!variant || !Array.isArray(variant.sizes)) {
       console.error("Không tìm thấy biến thể hoặc kích thước tại index:", variantIndex);
-      message.error("Dữ liệu kích thước không hợp lệ.");
       return;
     }
 
@@ -356,26 +355,26 @@ const ProductEdit: React.FC = () => {
                         </Form.Item>
                       </Col>
 
-                      {!isAddingVariant && (
-                        <Col span={6}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, 'status']}
-                            label="Trạng thái"
-                          >
-                            <Switch
-                              checked={restField.value?.status}
-                              onChange={async (checked: boolean) => {
-                                setLoading(true);
-                                const currentStatus = checked;
-                                const productId = id;
-                                handleStatusChange(productId, name, currentStatus); // Gửi variantIndex
-                                setLoading(false);
-                              }}
-                            />
-                          </Form.Item>
-                        </Col>
-                      )}
+
+                      <Col span={6}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'status']}
+                          label="Trạng thái"
+                        >
+                          <Switch
+                            checked={restField.value?.status}
+                            onChange={async (checked: boolean) => {
+                              setLoading(true);
+                              const currentStatus = checked;
+                              const productId = id;
+                              handleStatusChange(productId, name, currentStatus); // Gửi variantIndex
+                              setLoading(false);
+                            }}
+                          />
+                        </Form.Item>
+                      </Col>
+
 
                       <Col span={18}>
                         <Form.Item
@@ -452,27 +451,27 @@ const ProductEdit: React.FC = () => {
                                   <InputNumber min={0} placeholder="Số lượng" style={{ width: '100%' }} />
                                 </Form.Item>
                               </Col>
-                              {!isAddingVariant && (
-                                <Col span={6}>
-                                  <Form.Item
-                                    {...sizeRestField}
-                                    name={[sizeName, 'status']}
-                                    label="Trạng thái"
-                                    valuePropName="checked"
-                                  >
-                                    <Switch
-                                      checked={sizeRestField?.status}
-                                      onChange={async (checked: boolean) => {
-                                        setLoading(true);
-                                        const currentStatus = checked;
-                                        const productId = id;
-                                        handleSizeStatusChange(productId, variantIndex, sizeIndex, currentStatus);
-                                        setLoading(false);
-                                      }}
-                                    />
-                                  </Form.Item>
-                                </Col>
-                              )}
+
+                              <Col span={6}>
+                                <Form.Item
+                                  {...sizeRestField}
+                                  name={[sizeName, 'status']}
+                                  label="Trạng thái"
+                                  valuePropName="checked"
+                                >
+                                  <Switch
+                                    checked={sizeRestField?.status}
+                                    onChange={async (checked: boolean) => {
+                                      setLoading(true);
+                                      const currentStatus = checked;
+                                      const productId = id;
+                                      handleSizeStatusChange(productId, variantIndex, sizeIndex, currentStatus);
+                                      setLoading(false);
+                                    }}
+                                  />
+                                </Form.Item>
+                              </Col>
+
                             </Row>
                           ))}
                           <Form.Item>
@@ -494,7 +493,6 @@ const ProductEdit: React.FC = () => {
                 ))}
                 <Form.Item>
                   <Button type="dashed" onClick={() => {
-                    setIsAddingVariant(true);
                     add();
                   }} icon={<PlusOutlined />}>
                     Thêm biến thể sản phẩm
