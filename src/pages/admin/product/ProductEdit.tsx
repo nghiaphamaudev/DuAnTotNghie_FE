@@ -294,10 +294,10 @@ const ProductEdit: React.FC = () => {
         disabled={loading}
       >
         <Form.Item label="Tên sản phẩm" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' },
-        {
-          pattern: /^[\p{L}\p{N}\s]{6,}$/u,
-          message: "Tên mã giảm giá phải có ít nhất 6 ký tự gồm chữ cái và số",
-        }
+        // {
+        //   pattern: /^[\p{L}\p{N}\s]{6,}$/u,
+        //   message: "Tên mã giảm giá phải có ít nhất 6 ký tự gồm chữ cái và số",
+        // }
         ]}>
           <Input placeholder="Nhập tên sản phẩm" />
         </Form.Item>

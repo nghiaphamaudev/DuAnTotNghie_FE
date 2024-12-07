@@ -98,7 +98,6 @@ const AddToCart: React.FC<AddToCartProps> = ({
       swiperRef.current.navigation.update();
     }
   }, []);
-  console.log(selectedVariant?.sizes);
 
   useEffect(() => {
     if (cartData && cartData?.items.length > 0) {
@@ -148,8 +147,10 @@ const AddToCart: React.FC<AddToCartProps> = ({
 
   const handleAddItemToCart = async (id: string) => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
-    const newProduct = await getDataProductById(id)
+    const newProduct = await getDataProductById(item.id)
     const newVariants = newProduct?.data?.variants
+    const newStatusVariants = newVariants.filter(item => item.id === color)
+    const newStatusSizes = newStatusVariants?.[0].sizes.filter(item => item.id == size)
     if (!token || !isLogin) {
       notification.error({
         message: "Vui lòng đăng nhập để tiếp tục",
@@ -159,7 +160,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
       setIsModalVisible(false);
       return;
     }
-    if(!newProduct.data.isActive) {
+    if(!newProduct.data.isActive || !newStatusVariants[0].status || !newStatusSizes[0].status) {
       notification.error({
         message: "Sản phẩm không còn tồn tại. Vui lòng chọn sản phẩm khác",
         placement: "topRight",
@@ -322,7 +323,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
           <div className="mb-4">
             <p className="text-gray-700 font-semibold">Màu sắc:</p>
             <Radio.Group onChange={onChangeColor} value={color}>
-              {item?.variants.map((variant: ProductVariant) => (
+              {item?.variants.filter(item => item.status === true).map((variant: ProductVariant) => (
                 <Radio.Button key={variant.id} value={variant.id}>
                   {variant.color}
                 </Radio.Button>
