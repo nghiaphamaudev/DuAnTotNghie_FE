@@ -8,10 +8,11 @@ import {
   CommentOutlined,
   ProductOutlined,
   UnorderedListOutlined,
-  FontSizeOutlined,
-  GiftOutlined,
+  LockOutlined,
+  GiftOutlined
 } from "@ant-design/icons";
 import CategoryDropdown from "../../../pages/admin/category/CategoryDropdown";
+import { useAuth } from "../../../contexts/AuthContext";
 
 type Props = {
   small: boolean;
@@ -20,6 +21,7 @@ type Props = {
 export default function AdminMenu({ small }: Props) {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleClickMenu = (e: { key: string }) => {
     const key = e.key;
@@ -53,17 +55,17 @@ export default function AdminMenu({ small }: Props) {
     {
       key: "dashboard",
       icon: <DashboardOutlined />,
-      label: <Link to="/admin/dashboard">Thống kê</Link>,
+      label: <Link to="/admin/dashboard">Thống kê</Link>
     },
     {
       key: "bill",
       icon: <FileDoneOutlined />,
-      label: <Link to="/admin/bill">Đơn hàng</Link>,
+      label: <Link to="/admin/bill">Đơn hàng</Link>
     },
     {
       key: "product",
       icon: <ProductOutlined />,
-      label: <Link to="/admin/product">Sản phẩm</Link>,
+      label: <Link to="/admin/product">Sản phẩm</Link>
     },
     {
       key: "category",
@@ -76,29 +78,38 @@ export default function AdminMenu({ small }: Props) {
             <div style={{ padding: "0 16px" }}>
               <CategoryDropdown onSelect={handleCategorySelect} />
             </div>
-          ),
-        },
-      ],
+          )
+        }
+      ]
     },
-    {
-      key: "size",
-      icon: <FontSizeOutlined />,
-      label: <Link to="/admin/size">Kích cỡ</Link>,
-    },
+    // {
+    //   key: "size",
+    //   icon: <FontSizeOutlined />,
+    //   label: <Link to="/admin/size">Kích cỡ</Link>,
+    // },
     {
       key: "voucher",
       icon: <GiftOutlined />,
-      label: <Link to="/admin/voucher">Mã giảm giá</Link>,
+      label: <Link to="/admin/voucher">Mã giảm giá</Link>
     },
-    {
-      key: "users",
-      icon: <UserOutlined />,
-      label: <Link to="/admin/users">User</Link>,
-    },
+    ...(user?.role === "superadmin"
+      ? [
+          {
+            key: "users",
+            icon: <UserOutlined />,
+            label: <Link to="/admin/users">User</Link>,
+          },
+        ]
+      : []), 
     {
       key: "comments",
       icon: <CommentOutlined />,
       label: <Link to="/admin/comments">Bình luận</Link>,
+    },
+    {
+      key: "updatepassword",
+      icon: <LockOutlined />,
+      label: <Link to="/admin/updatepassword">Đổi mật khẩu</Link>,
     },
   ];
 
@@ -113,7 +124,7 @@ export default function AdminMenu({ small }: Props) {
       onOpenChange={handleOpenChange}
       items={menuItems}
       style={{
-        fontSize: "20px",
+        fontSize: "20px"
       }}
     />
   );

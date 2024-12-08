@@ -13,35 +13,21 @@ import {
   message
 } from "antd";
 import axios from "axios";
+import { TicketCheck } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import codpay from "../../../assets/images/codpay.png";
 import vnpay from "../../../assets/images/vnpay.png";
 import { AddressRequest } from "../../../common/types/Address";
 import { CartItem } from "../../../interface/Cart";
+import { Coupon } from "../../../interface/Voucher";
 import { getProfile } from "../../../services/authServices";
-import { getCartForUserServices } from "../../../services/cartServices";
 import {
   createOrderService,
   initiateVNPayPayment
 } from "../../../services/orderService";
-import { TicketCheck } from "lucide-react";
 import { getVouchers } from "../../../services/vorcherServices";
-import { Coupon } from "../../../interface/Voucher";
-
 const { Text } = Typography;
-
-const validateCoupon = async (couponCode: string) => {
-  return new Promise<{ amount: number }>((resolve, reject) => {
-    setTimeout(() => {
-      if (couponCode === "DISCOUNT10") {
-        resolve({ amount: 10000 });
-      } else {
-        reject(new Error("Invalid coupon code"));
-      }
-    }, 1000);
-  });
-};
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -60,20 +46,38 @@ const CheckoutPage: React.FC = () => {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const shippingFee: number = totalPrice >= 500000 ? 0 : 20000;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, setSelectedCheckboxes] = useState<string[]>([]);
 
+  const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(
+    null
+  );
+  const calculateTotalPrice = (selectedProducts: any[]) => {
+    return selectedProducts.reduce(
+      (total, item) => total + item.totalItemPrice,
+      0
+    );
+  };
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const cartData = await getCartForUserServices();
-        setCart(cartData.data);
-        setTotalPrice(cartData.data.totalCartPrice);
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          message.error(error.response?.data || "Lỗi khi lấy giỏ hàng!");
-        }
-      }
-    };
+    // const fetchCart = async () => {
+    //   try {
+    //     const cartData = await getCartForUserServices();
+    //     setCart(cartData.data);
+    //     setTotalPrice(cartData.data.totalCartPrice);
+    //   } catch (error) {
+    //     if (axios.isAxiosError(error)) {
+    //       message.error(error.response?.data || "Lỗi khi lấy giỏ hàng!");
+    //     }
+    //   }
+    // };
+
+    const selectedProducts = localStorage.getItem("selectedProducts");
+    if (selectedProducts) {
+      const parsedProducts = JSON.parse(selectedProducts);
+      setCart({
+        items: parsedProducts,
+        totalCartPrice: calculateTotalPrice(parsedProducts)
+      });
+      setTotalPrice(calculateTotalPrice(parsedProducts));
+    }
 
     const fetchAddresses = async () => {
       try {
@@ -89,6 +93,8 @@ const CheckoutPage: React.FC = () => {
     const fetchCoupons = async () => {
       try {
         const vorchers = await getVouchers();
+        console.log("vorcher: ", vorchers);
+
         setCoupons(vorchers.data);
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -97,13 +103,17 @@ const CheckoutPage: React.FC = () => {
       }
     };
 
-    fetchCart();
+    // fetchCart();
     fetchAddresses();
     fetchCoupons();
   }, []);
 
   const handleFinish = async (values: any) => {
     try {
+      const discountVoucher = isCouponApplied
+        ? cart?.totalCartPrice - totalPrice
+        : 0;
+
       const orderData = {
         ...values,
         paymentMethod,
@@ -116,7 +126,7 @@ const CheckoutPage: React.FC = () => {
         })),
         totalPrice: totalPrice + shippingFee,
         shippingCost: shippingFee,
-        discountVoucher: isCouponApplied ? cart?.totalCartPrice - totalPrice : 0
+        discountVoucher
       };
 
       if (paymentMethod === "VNPAY") {
@@ -129,14 +139,9 @@ const CheckoutPage: React.FC = () => {
       } else {
         await createOrderService(orderData);
         message.success("Đặt hàng thành công!");
+        localStorage.removeItem("selectedProducts");
         form.resetFields();
-        setSelectedCheckboxes([]);
-        const updatedCart = await getCartForUserServices();
-        setCart(updatedCart.data);
-        setTotalPrice(updatedCart.data.totalCartPrice);
-        if (!updatedCart.data.items || updatedCart.data.items.length === 0) {
-          navigate("/home");
-        }
+        navigate("/home");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -144,7 +149,9 @@ const CheckoutPage: React.FC = () => {
       }
     }
   };
-
+  const handleBackToCart = () => {
+    localStorage.removeItem("selectedProducts"); // Xóa sản phẩm khỏi localStorage khi quay lại giỏ hàng
+  };
   const handleSelectAddress = (address: AddressRequest) => {
     form.setFieldsValue({
       receiver: address.nameReceiver,
@@ -161,6 +168,18 @@ const CheckoutPage: React.FC = () => {
 
     if (currentDate >= startDate && currentDate <= expirationDate) {
       if (totalPrice >= coupon.minPurchaseAmount) {
+        let discountAmount = 0;
+
+        if (
+          coupon?.discountType === "percentage" &&
+          coupon?.discountPercentage
+        ) {
+          discountAmount = (totalPrice * coupon?.discountPercentage) / 100;
+        } else if (coupon?.discountType === "amount" && coupon.discountAmount) {
+          discountAmount = coupon.discountAmount;
+        }
+
+        setTotalPrice((prev) => prev - discountAmount);
         setCouponCode(coupon.code);
         setIsCouponApplied(true);
         setModalVisibleVoucher(false);
@@ -181,28 +200,69 @@ const CheckoutPage: React.FC = () => {
     return (
       currentDate < startDate ||
       currentDate > expirationDate ||
-      totalPrice < coupon.minPurchaseAmount
+      totalPrice < coupon.minPurchaseAmount ||
+      coupon?.quantity - coupon?.usedCount <= 0
     );
   };
 
   const handleApplyCoupon = async () => {
+    // Kiểm tra nếu đã áp dụng mã
     if (isCouponApplied) {
       message.error("Chỉ được áp dụng một mã giảm giá.");
       return;
     }
 
+    // Kiểm tra nếu mã rỗng
     if (!couponCode.trim()) {
       message.error("Vui lòng nhập mã giảm giá.");
       return;
     }
 
-    try {
-      const discount = await validateCoupon(couponCode);
-      setTotalPrice((prev) => prev - discount.amount);
-      setIsCouponApplied(true);
-      message.success("Mã giảm giá hợp lệ!");
-    } catch {
+    // Tìm mã trong danh sách
+    const coupon = coupons.find((c) => c.code === couponCode);
+    if (!coupon) {
       message.error("Mã giảm giá không hợp lệ!");
+      return;
+    }
+
+    // Kiểm tra ngày hiệu lực của mã
+    const currentDate = new Date();
+    const startDate = new Date(coupon.startDate);
+    const expirationDate = new Date(coupon.expirationDate);
+
+    if (currentDate < startDate || currentDate > expirationDate) {
+      message.error("Mã giảm giá đã hết hạn hoặc chưa bắt đầu!");
+      return;
+    }
+
+    // Kiểm tra tổng tiền đủ điều kiện áp dụng mã
+    if (totalPrice < coupon.minPurchaseAmount) {
+      message.error("Giỏ hàng không đủ yêu cầu để sử dụng mã giảm giá!");
+      return;
+    }
+
+    try {
+      // Tính toán giá trị giảm giá
+      let discountAmount = 0;
+
+      if (coupon.discountType === "percentage" && coupon.discountPercentage) {
+        discountAmount = (totalPrice * coupon.discountPercentage) / 100;
+      } else if (coupon.discountType === "amount" && coupon.discountAmount) {
+        discountAmount = coupon.discountAmount;
+      }
+
+      // Giới hạn giá trị giảm giá không vượt quá tổng giá trị đơn hàng
+      discountAmount = Math.min(discountAmount, totalPrice);
+
+      // Cập nhật giá trị tổng tiền và trạng thái
+      setTotalPrice((prev) => prev - discountAmount);
+      setIsCouponApplied(true);
+      setAppliedCouponCode(couponCode); // Lưu mã đã áp dụng
+      message.success(
+        `Mã giảm giá đã được áp dụng! Bạn được giảm ${discountAmount.toLocaleString()}₫`
+      );
+    } catch (error) {
+      message.error("Đã xảy ra lỗi khi áp dụng mã giảm giá!");
     }
   };
 
@@ -290,10 +350,21 @@ const CheckoutPage: React.FC = () => {
               </button>
             </Form.Item>
           </Form>
+          <Link
+            style={{
+              fontSize: "15px",
+              textDecoration: "underline"
+            }}
+            to={"/cart"}
+            onClick={handleBackToCart} // Xử lý khi quay lại giỏ hàng
+          >
+            Quay lại giỏ hàng
+          </Link>
         </div>
+
         <div className="bg-gray-50 p-6 rounded-lg">
           <h4 className="text-xl font-semibold">Tóm tắt đơn hàng</h4>
-          {cart ? (
+          {cart?.items && cart.items.length > 0 ? (
             <>
               {cart.items.map((item) => (
                 <Card
@@ -337,6 +408,7 @@ const CheckoutPage: React.FC = () => {
                   </Row>
                 </Card>
               ))}
+
               <div className="mt-6 p-4 bg-white shadow">
                 <Row justify="space-between">
                   <Text>Phí vận chuyển:</Text>
@@ -346,16 +418,30 @@ const CheckoutPage: React.FC = () => {
                       : `${shippingFee.toLocaleString()}₫`}
                   </Text>
                 </Row>
+
+                {isCouponApplied && (
+                  <Row justify="space-between" style={{ color: "green" }}>
+                    <Text>Giảm giá:</Text>
+                    <Text>
+                      -{(cart.totalCartPrice - totalPrice).toLocaleString()}₫
+                    </Text>
+                  </Row>
+                )}
+
                 <Row justify="space-between">
                   <Text>Thành tiền:</Text>
-                  <Text strong>{totalPrice.toLocaleString()}₫</Text>
+                  <Text strong>
+                    {(totalPrice + shippingFee).toLocaleString()}₫
+                  </Text>
                 </Row>
+
+                {/* Mã giảm giá */}
                 <div className="flex flex-col mt-2 gap-1">
                   <Button onClick={() => setModalVisibleVoucher(true)}>
                     <TicketCheck />
                     <span className="ml-2 text-sm">Sử dụng mã giảm giá</span>
                   </Button>
-                  <div className=" flex justify-center items-center gap-1">
+                  <div className="flex justify-center items-center gap-1">
                     <input
                       type="text"
                       placeholder="Mã giảm giá"
@@ -427,6 +513,7 @@ const CheckoutPage: React.FC = () => {
               hoverable={!isCouponDisabled(coupon)}
             >
               <Space direction="vertical" size="small">
+                {/* Mã giảm giá */}
                 <Text
                   strong
                   style={{
@@ -434,21 +521,41 @@ const CheckoutPage: React.FC = () => {
                     color: isCouponDisabled(coupon) ? "#bfbfbf" : "#000"
                   }}
                 >
-                  {coupon.code}
+                  Mã: {coupon.code}
                 </Text>
+
+                {/* Hiển thị giảm giá theo loại discountType */}
                 <Text
                   style={{
                     color: isCouponDisabled(coupon) ? "#bfbfbf" : "#52c41a"
                   }}
                 >
-                  Giảm giá: {coupon.discountAmount?.toLocaleString()}đ
+                  Giảm giá:{" "}
+                  {coupon.discountType === "percentage"
+                    ? `${coupon?.discountPercentage}%`
+                    : `${coupon?.discountAmount?.toLocaleString()}₫`}
                 </Text>
+
+                {/* Yêu cầu tối thiểu */}
+                {coupon.minPurchase && (
+                  <Text
+                    style={{
+                      color: isCouponDisabled(coupon) ? "#bfbfbf" : "#595959"
+                    }}
+                  >
+                    Áp dụng cho đơn hàng tối thiểu:{" "}
+                    {coupon.minPurchase.toLocaleString()}₫
+                  </Text>
+                )}
+
+                {/* Hạn sử dụng */}
                 <Text
                   style={{
                     color: isCouponDisabled(coupon) ? "#bfbfbf" : "#595959"
                   }}
                 >
-                  HSD: {new Date(coupon.expirationDate).toLocaleDateString()}
+                  Hạn sử dụng:{" "}
+                  {new Date(coupon.expirationDate).toLocaleDateString()}
                 </Text>
               </Space>
             </Card>

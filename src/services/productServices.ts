@@ -1,6 +1,8 @@
+import axios from "axios";
 import { DeleteProduct, Products } from "../common/types/Product";
 /* eslint-disable no-useless-catch */
 import instance from "../config/axios";
+import { message } from "antd";
 
 
 export const getAllProduct = async () => {
@@ -12,8 +14,7 @@ export const getAllProduct = async () => {
     }
 }
 
-
-
+const token = localStorage.getItem('accessToken');
 
 
 export const getProductById = async (id: string) => {
@@ -36,8 +37,12 @@ export const addProduct = async (product: Products) => {
 };
 export const deleteProductStatus = async (id: string, isActive: boolean) => {
     try {
-        const response = await instance.patch(`/products/${id}/status`, { isActive });
-        console.log('API response:', response.data);
+        const response = await instance.patch(`/products/${id}/status`, { isActive }, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token ? token : ''
+            }
+        });
         if (!response.data || !response.data.data || !response.data.data.id) {
             throw new Error('Product ID is invalid');
         }
@@ -57,6 +62,24 @@ export const updateProduct = async (id: string, formData: FormData) => {
     const responseBody = await response.json();
     console.log('Response body:', responseBody);
     return responseBody;
+};
+
+
+export const toggleVariantStatus = async (productId: string, variantId: string, currentStatus: any) => {
+
+    try {
+        const response = await instance.put(`/products/${productId}/variant/${variantId}`, {
+            status: currentStatus ? false : true,
+        });
+
+        if (response.status === 200) {
+            message.success(response.data.message);
+        } else {
+            message.error('Đã có lỗi xảy ra');
+        }
+    } catch (error) {
+        message.error('Lỗi khi thay đổi trạng thái biến thể');
+    }
 };
 
 

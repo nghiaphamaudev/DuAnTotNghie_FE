@@ -6,7 +6,7 @@ import {
   PhoneCall,
   Search,
   ShoppingBag,
-  X,
+  X
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -47,35 +47,32 @@ const HeaderClient = () => {
     ? [
         {
           key: "2",
-          label: <Link to="/my-account">Thông tin cá nhân</Link>,
+          label: <Link to="/my-account">Thông tin cá nhân</Link>
         },
-        {
-          key: "3",
-          label: "Lịch sử đặt hàng",
-        },
+
         ...(user?.role === "admin"
           ? [
               {
                 key: "4",
-                label: <Link to="/admin">Trang quản trị</Link>,
-              },
+                label: <Link to="/admin">Trang quản trị</Link>
+              }
             ]
           : []),
         {
           key: "5",
           label: "Đăng xuất",
-          onClick: handleLogout,
-        },
+          onClick: handleLogout
+        }
       ]
     : [
         {
           key: "1",
-          label: <Link to="/login">Đăng nhập</Link>,
+          label: <Link to="/login">Đăng nhập</Link>
         },
         {
           key: "2",
-          label: <Link to="/register">Đăng ký</Link>,
-        },
+          label: <Link to="/register">Đăng ký</Link>
+        }
       ];
 
   // Example cart items and total price
@@ -87,7 +84,7 @@ const HeaderClient = () => {
       <div className="bg-[#000] w-screen hidden text-white py-2 px-16 md:flex justify-between items-center">
         <div className="text-base lg:text-[14px] flex items-center space-x-2">
           <PhoneCall size={18} />
-          <span>0988888888</span>
+          <span>0984282598</span>
         </div>
       </div>
 
@@ -108,16 +105,16 @@ const HeaderClient = () => {
           {/* Navigation Links (Desktop) */}
           <ul className="hidden justify-center items-center space-x-2 md:flex md:space-x-6 lg:space-x-8">
             <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <Link to="/product">Sản phẩm mới</Link>
+              <Link to="/home">Trang chủ</Link>
             </li>
             <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <a href="#hotproduct">Sản phẩm hot</a>
+              <Link to="/product">Sản phẩm</Link>
             </li>
             <li className="block text-[15px] font-semibold whitespace-nowrap">
               <a href="#collection">Bộ sưu tập</a>
             </li>
             <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <a href="#aboutus">Về chúng tôi</a>
+              <Link to="/aboutus">Về chúng tôi</Link>
             </li>
           </ul>
 
@@ -186,10 +183,7 @@ const HeaderClient = () => {
       >
         <ul className="flex flex-col space-y-4">
           <li className="block text-[15px] font-semibold whitespace-nowrap">
-            <a href="#">Sản phẩm mới</a>
-          </li>
-          <li className="block text-[15px] font-semibold whitespace-nowrap">
-            <a href="#">Sản phẩm hot</a>
+            <Link to="/product">Sản phẩm mới</Link>
           </li>
           <li className="block text-[15px] font-semibold whitespace-nowrap">
             <a href="#">Bộ sưu tập</a>

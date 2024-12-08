@@ -2,40 +2,80 @@ import EzChange from "../../../assets/images/ezchange.svg";
 import FreeShip from "../../../assets/images/freeship.svg";
 import Hotline from "../../../assets/images/hotline.svg";
 import Payment from "../../../assets/images/payment.svg";
+import Video from "../../../assets/videos/Ngang - gio.mp4";
 // Import Swiper styles
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 
+import { Tabs } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import ProductCard from "../../../components/common/(client)/ProductCard";
-import { useProduct } from "../../../contexts/ProductContext";
-import { Tabs } from "antd";
-import { useRef } from "react";
 import { NavigationOptions } from "swiper/types";
-import { Products } from "../../../common/types/Product";
+import ProductCard from "../../../components/common/(client)/ProductCard";
+import { useCategory } from "../../../contexts/CategoryContext";
+import { useProduct } from "../../../contexts/ProductContext";
+// import { Products } from "../../../common/types/Product";
 
 const HomePage = () => {
+  const navigate = useNavigate();
   // context
   const { allProduct } = useProduct();
+  const {
+    allCategory,
+    activeCategoryProducts,
+    getAllDataCategory,
+    getDataCategoryById
+  } = useCategory();
+  const [loading, setLoading] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(8);
   const prevRef = useRef(null);
   const nextRef = useRef(null);
-
-  const renderProductsBySeason = (season: string) => {
-    const filteredProducts = allProduct.filter(
-      (product) => product.category === season
-    );
+  const newProducts = allProduct
+    .filter((item) => item.isActive === true)
+    .filter((item) => {
+      const createdAt = new Date(item?.createdAt); // Giả sử `createdAt` có định dạng ISO 8601
+      const now = new Date();
+      const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
+      const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      return diffInDays <= 7; //! Chỉ lấy sản phẩm được tạo trong vòng 4 ngày
+    });
+  // Hàm hiển thị thêm sản phẩm
+  const handleShowMore = () => {
+    setVisibleCount((prev) => prev + 6);
+  };
+  // Hàm ẩn bớt sản phẩm
+  const handleShowLess = () => {
+    setVisibleCount((prev) => (prev - (prev - 8) > 0 ? prev - 8 : 8));
+  };
+  useEffect(() => {
+    setLoading(true);
+    getAllDataCategory()
+      .then(() => {
+        if (allCategory.length > 0) {
+          getDataCategoryById(allCategory[0]?.id);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+  // console.log(category);
+  const renderProductsByCategory = () => {
+    if (loading) return <p>Đang tải...</p>;
+    if (!activeCategoryProducts || activeCategoryProducts?.length === 0)
+      return <p>Không có sản phẩm nào.</p>;
+    console.log("activeCategoryProducts", activeCategoryProducts);
 
     return (
-      <div className="flex justify-center">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mx-10">
-          {filteredProducts.map((item, index) => (
-            <ProductCard key={index} item={item} />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {activeCategoryProducts
+          ?.filter((item) => item?.isActive == true)
+          .map((product) => (
+            <ProductCard key={product?.id} item={product} />
           ))}
-        </div>
       </div>
     );
   };
@@ -173,113 +213,79 @@ const HomePage = () => {
               1024: { slidesPerView: 4 }
             }}
           >
-            {/* Polo */}
-            <SwiperSlide>
-              <div className="relative group">
-                <img
-                  className="w-full object-cover h-[700px] sm:h-[600px] md:h-[700px] lg:h-[750px] aspect-square"
-                  src="https://product.hstatic.net/200000690725/product/tp039_a6940e2c64624279b623c14c12a082c6_master.jpg"
-                  alt="Áo Polo"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end justify-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <h2 className="text-white text-[24px] font-bold">ÁO POLO</h2>
+            {allCategory?.map((item, index) => (
+              <SwiperSlide key={index}>
+                <div
+                  className="relative group cursor-pointer"
+                  onClick={() => navigate(`/product?category=${item.id}`)}
+                >
+                  <img
+                    className="w-full object-cover h-[700px] sm:h-[600px] md:h-[700px] lg:h-[750px] aspect-square"
+                    src={item?.imageCategory}
+                    alt={item?.name}
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end justify-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <h2 className="text-white text-[24px] font-bold">
+                      {item?.name}
+                    </h2>
+                  </div>
                 </div>
-              </div>
-            </SwiperSlide>
-
-            {/* Thun */}
-            <SwiperSlide>
-              <div className="relative group">
-                <img
-                  className="w-full object-cover h-[700px] sm:h-[600px] md:h-[700px] lg:h-[750px] aspect-square"
-                  src="https://product.hstatic.net/200000690725/product/ts001_eec77c4082074ba79aef59388c49def1_master.jpg"
-                  alt="Áo Thun"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end justify-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <h2 className="text-white text-[24px] font-bold">ÁO THUN</h2>
-                </div>
-              </div>
-            </SwiperSlide>
-
-            {/* Sơ mi */}
-            <SwiperSlide>
-              <div className="relative group">
-                <img
-                  className="w-full object-cover h-[700px] sm:h-[600px] md:h-[700px] lg:h-[750px] aspect-square"
-                  src="https://product.hstatic.net/200000690725/product/tb613---bt900-_24__397096fcf9dc4a9da5a5e7c8ea6112e3_master.jpg"
-                  alt="Áo Sơ Mi"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end justify-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <h2 className="text-white text-[24px] font-bold">ÁO SƠ MI</h2>
-                </div>
-              </div>
-            </SwiperSlide>
-
-            {/* Thể thao */}
-            <SwiperSlide>
-              <div className="relative group">
-                <img
-                  className="w-full object-cover h-[700px] sm:h-[600px] md:h-[700px] lg:h-[750px] aspect-square"
-                  src="https://product.hstatic.net/200000690725/product/5d6f030c-b709-447b-a934-629c527fa5f3_957c27b9670f4507a44f91c44ec8af00_master.jpg"
-                  alt="Áo Thể Thao"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end justify-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <h2 className="text-white text-[24px] font-bold">
-                    ÁO THỂ THAO
-                  </h2>
-                </div>
-              </div>
-            </SwiperSlide>
-            {/* Thể thao */}
-            <SwiperSlide>
-              <div className="relative group">
-                <img
-                  className="w-full object-cover h-[700px] sm:h-[600px] md:h-[700px] lg:h-[750px] aspect-square"
-                  src="https://product.hstatic.net/200000690725/product/5d6f030c-b709-447b-a934-629c527fa5f3_957c27b9670f4507a44f91c44ec8af00_master.jpg"
-                  alt="Áo Thể Thao"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end justify-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <h2 className="text-white text-[24px] font-bold">
-                    ÁO THỂ THAO
-                  </h2>
-                </div>
-              </div>
-            </SwiperSlide>
+              </SwiperSlide>
+            ))}
           </Swiper>
         </div>
         {/*  EndCategory */}
         <div
-          id="hotproduct"
-          className="product-list flex flex-col justify-start items-center"
+          id="newproduct"
+          className="product-list flex flex-col justify-start items-center w-full px-4 "
         >
-          <h3 className="text-2xl font-bold my-5">Sản phẩm bán chạy</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-3">
-            {allProduct.filter((item) => item.isActive === true).map((item: Products, index: number) => (
+          <h3 className="text-2xl font-bold my-5">Sản phẩm mới</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-10 my-3">
+            {newProducts.slice(0, visibleCount).map((item, index) => (
               <ProductCard key={index} item={item} />
             ))}
           </div>
+
+          {visibleCount < newProducts.length && (
+            <button
+              onClick={handleShowMore}
+              className="mt-4 px-5 py-2 text-black text-sm rounded border border-black uppercase hover:bg-black hover:text-white transition duration-300"
+            >
+              Hiển thị thêm
+            </button>
+          )}
+          {visibleCount > newProducts.length && (
+            <button
+              onClick={handleShowLess}
+              className="mt-4 px-5 py-2 text-black text-sm rounded border border-black uppercase hover:bg-black hover:text-white transition duration-300"
+            >
+              Ẩn bớt
+            </button>
+          )}
         </div>
         {/* EndProductCard */}
-        <div className="w-full px-4 sm:px-10 md:px-20 bg-[#f0f0f0] py-16 my-5">
-          <h1 className="text-2xl font-semibold text-center">
-            Sản phẩm theo mùa
-          </h1>
-          <Tabs defaultActiveKey="spring" centered>
-            <Tabs.TabPane
-              className="text-2xl font-semibold"
-              tab="Spring"
-              key="spring"
-            >
-              {renderProductsBySeason("653b6fbd34bc9d789b0d357a")}
-            </Tabs.TabPane>
-            <Tabs.TabPane
-              className="text-2xl font-semibold"
-              tab="Summer"
-              key="summer"
-            >
-              {renderProductsBySeason("653b6fbd34bc9d789b0d357b")}
-            </Tabs.TabPane>
-          </Tabs>
+        <div className="video flex flex-col justify-start items-center w-full px-4 sm:px-10 md:px-20 py-10 bg-[#f0f0f0] mt-5">
+          <video
+            className="w-full h-[100px] sm:h-[200px] md:h-[300px] lg:h-[400px]
+            object-cover"
+            src={Video}
+            autoPlay
+            loop
+            muted
+          ></video>
+        </div>
+
+        <div className="flex flex-col justify-start items-center w-full px-4 sm:px-10 md:px-20 py-16 my-5">
+          <h1 className="text-2xl font-semibold text-center">Bộ sưu tập</h1>
+          <Tabs
+            defaultActiveKey="0"
+            onChange={(key) => getDataCategoryById(allCategory[key]?.id)}
+            items={allCategory.map((item, index) => ({
+              label: item.name,
+              key: `${index}`
+            }))}
+          />
+          <div className="mt-4">{renderProductsByCategory()}</div>
         </div>
       </div>
     </>

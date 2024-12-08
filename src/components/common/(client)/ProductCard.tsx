@@ -18,44 +18,47 @@ const ProductCard = ({ item }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const queryClient = useQueryClient();
-
+  // console.log(item);
 
   const countColors = (): number => item?.variants.length;
   const countSizes = (): number =>
     item?.variants.reduce((total, variant) => total + variant.sizes.length, 0);
 
   const showModal = async (id: string) => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
     const res = await getDataProductById(id)
     if (res?.data?.isActive === false) {
       notification.error({
         message: "Sản phẩm không còn tồn tại!",
         placement: "topRight",
-        duration: 4,
+        duration: 4
       });
       queryClient.invalidateQueries({ queryKey: ["products"] });
     } else {
-      setIsModalVisible(true)
+      setIsModalVisible(true);
     }
-
   };
   const handleOk = () => {
     setIsModalVisible(true);
   };
-  const handleCancel = () => setIsModalVisible(false);
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
 
   const handleToProductDetail = async (id: string) => {
-    const res = await getDataProductById(id)
+    const res = await getDataProductById(id);
+
     if (res?.data?.isActive === false) {
       notification.error({
         message: "Sản phẩm không còn tồn tại!",
         placement: "topRight",
-        duration: 4,
+        duration: 4
       });
       queryClient.invalidateQueries({ queryKey: ["products"] });
     } else {
-      nav(`/home/product/${id}`)
+      nav(`/home/product/${id}`);
     }
-  }
+  };
 
   return (
     <div
@@ -63,11 +66,6 @@ const ProductCard = ({ item }: ProductCardProps) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {item?.discount && (
-        <div className="absolute z-10 top-2 right-2 bg-red-500 text-white text-[14px] font-semibold rounded-full px-2 py-1">
-          -{item?.discount}%
-        </div>
-      )}
       <div className="relative">
         <img
           className="w-full object-cover h-[250px] mb-4"
@@ -78,16 +76,18 @@ const ProductCard = ({ item }: ProductCardProps) => {
           <div className="absolute inset-0 flex justify-center items-end mb-5 space-x-4">
             <button
               className="bg-white p-2 rounded-full shadow-md flex justify-start items-center gap-1"
-              onClick={() =>showModal(item.id)}
+              onClick={() => showModal(item?.id)}
             >
               <ShoppingBag size={20} className="text-gray-800" />
               <span className="hidden md:block text-base">Thêm giỏ hàng</span>
             </button>
             {/* Nút Xem chi tiết sản phẩm */}
-            <button onClick={() => handleToProductDetail(item.id)} className="bg-white p-2 rounded-full shadow-md">
+            <button
+              onClick={() => handleToProductDetail(item?.id)}
+              className="bg-white p-2 rounded-full shadow-md"
+            >
               <Eye size={20} className="text-gray-800" /> {/* Icon Xem */}
             </button>
-
           </div>
         )}
       </div>
@@ -102,7 +102,7 @@ const ProductCard = ({ item }: ProductCardProps) => {
         <span className="text-red-500 text-[16px] font-bold mr-2">
           {item?.variants[0]?.sizes[0]?.price.toLocaleString()}đ
         </span>
-        <span className="text-gray-400 text-[14px] line-through">198,000đ</span>
+        {/* <span className="text-gray-400 text-[14px] line-through">178,000đ</span> */}
       </div>
       <AddToCart
         isModalVisible={isModalVisible}

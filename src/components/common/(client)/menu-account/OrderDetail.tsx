@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Descriptions,
   Table,
@@ -9,6 +9,7 @@ import {
   Spin,
   Button,
   Modal,
+  Input,
   message
 } from "antd";
 import {
@@ -18,10 +19,13 @@ import {
 
 const OrderDetail = () => {
   const { orderId } = useParams();
+  const navigate = useNavigate();
   const [orderDetail, setOrderDetail] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false); // Trạng thái mở modal
-  const [cancelNote, setCancelNote] = useState(""); // Ghi chú hủy đơn hàng
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [cancelNote, setCancelNote] = useState("");
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+  const [returnNote, setReturnNote] = useState("");
 
   const statusColorMap = {
     "Chờ xác nhận": "blue",
@@ -34,31 +38,37 @@ const OrderDetail = () => {
     "Đã hủy": "red"
   };
 
-  useEffect(() => {
-    const fetchOrderDetail = async () => {
-      setLoading(true);
+  const fetchOrderDetail = async () => {
+    setLoading(true);
+    try {
       if (orderId) {
         const { data } = await getOrderDetailService(orderId);
-        setOrderDetail(data);
+        if (data) {
+          setOrderDetail(data);
+        } else {
+          message.error(
+            "Không thể lấy thông tin đơn hàng. Vui lòng thử lại sau."
+          );
+          navigate("/my-account");
+        }
       }
+    } catch (error) {
+      message.error("Không thể lấy thông tin đơn hàng. Vui lòng thử lại sau.");
+    } finally {
       setLoading(false);
-    };
+    }
+  };
+
+  useEffect(() => {
     fetchOrderDetail();
   }, [orderId]);
-
-  if (loading) {
-    return <Spin size="large" style={{ display: "block", margin: "auto" }} />;
-  }
 
   const handleCancelOrder = async () => {
     try {
       const response = await updateOrderService(orderId, "Đã hủy", cancelNote);
       if (response?.status) {
         message.success("Đơn hàng đã được hủy thành công.");
-        setOrderDetail((prev) => ({
-          ...prev,
-          orderInfor: { ...prev.orderInfor, status: "Đã hủy" }
-        }));
+        await fetchOrderDetail();
       } else {
         message.error(response?.message || "Hủy đơn hàng thất bại.");
       }
@@ -68,6 +78,30 @@ const OrderDetail = () => {
       setIsCancelModalOpen(false);
     }
   };
+
+  const handleReturnOrder = async () => {
+    try {
+      const response = await updateOrderService(
+        orderId,
+        "Hoàn đơn",
+        returnNote
+      );
+      if (response?.status) {
+        message.success("Đơn hàng đã được hoàn thành công.");
+        await fetchOrderDetail();
+      } else {
+        message.error(response?.message || "Hoàn đơn hàng thất bại.");
+      }
+    } catch (error) {
+      message.error("Có lỗi xảy ra khi hoàn đơn hàng.");
+    } finally {
+      setIsReturnModalOpen(false);
+    }
+  };
+
+  if (loading) {
+    return <Spin size="large" style={{ display: "block", margin: "auto" }} />;
+  }
 
   const {
     orderInfor,
@@ -92,11 +126,15 @@ const OrderDetail = () => {
         <Button style={{ margin: "10px 0" }}>Quay về</Button>
       </Link>
 
-      {/* Lịch sử đơn hàng */}
       <Card title="Lịch sử đơn hàng">
         <Timeline
           mode="top"
-          style={{ overflowX: "auto", whiteSpace: "nowrap" }}
+          style={{
+            display: "flex",
+            overflowX: "auto",
+            whiteSpace: "nowrap",
+            padding: "10px 0"
+          }}
         >
           {historyBill?.map((item, index) => (
             <Timeline.Item
@@ -105,22 +143,21 @@ const OrderDetail = () => {
               style={{
                 display: "inline-block",
                 textAlign: "center",
+                width: "250px",
                 marginRight: "20px"
               }}
             >
-              <p style={{ margin: "5px 0", fontWeight: "bold" }}>
-                {item.createdAt}
+              <p>
+                <strong>{item.createdAt}</strong>
               </p>
-              <p style={{ margin: "5px 0" }}>
+              <p>
                 Người xử lý: {item.creator} ({item.role})
               </p>
-              <p style={{ margin: "5px 0" }}>
+              <p>
                 Trạng thái:{" "}
                 <Tag color={statusColorMap[item.status]}>{item.status}</Tag>
               </p>
-              {item.note && (
-                <p style={{ margin: "5px 0" }}>Ghi chú: {item.note}</p>
-              )}
+              {item.note && <p>Ghi chú: {item.note}</p>}
             </Timeline.Item>
           ))}
         </Timeline>
@@ -128,22 +165,31 @@ const OrderDetail = () => {
 
       <Card>
         <div className="flex gap-2">
-          {orderInfor?.status === "Chờ xác nhận" && (
-            <Button
-              danger
-              onClick={() => setIsCancelModalOpen(true)}
-              style={{ margin: "10px 0" }}
-            >
-              Hủy đơn hàng
-            </Button>
-          )}
-          <Button style={{ margin: "10px 0" }}>
-            Xem chi tiết lịch sử đơn hàng
+          <Button
+            danger
+            onClick={() => setIsCancelModalOpen(true)}
+            disabled={[
+              "Đã hủy",
+              "Hoàn đơn",
+              "Đang giao hàng",
+              "Đã giao hàng",
+              "Hoàn thành"
+            ].includes(orderInfor?.status)}
+          >
+            Hủy đơn hàng
+          </Button>
+          <Button
+            onClick={() => setIsReturnModalOpen(true)}
+            disabled={
+              !["Đã giao hàng", "Hoàn thành"].includes(orderInfor?.status) ||
+              ["Đã hủy", "Hoàn đơn"].includes(orderInfor?.status)
+            }
+          >
+            Hoàn đơn
           </Button>
         </div>
       </Card>
 
-      {/* Modal hủy đơn hàng */}
       <Modal
         title="Xác nhận hủy đơn hàng"
         visible={isCancelModalOpen}
@@ -151,51 +197,32 @@ const OrderDetail = () => {
         onCancel={() => setIsCancelModalOpen(false)}
         okText="Xác nhận"
         cancelText="Hủy"
-        style={{
-          // Màu nền nhẹ nhàng
-          borderRadius: "8px", // Bo góc modal
-          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" // Đổ bóng nhẹ
-        }}
-        bodyStyle={{
-          padding: "20px" // Padding cho body modal
-        }}
-        titleStyle={{
-          backgroundColor: "#ff4d4f", // Màu nền đỏ cho tiêu đề
-          color: "white", // Màu chữ trắng
-          borderTopLeftRadius: "8px", // Bo góc cho tiêu đề
-          borderTopRightRadius: "8px", // Bo góc cho tiêu đề
-          fontSize: "16px", // Kích thước chữ tiêu đề
-          fontWeight: "bold" // In đậm tiêu đề
-        }}
       >
-        <p
-          style={{
-            fontSize: "14px",
-            // color: "#555", // Màu chữ tối
-            marginBottom: "15px" // Khoảng cách dưới paragraph
-          }}
-        >
-          Bạn có chắc chắn muốn hủy đơn hàng này?
-        </p>
-        <textarea
-          style={{
-            width: "100%",
-            height: "100px",
-            padding: "10px",
-            border: "1px solid #ccc",
-            borderRadius: "6px",
-            fontSize: "14px",
-            resize: "vertical", // Cho phép thay đổi chiều cao của textarea
-            outline: "none"
-          }}
+        <p>Bạn có chắc chắn muốn hủy đơn hàng này?</p>
+        <Input.TextArea
           placeholder="Nhập lý do hủy đơn hàng (không bắt buộc)"
           value={cancelNote}
           onChange={(e) => setCancelNote(e.target.value)}
         />
       </Modal>
 
-      {/* Thông tin đơn hàng */}
-      <Card title="Thông tin đơn hàng" style={{ marginBottom: "20px" }}>
+      <Modal
+        title="Xác nhận hoàn đơn"
+        visible={isReturnModalOpen}
+        onOk={handleReturnOrder}
+        onCancel={() => setIsReturnModalOpen(false)}
+        okText="Xác nhận"
+        cancelText="Hủy"
+      >
+        <p>Bạn có chắc chắn muốn hoàn đơn hàng này?</p>
+        <Input.TextArea
+          placeholder="Nhập lý do hoàn đơn hàng (không bắt buộc)"
+          value={returnNote}
+          onChange={(e) => setReturnNote(e.target.value)}
+        />
+      </Modal>
+
+      <Card title="Thông tin đơn hàng">
         <Descriptions bordered column={2}>
           <Descriptions.Item label="Mã hóa đơn">
             {orderInfor?.code}
@@ -212,66 +239,47 @@ const OrderDetail = () => {
           <Descriptions.Item label="Địa chỉ">
             {orderInfor?.address}
           </Descriptions.Item>
-          <Descriptions.Item label="Phương thức thanh toán">
-            <Tag
-              color={
-                orderInfor?.paymentMethod === "COD" ? "#2db7f5" : "#87d068"
-              }
-            >
-              {orderInfor?.paymentMethod}
-            </Tag>
-          </Descriptions.Item>
           <Descriptions.Item label="Trạng thái">
             <Tag color={statusColorMap[orderInfor?.status]}>
               {orderInfor?.status}
             </Tag>
           </Descriptions.Item>
-          <Descriptions.Item label="Ngày tạo">{createdAt}</Descriptions.Item>
         </Descriptions>
       </Card>
 
-      {/* Danh sách sản phẩm */}
-      <Card title="Danh sách sản phẩm" style={{ marginBottom: "20px" }}>
+      <Card title="Danh sách sản phẩm">
         <Table
-          rowKey="id"
           dataSource={orderItems}
-          pagination={false}
-          bordered
           columns={[
-            {
-              title: "Hình ảnh",
-              dataIndex: "image",
-              key: "image",
-              render: (src) => (
-                <img src={src} alt="product" style={{ width: 50 }} />
-              )
-            },
-            { title: "Tên sản phẩm", dataIndex: "name", key: "name" },
-            { title: "Màu sắc", dataIndex: "color", key: "color" },
-            { title: "Kích thước", dataIndex: "size", key: "size" },
+            { title: "Tên sản phẩm", dataIndex: "name" },
+            { title: "Số lượng", dataIndex: "quantity" },
             {
               title: "Đơn giá",
               dataIndex: "price",
-              key: "price",
               render: (price) => `${price.toLocaleString()} đ`
             },
-            { title: "Số lượng", dataIndex: "quantity", key: "quantity" },
             {
-              title: "Tổng tiền",
+              title: "Tổng",
               dataIndex: "totalItemPrice",
-              key: "totalItemPrice",
               render: (price) => `${price.toLocaleString()} đ`
             }
           ]}
+          pagination={false}
+          bordered
         />
       </Card>
 
-      {/* Thông tin thanh toán */}
-      <Card title="Thông tin thanh toán" style={{ marginBottom: "20px" }}>
+      <Card title="Thông tin thanh toán">
         <Descriptions bordered column={1}>
-          <Descriptions.Item label="Tổng tiền hàng">{`${totalPrice?.toLocaleString()} đ`}</Descriptions.Item>
-          <Descriptions.Item label="Phí vận chuyển">{`${shippingCost?.toLocaleString()} đ`}</Descriptions.Item>
-          <Descriptions.Item label="Voucher giảm giá">{`${discountVoucher?.toLocaleString()} đ`}</Descriptions.Item>
+          <Descriptions.Item label="Tổng tiền hàng">
+            {`${totalPrice?.toLocaleString()} đ`}
+          </Descriptions.Item>
+          <Descriptions.Item label="Phí vận chuyển">
+            {`${shippingCost?.toLocaleString()} đ`}
+          </Descriptions.Item>
+          <Descriptions.Item label="Voucher giảm giá">
+            {`${discountVoucher?.toLocaleString()} đ`}
+          </Descriptions.Item>
           <Descriptions.Item label="Tổng thanh toán">
             <strong>{`${totalCost?.toLocaleString()} đ`}</strong>
           </Descriptions.Item>

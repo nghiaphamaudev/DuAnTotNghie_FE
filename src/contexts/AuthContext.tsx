@@ -11,6 +11,7 @@ import { AddressRequest } from "../common/types/Address";
 import {
   ApiError,
   ForgotPasswordRequest,
+  RegisterAdminRequest,
   ResetPasswordRequest,
   UpdatePasswordRequest,
   User,
@@ -25,8 +26,11 @@ import {
   forgotPassword,
   getProfile,
   loginAccount,
+  loginAdmin,
   registerAccount,
+  registerAdmin,
   resetPassword,
+  toggleBlockAdmin,
   toggleBlockUser,
   updateAddress,
   updatePassword,
@@ -40,6 +44,7 @@ type AuthContextProps = {
   setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;
   register: (formData: UserRegisterRequest) => void;
   login: (formData: UserLoginRequest) => void;
+  loginadmin: (formData: UserLoginRequest) => void;
   user: User | null;
   handleLogout: () => void;
   updateUser: (formData: User) => void;
@@ -64,10 +69,18 @@ type AuthContextProps = {
   IblockUser: UseMutateAsyncFunction<
     UserAdmin,
     ApiError,
-    { userId: string; shouldBlock: boolean; note?: string },
+    { idUser: string; status: boolean; note?: string },
+    unknown
+  >;
+  IblockAdmin: UseMutateAsyncFunction<
+    UserAdmin,
+    ApiError,
+    { idAdmin: string; status: boolean },
     unknown
   >;
   UnblockUser: (id: string) => void;
+  UnblockAdmin: (id: string) => void;
+  IregisterAdmin:(formData: RegisterAdminRequest) => void;
   updateroleUser: (data: { userId: string; role: string }) => Promise<void>;
 };
 
@@ -142,6 +155,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         placement: "topRight",
       });
       nav("/home");
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Đăng nhập thất bại",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
+  });
+  //login admin
+  const { mutateAsync: loginadmin } = useMutation({
+    mutationFn: async (formData: UserLoginRequest) => {
+      const data = await loginAdmin(formData);
+      return data;
+    },
+    onSuccess: (data: UserResponse) => {
+      localStorage.setItem("accessToken", data.adminToken);
+      localStorage.setItem("user", JSON.stringify(data.data));
+      setUser(data.data);
+      notification.success({
+        message: "Đăng nhập thành công",
+        description: "Chào mừng bạn quay trở lại!",
+        placement: "topRight",
+      });
+      nav("/admin");
     },
     onError: (error: ApiError) => {
       const errorMessage = error?.response?.data?.message || error?.message;
@@ -227,7 +266,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       queryClient.invalidateQueries({
         queryKey: ["users"],
       });
-      localStorage.setItem("user", JSON.stringify(data));
+      localStorage.setItem("user", JSON.stringify(data.data?.user));
       notification.success({
         message: "Cập nhật thông tin thành công!",
         placement: "topRight",
@@ -372,17 +411,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   //mutation block user
   const { mutateAsync: IblockUser } = useMutation({
     mutationFn: async ({
-      userId,
-      shouldBlock,
+      idUser,
       note,
     }: {
-      userId: string;
-      shouldBlock: boolean;
+      idUser: string;
+      status: boolean;
       note?: string;
     }) => {
       const data = await toggleBlockUser({
-        userId,
-        shouldBlock,
+        idUser,
+        status: false,
         note, // Truyền lý do chặn
       });
       return data;
@@ -404,18 +442,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   const { mutateAsync: UnblockUser } = useMutation({
-    mutationFn: async (userId: string) => {
+    mutationFn: async (idUser: string) => {
       const data = await toggleBlockUser({
-        userId,
-        shouldBlock: true,
+        idUser,
+        status: true,
       });
-      console.log(userId); // Gọi hàm BlockUser từ authServices
+      console.log(idUser); // Gọi hàm BlockUser từ authServices
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["usersAdmin"] }); // Invalidates query để làm mới dữ liệu
       notification.success({
         message: "Bỏ chặn người dùng thành công!",
+      });
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Có lỗi khi bỏ chặn người dùng",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
+  });
+
+  //block admin
+  const { mutateAsync: IblockAdmin } = useMutation({
+    mutationFn: async ({
+      idAdmin,
+      status,
+    }: {
+      idAdmin: string;
+      status: boolean;
+    }) => {
+      const data = await toggleBlockAdmin({ idAdmin, status });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["AdminAccount"] });
+      notification.success({
+        message: "Chặn người dùng thành công!",
       });
     },
     onError: (error: ApiError) => {
@@ -428,7 +494,56 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     },
   });
 
-  //
+  const { mutateAsync: UnblockAdmin } = useMutation({
+    mutationFn: async (idAdmin: string) => {
+      const data = await toggleBlockAdmin({
+        idAdmin,
+        status: true,
+      });
+      console.log(idAdmin); // Gọi hàm BlockUser từ authServices
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["AdminAccount"] }); // Invalidates query để làm mới dữ liệu
+      notification.success({
+        message: "Bỏ chặn người dùng thành công!",
+      });
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Có lỗi khi bỏ chặn người dùng",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
+  });
+
+  //register admin
+  const { mutateAsync: IregisterAdmin } = useMutation({
+    mutationFn: async (formData: RegisterAdminRequest) => {
+      const data = await registerAdmin(formData);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["AdminAccount"] });
+      notification.success({
+        message: "Đăng ký tài khoản Admin thành công",
+        description: "Tài khoản của bạn đã được tạo thành công!",
+        placement: "topRight",
+      });
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Đăng ký tài khoản Admin thất bại",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    },
+  });
+
+  //update role user
   const { mutateAsync: updateroleUser } = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
       return await updateRoleUser(userId, role);
@@ -500,6 +615,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         IblockUser,
         UnblockUser,
         token,
+        loginadmin,
+        IblockAdmin,
+        UnblockAdmin,
+        IregisterAdmin
       }}
     >
       {children}

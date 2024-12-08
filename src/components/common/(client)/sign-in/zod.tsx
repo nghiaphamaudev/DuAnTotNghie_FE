@@ -17,7 +17,6 @@ export const LoginSchema = z.object({
     .nonempty("Vui lòng nhập mật khẩu")
     .min(6, "Mật khẩu phải lớn hơn 6 kí tự ")
     .regex(/[a-z]/, "Mật khẩu ít nhất phải có một chữ thường")
-    .regex(/[A-Z]/, "Mật khẩu ít nhất phải có một chữ hoa")
     .regex(/[\d]/, "Mật khẩu ít nhất phải có một số")
     .regex(/[^a-zA-Z0-9]/, "Mật khẩu ít nhất phải có một ký tự đặc biệt"),
 });
@@ -55,13 +54,13 @@ export const RegisterSchema = z
       .nonempty("Vui lòng nhập mật khẩu")
       .min(6, "Mật khẩu phải lớn hơn 6 kí tự ")
       .regex(/[a-z]/, "Mật khẩu ít nhất phải có một chữ thường")
-      .regex(/[A-Z]/, "Mật khẩu ít nhất phải có một chữ hoa")
       .regex(/[\d]/, "Mật khẩu ít nhất phải có một số")
       .regex(/[^a-zA-Z0-9]/, "Mật khẩu ít nhất phải có một ký tự đặc biệt"),
     fullName: z
       .string()
       .nonempty("Vui lòng nhập tên người dùng")
-      .min(7, "Tên người dùng phải dài hơn 7 kí tự "),
+      .min(7, "Tên người dùng phải dài hơn 7 kí tự ")
+      .max(50, "Tên người dùng không được vượt quá 50 kí tự"),
     phoneNumber: z
       .string()
       .nonempty("Vui lòng nhập số điện thoại")
