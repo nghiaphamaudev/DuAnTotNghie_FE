@@ -44,7 +44,7 @@ const FeedbackSection = ({ productId }: { productId: string }) => {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold">Đánh giá sản phẩm</h2>
+      {/* <h2 className="text-lg font-semibold">Đánh giá sản phẩm</h2> */}
       <Rate
         character={<Star />}
         value={rating}

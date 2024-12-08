@@ -42,7 +42,7 @@ const HomePage = () => {
       const now = new Date();
       const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
       const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-      return diffInDays <= 7; //! Chỉ lấy sản phẩm được tạo trong vòng 4 ngày
+      return diffInDays <= 10; //! Chỉ lấy sản phẩm được tạo trong vòng 4 ngày
     });
   // Hàm hiển thị thêm sản phẩm
   const handleShowMore = () => {

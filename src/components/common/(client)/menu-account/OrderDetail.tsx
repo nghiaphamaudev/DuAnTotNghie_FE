@@ -37,7 +37,7 @@ const OrderDetail = () => {
     "Đóng gói chờ vận chuyển": "orange",
     "Đang giao hàng": "purple",
     "Đã giao hàng": "cyan",
-    "Hoàn thành": "green",
+    "Đã nhận được hàng": "green",
     "Hoàn đơn": "magenta",
     "Đã hủy": "red"
   };
@@ -84,7 +84,7 @@ const OrderDetail = () => {
   };
   const handleComplete = async () => {
     try {
-      const response = await updateOrderService(orderId, "Hoàn thành");
+      const response = await updateOrderService(orderId, "Đã nhận được hàng");
       if (response?.status) {
         message.success("Bạn đã hoàn thành đơn hàng thành công.");
         // await fetchOrderDetail();
@@ -293,7 +293,7 @@ const OrderDetail = () => {
 
       {/* Thông tin giao dịch */}
       <Card title="Thông tin giao dịch">
-        {orderInfor?.status === "Hoàn thành" ||
+        {orderInfor?.status === "Hoàn thành đơn hàng" ||
         (orderInfor?.status === "Đã hủy" &&
           orderInfor?.paymentMethod === "VNPAY") ? (
           orderInfor?.paymentMethod === "VNPAY" ? (
