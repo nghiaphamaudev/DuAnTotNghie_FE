@@ -28,7 +28,6 @@ const ProductPage = () => {
   const [isLoading, setIsLoading] = useState(false); // Trạng thái loading
   const [popularColors, setPopularColors] = useState<string[]>([]); // Màu phổ biến
   const itemsPerPage = 8;
-
   // Lấy 5 màu phổ biến nhất
   useEffect(() => {
     const getPopularColors = () => {
@@ -59,13 +58,14 @@ const ProductPage = () => {
   }, []);
 
   useEffect(() => {
+    console.log("SelectedCategory", selectedCategory);
     if (selectedCategory) {
       setIsLoading(true);
       getDataCategoryById(selectedCategory).finally(() => setIsLoading(false));
     } else {
       setFilteredProducts(allProduct); // Nếu không chọn danh mục, sử dụng tất cả sản phẩm
     }
-  }, [selectedCategory, allProduct]);
+  }, [selectedCategory]);
 
   const handleCategoryChange = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
@@ -78,6 +78,7 @@ const ProductPage = () => {
     setSortOption(value);
     localStorage.setItem("sortOption", value);
   };
+  console.log("ActiveCategoryProducts", activeCategoryProducts);
 
   const applyFilters = () => {
     const filtered = (selectedCategory ? activeCategoryProducts : allProduct)
@@ -152,9 +153,9 @@ const ProductPage = () => {
                 <li
                   key={category.id}
                   className={`cursor-pointer ${
-                    selectedCategory === category.id ? "text-blue-500" : ""
+                    selectedCategory === category?.id ? "text-blue-500" : ""
                   }`}
-                  onClick={() => handleCategoryChange(category.id)}
+                  onClick={() => handleCategoryChange(category?.id)}
                 >
                   {category.name}
                 </li>

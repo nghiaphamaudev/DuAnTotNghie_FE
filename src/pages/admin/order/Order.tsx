@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Table, Button, Space, Tag, Tabs, Card, Row, Col } from "antd";
 import { Link } from "react-router-dom";
 import { Search, View } from "lucide-react";
-import { getAllOrdersService } from "../../../services/orderService";
+import {
+  getAllOrdersService,
+  getAllOrdersServiceForAdmin
+} from "../../../services/orderService";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 
 const Orders = () => {
@@ -10,7 +13,7 @@ const Orders = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      const response = await getAllOrdersService();
+      const response = await getAllOrdersServiceForAdmin();
       console.log("orders: ", response);
 
       if (response?.data) {
@@ -72,7 +75,7 @@ const Orders = () => {
           "Đóng gói chờ vận chuyển": "orange",
           "Đang giao hàng": "purple",
           "Đã giao hàng": "cyan",
-          "Hoàn thành": "green",
+          "Đã nhận được hàng": "green",
           "Hoàn đơn": "magenta",
           "Đã hủy": "red"
         };
@@ -112,7 +115,7 @@ const Orders = () => {
     { key: "Đóng gói chờ vận chuyển", label: "Đóng gói chờ vận chuyển" },
     { key: "Đang giao hàng", label: "Đang giao hàng" },
     { key: "Đã giao hàng", label: "Đã giao hàng" },
-    { key: "Hoàn thành", label: "Hoàn thành" },
+    { key: "Đã nhận được hàng", label: "Đã nhận được hàng" },
     { key: "Hoàn đơn", label: "Hoàn đơn" },
     { key: "Đã hủy", label: "Đã hủy" }
   ];
