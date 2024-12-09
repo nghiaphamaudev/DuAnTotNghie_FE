@@ -15,7 +15,7 @@ import {
   Switch,
   Space
 } from "antd";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { DeleteOutlined, MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   getProductById,
   toggleSizeStatus,
@@ -39,7 +39,9 @@ const ProductEdit: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [isAddingVariant, setIsAddingVariant] = useState(false);
-  const [isRemoveVariant, setIsRemoveVariant] = useState(false);
+  const [isAddSize, setIsAddSize] = useState<{ [key: number]: boolean }>({});
+  const [fields, setFields] = useState([]);
+
 
   // Fetch product details
   const fetchProductDetails = async () => {
@@ -49,11 +51,11 @@ const ProductEdit: React.FC = () => {
         setInitialData(product.data);
         const coverImageFileList = product.data.coverImg
           ? [
-              {
-                url: product.data.coverImg,
-                name: "coverImage.jpg"
-              }
-            ]
+            {
+              url: product.data.coverImg,
+              name: "coverImage.jpg"
+            }
+          ]
           : [];
         form.setFieldsValue({
           name: product.data.name,
@@ -183,8 +185,7 @@ const ProductEdit: React.FC = () => {
         navigate("/admin/product");
       } else {
         message.error(
-          `Cập nhật sản phẩm thất bại: ${
-            response.message || "Lỗi không xác định"
+          `Cập nhật sản phẩm thất bại: ${response.message || "Lỗi không xác định"
           }`
         );
       }
@@ -327,6 +328,41 @@ const ProductEdit: React.FC = () => {
         message.error("Cập nhật trạng thái kích thước thất bại.");
       });
   };
+
+  const handleAddVariant = () => {
+    setIsAddingVariant(true);
+    setFields([...fields, {}]);
+  }
+  const handleCancelAddVariant = () => {
+    setIsAddingVariant(false); // Đánh dấu không còn thêm biến thể mới
+    const variants = form.getFieldValue('variants');
+    variants.pop(); // Xóa biến thể mới khỏi mảng
+    form.setFieldsValue({ variants }); // Cập nhật lại giá trị form
+  };
+
+  const handleAddSize = (variantIndex: number, addSize: () => void) => {
+    addSize();  // Thêm size mới vào form
+    setIsAddSize((prev) => ({
+      ...prev,
+      [variantIndex]: true,  // Đánh dấu trạng thái là đang thêm size cho biến thể này
+    }));
+  };
+
+  const handleCancelAddSize = (variantIndex: number, removeSize: () => void) => {
+    // Xóa size mới vừa thêm
+    removeSize();
+    setIsAddSize((prev) => {
+      const updated = { ...prev };
+      delete updated[variantIndex];  // Xóa trạng thái của biến thể khỏi isAddSize
+      return updated;
+    });
+
+    // Xóa cả form size mới thêm khỏi biến thể
+    const variants = form.getFieldValue("variants");
+    variants[variantIndex].sizes.pop(); // Xóa size mới ở biến thể này
+    form.setFieldsValue({ variants });  // Cập nhật lại giá trị form
+  };
+
 
   return (
     <Spin spinning={loading} tip="Đang xử lý...">
@@ -559,33 +595,43 @@ const ProductEdit: React.FC = () => {
                                       />
                                     </Form.Item>
                                   </Col>
-                                  {!isAddingVariant && (
-                                    <Col span={6}>
-                                      <Form.Item
-                                        {...sizeRestField}
-                                        name={[sizeName, "status"]}
-                                        label="Trạng thái"
-                                        valuePropName="checked"
+
+                                  <Col span={6}>
+                                    <Form.Item
+                                      {...sizeRestField}
+                                      name={[sizeName, "status"]}
+                                      label="Trạng thái"
+                                      valuePropName="checked"
+                                    >
+                                      <Switch
+                                        checked={sizeRestField?.status}
+                                        onChange={async (
+                                          checked: boolean
+                                        ) => {
+                                          setLoading(true);
+                                          const currentStatus = checked;
+                                          const productId = id;
+                                          handleSizeStatusChange(
+                                            productId,
+                                            variantIndex,
+                                            sizeIndex,
+                                            currentStatus
+                                          );
+                                          setLoading(false);
+                                        }}
+                                      />
+                                    </Form.Item>
+                                  </Col>
+                                  {sizeIndex === sizeFields.length - 1 && !sizeRestField?.nameSize && isAddSize[variantIndex] && (
+                                    <Form.Item>
+                                      <Button
+                                        type="link"
+                                        onClick={() => handleCancelAddSize(variantIndex, removeSize)}
+                                        icon={<MinusCircleOutlined />}
                                       >
-                                        <Switch
-                                          checked={sizeRestField?.status}
-                                          onChange={async (
-                                            checked: boolean
-                                          ) => {
-                                            setLoading(true);
-                                            const currentStatus = checked;
-                                            const productId = id;
-                                            handleSizeStatusChange(
-                                              productId,
-                                              variantIndex,
-                                              sizeIndex,
-                                              currentStatus
-                                            );
-                                            setLoading(false);
-                                          }}
-                                        />
-                                      </Form.Item>
-                                    </Col>
+                                        Bỏ thêm Size
+                                      </Button>
+                                    </Form.Item>
                                   )}
                                 </Row>
                               )
@@ -594,15 +640,28 @@ const ProductEdit: React.FC = () => {
                               <Button
                                 type="dashed"
                                 icon={<PlusOutlined />}
-                                onClick={() => addSize()}
+                                onClick={() => handleAddSize(variantIndex, addSize)}
                                 block
                               >
                                 Thêm Size
                               </Button>
                             </Form.Item>
+
+
                           </>
                         )}
                       </Form.List>
+                      {isAddingVariant && variantIndex === fields.length - 1 && (
+                        <Form.Item>
+                          <Button
+                            type="link"
+                            onClick={handleCancelAddVariant}
+                            icon={<MinusCircleOutlined />}
+                          >
+                            Bỏ thêm
+                          </Button>
+                        </Form.Item>
+                      )}
                     </div>
                   )
                 )}
@@ -610,9 +669,11 @@ const ProductEdit: React.FC = () => {
                   <Button
                     type="dashed"
                     onClick={() => {
+                      handleAddVariant()
                       add();
                     }}
                     icon={<PlusOutlined />}
+
                   >
                     Thêm biến thể sản phẩm
                   </Button>
