@@ -1,4 +1,4 @@
-import { updatePassword } from "./authServices";
+
 import {
   ForgotPasswordRequest,
   RegisterAdminRequest,

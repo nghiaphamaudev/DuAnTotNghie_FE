@@ -1,23 +1,21 @@
 import {
   EditOutlined,
-  EyeOutlined,
   GiftOutlined,
-  HeartOutlined,
   HomeOutlined,
   LockOutlined,
   LogoutOutlined,
-  ShoppingCartOutlined,
+  ShoppingCartOutlined
 } from "@ant-design/icons";
-import { Card, Menu } from "antd";
+import { Menu } from "antd";
 import React, { useState } from "react"; // Đảm bảo import React
 import Address from "../../../components/common/(client)/menu-account/Address";
 import Favorite from "../../../components/common/(client)/menu-account/Favorite";
 import MyOrders from "../../../components/common/(client)/menu-account/MyOrders";
 import PromoCode from "../../../components/common/(client)/menu-account/PromoCode";
+import UpdatePassword from "../../../components/common/(client)/menu-account/UpdatePassword";
+import UserProfile from "../../../components/common/(client)/menu-account/UserProfile";
 import ViewHistoty from "../../../components/common/(client)/menu-account/ViewHistoty";
 import { useAuth } from "../../../contexts/AuthContext";
-import UserProfile from "../../../components/common/(client)/menu-account/UserProfile";
-import UpdatePassword from "../../../components/common/(client)/menu-account/UpdatePassword";
 
 import { ScrollToTop } from "../../../ultils/client";
 
@@ -69,10 +67,9 @@ const MenuAccount = () => {
             <div className="flex flex-col items-center mb-6">
               <label className="w-20 h-20 bg-gray-200 rounded-full mb-3 flex items-center justify-center cursor-pointer overflow-hidden">
                 {userData && (
-                  // <span className="font-semibold text-sm mr-2">
-                  //   {userData.avatar}
-                  // </span>
-                  <img src={userData.avatar} alt="" />
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full  text-black font-bold text-2xl">
+                    {userData.fullName?.charAt(0)}
+                  </div>
                 )}
               </label>
               <div className="flex items-center">
