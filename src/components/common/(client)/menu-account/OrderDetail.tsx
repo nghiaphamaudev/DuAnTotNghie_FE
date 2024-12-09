@@ -30,6 +30,7 @@ const OrderDetail = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     null
   );
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const statusColorMap = {
     "Chờ xác nhận": "blue",
@@ -80,6 +81,7 @@ const OrderDetail = () => {
       message.error("Có lỗi xảy ra khi hủy đơn hàng.");
     } finally {
       setIsCancelModalOpen(false);
+      setIsProcessing(false);
     }
   };
   const handleComplete = async () => {
@@ -87,12 +89,14 @@ const OrderDetail = () => {
       const response = await updateOrderService(orderId, "Đã nhận được hàng");
       if (response?.status) {
         message.success("Bạn đã hoàn thành đơn hàng thành công.");
-        // await fetchOrderDetail();
+        await fetchOrderDetail();
       } else {
         message.error(response?.message || "Hoàn thành đơn hàng thất bại.");
       }
     } catch (error) {
       message.error("Có lỗi xảy ra khi hoàn thành đơn hàng.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -147,7 +151,7 @@ const OrderDetail = () => {
               style={{
                 display: "inline-block",
                 textAlign: "center",
-                width: "250px",
+                width: "270px",
                 marginRight: "20px"
               }}
             >
@@ -171,6 +175,7 @@ const OrderDetail = () => {
         <div className="flex gap-2">
           <Button
             danger
+            loading={isProcessing}
             onClick={() => setIsCancelModalOpen(true)}
             disabled={[
               "Đã hủy",
@@ -184,11 +189,16 @@ const OrderDetail = () => {
           </Button>
           {orderInfor?.status === "Đã giao hàng" && (
             <Button
+              style={{
+                backgroundColor: "#219B9D",
+                borderColor: "#219B9D",
+                borderRadius: "none"
+              }}
               type="primary"
-              loading={loading}
+              loading={isProcessing}
               onClick={() => handleComplete()}
             >
-              Xác nhận đơn hàng
+              Đã nhận được hàng
             </Button>
           )}
         </div>

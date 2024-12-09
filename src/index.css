@@ -13,9 +13,9 @@
 html,
 body {
   height: 100%;
-  /* font-family: "Ari", sans-serif; */
-  /* font-family: "Times New Roman", Times, serif; */
   font-family: Arial, Helvetica, sans-serif;
+  transition: all 0.3s;
+  scroll-behavior: smooth;
 }
 
 /* Thẻ tiêu đề */

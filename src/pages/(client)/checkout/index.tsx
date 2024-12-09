@@ -141,7 +141,8 @@ const CheckoutPage: React.FC = () => {
         message.success("Đặt hàng thành công!");
         localStorage.removeItem("selectedProducts");
         form.resetFields();
-        navigate("/home");
+        //
+        window.location.href = "/home";
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
