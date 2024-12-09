@@ -451,10 +451,12 @@ const DetailProduct = () => {
             </span>
           </div>
 
-          <div className="product-price">{price.toLocaleString()}₫</div>
+          <div className="product-price font-semibold text-2xl">
+            {price.toLocaleString()}₫
+          </div>
 
           <div className="product-options">
-            <label htmlFor="color" className="product-options1">
+            <label htmlFor="color" className="product-options1 ">
               Màu Sắc
             </label>
             <div className="color-options">
@@ -467,7 +469,7 @@ const DetailProduct = () => {
                   disabled={!variant.status}
                   style={{
                     padding: 0,
-                    margin: "5px",
+                    margin: "5px 0",
                     border:
                       selectedColor === variant.color
                         ? "2px solid #000"
@@ -559,7 +561,6 @@ const DetailProduct = () => {
               max={inventory}
               value={quantity}
               onChange={onChangeQuantity}
-              // onKeyDown={handleKeyPress}
               className="w-14 mx-2 focus:outline-none caret-transparent"
             />
             <Button
@@ -593,7 +594,7 @@ const DetailProduct = () => {
             </button>
           </div>
 
-          <div className="infor">
+          <div className="infor text-gray-500">
             <p>{product?.data?.description}</p>
           </div>
         </div>
@@ -601,7 +602,7 @@ const DetailProduct = () => {
         <div>
           <div className="feedback-from">
             <div className="product-feedbacks">
-              <h2>XEM BÌNH LUẬN</h2>
+              <h2>XEM ĐÁNH GIÁ</h2>
               {feedbacks
                 .filter((feedback) => feedback.classify === true)
                 .map((feedback) => (
@@ -633,11 +634,16 @@ const DetailProduct = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="feedback-content">
+                    <div className="feedback-content text-sm text-gray-500 italic">
                       <p>{feedback.comment}</p>
                     </div>
                   </div>
                 ))}
+              {feedbacks.length === 0 && (
+                <p className="no-feedbacks-message text-sm text-gray-500 italic">
+                  Chưa có đánh giá nào cho sản phẩm này.
+                </p>
+              )}
             </div>
           </div>
         </div>

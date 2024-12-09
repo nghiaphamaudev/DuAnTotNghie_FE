@@ -131,7 +131,7 @@ const VoucherAddPage = () => {
               style={{ width: 850 }}
               rules={[
                 { required: true, message: "Vui lòng nhập!" },
-                { min: 0, message: 'Giá trị phải là số dương', transform: val => Number(val) },
+                { min: 1, message: 'Giá trị phải là số dương và lớn hơn 0', transform: val => Number(val) },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
                     const discountType = getFieldValue('discountType');
@@ -158,7 +158,7 @@ const VoucherAddPage = () => {
               style={{ width: 850 }}
               rules={[
                 { required: true, message: "Vui lòng nhập!" },
-                { min: 0, message: 'Giá trị phải là số dương', transform: val => Number(val) },
+                { min: 1, message: 'Giá trị phải là số dương và lớn hơn 0', transform: val => Number(val) },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
                     const discountType = getFieldValue('discountType');
@@ -224,6 +224,7 @@ const VoucherAddPage = () => {
             name="quantity"
             rules={[
               { required: true, message: "Vui lòng nhập số lượng mã giảm giá!" },
+              { min: 1, message: 'Giá trị phải là số dương và lớn hơn 0', transform: val => Number(val) }
             ]}
           >
             <Input placeholder="Số lượng" type="number" />
@@ -240,6 +241,7 @@ const VoucherAddPage = () => {
                 required: true,
                 message: "Vui lòng nhập giá trị đơn hàng tối thiểu!",
               },
+              { min: 50000, message: 'Giá trị phải là số dương và lớn hơn 50.000 nghìn', transform: val => Number(val) }
             ]}
           >
             <Input placeholder="Giá trị đơn hàng tối thiểu" type="number" />
