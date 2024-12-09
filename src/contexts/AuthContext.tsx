@@ -4,7 +4,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { notification } from "antd";
+import { Modal, notification } from "antd";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AddressRequest } from "../common/types/Address";
@@ -65,6 +65,7 @@ type AuthContextProps = {
   isPendingUpdateStatusAddress: boolean;
   token: string | null;
   showDeleteModal: (addressId: string) => void;
+  showLogoutModal: () => void
   updateMyPassword: (formData: UpdatePasswordRequest) => void;
   IupdatePasswordAdmin: (formData: UpdatePasswordRequestAdmin) => void;
   updatestatusAddress: (formData: AddressRequest) => void;
@@ -660,6 +661,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const showLogoutModal = async () => {
+    Modal.confirm({
+      title: "Xác nhận đăng xuất",
+      content: "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?",
+      okText: "Đăng xuất",
+      cancelText: "Hủy",
+      onOk: handleLogout,
+      onCancel: () => {},
+    });
+  };
+
   const handleRefetchUser = () => {
     refetchUserData(); // Tái thực hiện lại request để lấy thông tin mới
   };
@@ -699,6 +711,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         IregisterAdmin,
         IupdatePasswordAdmin,
         changePasswordAdmin,
+        showLogoutModal
       }}
     >
       {children}
