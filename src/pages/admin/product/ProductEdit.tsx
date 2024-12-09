@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Select, Button, InputNumber, Row, Col, Upload, UploadFile, message, Spin, Switch } from 'antd';
+import { Form, Input, Select, Button, InputNumber, Row, Col, Upload, UploadFile, message, Spin, Switch, Space } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { getProductById, toggleVariantStatus, updateProduct } from '../../../services/productServices';
+import { getProductById, toggleSizeStatus, toggleVariantStatus, updateProduct } from '../../../services/productServices';
 import { getAllCategory } from '../../../services/categoryServices';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 const { Option } = Select;
 
@@ -19,6 +19,9 @@ const ProductEdit: React.FC = () => {
   const { id } = useParams<{ id: string | undefined }>();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [isAddingVariant, setIsAddingVariant] = useState(false);
+  const [isRemoveVariant, setIsRemoveVariant] = useState(false);
+
 
   // Fetch product details
   const fetchProductDetails = async () => {
@@ -105,6 +108,7 @@ const ProductEdit: React.FC = () => {
           formData.append(`variants[${index}][sizes][${sizeIndex}][nameSize]`, size.nameSize);
           formData.append(`variants[${index}][sizes][${sizeIndex}][price]`, size.price.toString());
           formData.append(`variants[${index}][sizes][${sizeIndex}][inventory]`, size.inventory.toString());
+          formData.append(`variants[${index}][sizes][${sizeIndex}][status]`, size.status);
         });
 
         // Xử lý ảnh
@@ -188,15 +192,19 @@ const ProductEdit: React.FC = () => {
     return Promise.resolve();
   };
   // Validate for duplicate size
+  // Hàm validate kiểm tra size có trùng lặp hay không trong cùng một biến thể
   const validateUniqueSize = (variantIndex: number) => (_: any, value: string) => {
     const variants = form.getFieldValue('variants') || [];
     const sizes = variants[variantIndex]?.sizes || [];
     const sizeNames = sizes.map((size: any) => size?.nameSize).filter(Boolean);
+
     if (sizeNames.filter((size: string) => size === value).length > 1) {
       return Promise.reject(new Error('Size này đã tồn tại trong biến thể! Vui lòng chọn size khác.'));
     }
+
     return Promise.resolve();
   };
+
 
 
   const handleStatusChange = (productId: string, variantIndex: number, currentStatus: any) => {
@@ -207,21 +215,13 @@ const ProductEdit: React.FC = () => {
     }
 
     const variant = initialData.variants[variantIndex];
-    console.log("Variant Data:", variant);
-
     if (!variant || !variant.id) {
       console.error("Không tìm thấy biến thể tại index:", variantIndex);
-      message.error("Không tìm thấy ID của biến thể.");
       return;
     }
 
     const newStatus = currentStatus ? false : true;
     const variantId = variant.id; // Sử dụng `id` thay vì `_id`
-
-    console.log("Product ID:", productId);
-    console.log("Variant ID:", variantId);
-    console.log("New Status:", newStatus);
-
     toggleVariantStatus(productId, variantId, newStatus)
       .then(() => message.success("Cập nhật trạng thái thành công!"))
       .catch((err) => {
@@ -229,6 +229,43 @@ const ProductEdit: React.FC = () => {
         message.error("Cập nhật trạng thái thất bại.");
       });
   };
+
+  const handleSizeStatusChange = (productId: string, variantIndex: number, sizeIndex: number, currentStatus: boolean) => {
+    if (!initialData || !Array.isArray(initialData.variants)) {
+      console.error("Initial Data hoặc variants không hợp lệ:", initialData);
+      message.error("Dữ liệu sản phẩm chưa sẵn sàng hoặc không hợp lệ.");
+      return;
+    }
+
+    const variant = initialData.variants[variantIndex];
+    if (!variant || !Array.isArray(variant.sizes)) {
+      console.error("Không tìm thấy biến thể hoặc kích thước tại index:", variantIndex);
+      return;
+    }
+
+    const size = variant.sizes[sizeIndex];
+    if (!size || !size.id) {
+      console.error("Không tìm thấy kích thước tại index:", sizeIndex);
+      return;
+    }
+
+    const newStatus = !currentStatus; // Đổi trạng thái
+    const sizeId = size.id; // Sử dụng `id` thay vì `_id`
+
+
+    // Gọi API cập nhật trạng thái size
+    toggleSizeStatus(productId, variant.id, sizeId, newStatus)
+      .then(() => {
+        message.success("Cập nhật trạng thái kích thước thành công!");
+        // Cập nhật trạng thái size trên giao diện (nếu cần)
+        initialData.variants[variantIndex].sizes[sizeIndex].status = newStatus;
+      })
+      .catch((err) => {
+        console.error("Lỗi khi cập nhật trạng thái kích thước:", err);
+        message.error("Cập nhật trạng thái kích thước thất bại.");
+      });
+  };
+
 
 
 
@@ -248,13 +285,13 @@ const ProductEdit: React.FC = () => {
         <Form.Item label="Tên sản phẩm" name="name" rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' },
         {
           pattern: /^[\p{L}\p{N}\s]{6,}$/u,
-          message: "Tên mã giảm giá phải có ít nhất 6 ký tự gồm chữ cái và số",
+          message: "Tên mã giảm giá phải có ít nhất 6 ký ",
         }
         ]}>
           <Input placeholder="Nhập tên sản phẩm" />
         </Form.Item>
 
-        <Form.Item label="Category" name="category" rules={[{ required: true, message: 'Please select a category!' }]}>
+        <Form.Item label="Category" name="category" rules={[{ required: true, message: 'vui lòng nhập danh mục!' }]}>
           <Select placeholder="Chọn danh mục">
             {categories.map((category) => (
               <Option key={category.id} value={category.id}>
@@ -307,6 +344,7 @@ const ProductEdit: React.FC = () => {
                         </Form.Item>
                       </Col>
 
+
                       <Col span={6}>
                         <Form.Item
                           {...restField}
@@ -319,12 +357,13 @@ const ProductEdit: React.FC = () => {
                               setLoading(true);
                               const currentStatus = checked;
                               const productId = id;
-                              handleStatusChange(productId, variantIndex, currentStatus); // Truyền variantIndex
+                              handleStatusChange(productId, name, currentStatus); // Gửi variantIndex
                               setLoading(false);
                             }}
                           />
                         </Form.Item>
                       </Col>
+
 
                       <Col span={18}>
                         <Form.Item
@@ -363,7 +402,7 @@ const ProductEdit: React.FC = () => {
                     <Form.List name={[name, 'sizes']}>
                       {(sizeFields, { add: addSize, remove: removeSize }) => (
                         <>
-                          {sizeFields.map(({ key: sizeKey, name: sizeName, ...sizeRestField }) => (
+                          {sizeFields.map(({ key: sizeKey, name: sizeName, ...sizeRestField }, sizeIndex) => (
                             <Row gutter={16} key={sizeKey} style={{ alignItems: 'center' }}>
                               <Col span={6}>
                                 <Form.Item
@@ -401,14 +440,27 @@ const ProductEdit: React.FC = () => {
                                   <InputNumber min={0} placeholder="Số lượng" style={{ width: '100%' }} />
                                 </Form.Item>
                               </Col>
-                              <Col span={6} style={{ textAlign: 'right' }}>
-                                <Button
-                                  icon={<DeleteOutlined />}
-                                  onClick={() => removeSize(sizeName)}
-                                  type="link"
-                                  danger
-                                />
+
+                              <Col span={6}>
+                                <Form.Item
+                                  {...sizeRestField}
+                                  name={[sizeName, 'status']}
+                                  label="Trạng thái"
+                                  valuePropName="checked"
+                                >
+                                  <Switch
+                                    checked={sizeRestField?.status}
+                                    onChange={async (checked: boolean) => {
+                                      setLoading(true);
+                                      const currentStatus = checked;
+                                      const productId = id;
+                                      handleSizeStatusChange(productId, variantIndex, sizeIndex, currentStatus);
+                                      setLoading(false);
+                                    }}
+                                  />
+                                </Form.Item>
                               </Col>
+
                             </Row>
                           ))}
                           <Form.Item>
@@ -424,14 +476,14 @@ const ProductEdit: React.FC = () => {
                         </>
                       )}
                     </Form.List>
-
-                    <Button onClick={() => remove(name)} icon={<DeleteOutlined />}>
-                      Xóa biến thể
-                    </Button>
                   </div>
+
+
                 ))}
                 <Form.Item>
-                  <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />}>
+                  <Button type="dashed" onClick={() => {
+                    add();
+                  }} icon={<PlusOutlined />}>
                     Thêm biến thể sản phẩm
                   </Button>
                 </Form.Item>
@@ -444,9 +496,14 @@ const ProductEdit: React.FC = () => {
         )}
 
         <Form.Item>
-          <Button type="primary" htmlType="submit"  >
-            Cập nhật sản phẩm
-          </Button>
+          <Space>
+            <Button type="primary" htmlType="submit"  >
+              Cập nhật sản phẩm
+            </Button>
+            <Button type="default" htmlType="button" block>
+              <Link to={`/admin/product`}>Thoát</Link>
+            </Button>
+          </Space>
         </Form.Item>
       </Form>
 

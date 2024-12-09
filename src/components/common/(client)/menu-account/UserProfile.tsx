@@ -151,7 +151,7 @@ const UserProfile = () => {
             />
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             label="Ảnh đại diện"
             name="avatar"
             valuePropName="file"
@@ -171,7 +171,7 @@ const UserProfile = () => {
                 <div style={{ marginTop: 8 }}>Tải ảnh</div>
               </div>
             </Upload>
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item>
             <Button

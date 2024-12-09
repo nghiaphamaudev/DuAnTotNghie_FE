@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { notification } from "antd";
 import { Eye, ShoppingBag } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Product } from "../../../common/types/Product";
 import { useProduct } from "../../../contexts/ProductContext";
@@ -18,11 +18,14 @@ const ProductCard = ({ item }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const queryClient = useQueryClient();
-  // console.log(item);
 
   const countColors = (): number => item?.variants.length;
   const countSizes = (): number =>
     item?.variants.reduce((total, variant) => total + variant.sizes.length, 0);
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+  }, [isModalVisible])
 
   const showModal = async (id: string) => {
     queryClient.invalidateQueries({ queryKey: ["products"] });

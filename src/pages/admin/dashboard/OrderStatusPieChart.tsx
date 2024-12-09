@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { getOrderStatuses } from '../../../services/servicesdashboard/OrderStatusTable';
 import { PieChart, Pie, Tooltip, Cell, Legend } from 'recharts';
 import { LoadingOutlined } from '@ant-design/icons';
-import { Button, Select, Space, Input, Typography, Spin } from 'antd';
+import { Button, Select, Space, Input, Typography, Spin, message } from 'antd';
 // import './OrderStatusPieChart.css'; // Thêm tệp CSS để làm đẹp
 
 const { Title } = Typography;
@@ -40,13 +40,43 @@ const OrderStatusPieChart = () => {
     }, [timeRange, startDate, endDate]);
 
     // Màu sắc cho các phân đoạn của biểu đồ tròn
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6666', '#8E44AD', '#3498DB', '#2ECC71'];
+    const getColorByStatus = (status: string) => {
+        switch (status.toLowerCase()) {
+            case 'đã hủy':
+                return '#FF4D4F'; 
+            case 'chờ xác nhận':
+                return '#FFC107'; 
+            case 'đã xác nhận':
+                return '#00C49F'; 
+            case 'đang giao':
+                return '#1890FF'; 
+            case 'hoàn đơn':
+                return '#722ED1'; 
+            case 'thành công':
+                return '#28A745'; 
+            default:
+                return '#0088FE'; 
+        }
+    };
+    const handleFilter = () => {
+        if (timeRange === 'range') {
+            if (!startDate || !endDate) {
+                message.error('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc.');
+                return;
+            }
+
+            if (new Date(endDate) < new Date(startDate)) {
+                message.error('Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
+                return;
+            }
+
+            fetchData('range', startDate, endDate);
+        }
+    };
 
     return (
         <div className="chart-container">
             <Title level={4}>Thống Kê Trạng Thái Đơn Hàng</Title>
-
-            {/* Phần lọc thời gian */}
             <Space className="filter-space">
                 <Select
                     value={timeRange}
@@ -58,6 +88,7 @@ const OrderStatusPieChart = () => {
                     <Select.Option value="week">Tuần Này</Select.Option>
                     <Select.Option value="month">Tháng Này</Select.Option>
                     <Select.Option value="year">Năm Nay</Select.Option>
+                    <Select.Option value="range">Tùy Chọn</Select.Option>
                 </Select>
                 {timeRange === 'range' && (
                     <Space>
@@ -75,7 +106,7 @@ const OrderStatusPieChart = () => {
                         />
                         <Button
                             type="primary"
-                            onClick={() => fetchData('range', startDate, endDate)}
+                            onClick={handleFilter}
                             className="filter-button"
                         >
                             Lọc
@@ -90,23 +121,27 @@ const OrderStatusPieChart = () => {
                     <Spin indicator={<LoadingOutlined spin />} />
                 </div>
             ) : data.length > 0 ? (
-                <PieChart width={400} height={400}>
-                    <Pie
-                        data={data}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={150}
-                        label
-                    >
-                        {data.map((_entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                </PieChart>
+                    <PieChart width={400} height={400}>
+                        <Pie
+                            data={data}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={150}
+                            label
+                        >
+                            {data.map((entry, index) => (
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={getColorByStatus(entry.name)} // Sử dụng màu theo trạng thái
+                                />
+                            ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                    </PieChart>
+
             ) : (
                         <div style={{ textAlign: 'center', padding: '20px' }}>
                             <p>Không có dữ liệu</p>
