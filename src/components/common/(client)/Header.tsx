@@ -22,7 +22,7 @@ const HeaderClient = () => {
 
   // context
   const { cartData, countItemCart } = useCart();
-  const { isLogin, handleLogout, user } = useAuth();
+  const { isLogin, showLogoutModal,  user } = useAuth();
 
   const cartItems = cartData?.items || [];
   const totalPrice = cartData?.totalCartPrice ?? 0;
@@ -52,7 +52,7 @@ const HeaderClient = () => {
         {
           key: "5",
           label: "Đăng xuất",
-          onClick: handleLogout,
+          onClick: showLogoutModal,
         },
       ]
     : [
