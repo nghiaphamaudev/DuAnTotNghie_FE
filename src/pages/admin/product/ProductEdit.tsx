@@ -344,8 +344,8 @@ const ProductEdit: React.FC = () => {
           rules={[
             { required: true, message: "Vui lòng nhập tên sản phẩm!" },
             {
-              pattern: /^[\p{L}\p{N}\s]{6,}$/u,
-              message: "Tên mã giảm giá phải có ít nhất 6 ký "
+              pattern: /^(?!.*^(?:\p{L}+|\p{N}+)$)[\p{L}\p{N}\s\p{P}\p{S}]{6,}$/u,
+              message: "Tên sản phẩm phải có ít nhất 6 ký "
             }
           ]}
         >
@@ -535,12 +535,11 @@ const ProductEdit: React.FC = () => {
                                       {...sizeRestField}
                                       name={[sizeName, "price"]}
                                       label="Giá"
-                                      rules={[
-                                        { required: true, message: "Nhập giá" }
-                                      ]}
+                                      rules=
+                                        {[{ type: 'number', min: 1, message:'Giá phải lớn hơn 0' }, { required: true, message: 'Giá sản phẩm không được để trống' }]}
                                     >
                                       <InputNumber
-                                        min={0}
+                                        
                                         placeholder="Giá"
                                         style={{ width: "100%" }}
                                       />
@@ -551,15 +550,10 @@ const ProductEdit: React.FC = () => {
                                       {...sizeRestField}
                                       name={[sizeName, "inventory"]}
                                       label="Số lượng"
-                                      rules={[
-                                        {
-                                          required: true,
-                                          message: "Nhập số lượng"
-                                        }
-                                      ]}
+                                      rules={[{ type: 'number', min: 1, message: 'Giá phải lớn hơn 0' }, { required: true, message: 'Giá sản phẩm không được để trống' }]}
                                     >
                                       <InputNumber
-                                        min={0}
+                                        
                                         placeholder="Số lượng"
                                         style={{ width: "100%" }}
                                       />

@@ -160,8 +160,8 @@ const ProductAdd: React.FC = () => {
           name="name"
           rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' },
           {
-            pattern: /^[\p{L}\p{N}\s]{6,}$/u,
-            message: "phải có ít nhất 6 ký tự ",
+            pattern: /^(?!.*^(?:\p{L}+|\p{N}+)$)[\p{L}\p{N}\s\p{P}\p{S}]{6,}$/u,
+            message: " Tên sản phẩm phải có ít nhất 6 ký tự và không được nhập spam ",
           }
           ]} >
           <Input placeholder="Nhập tên sản phẩm" />
@@ -182,10 +182,6 @@ const ProductAdd: React.FC = () => {
           label="Mô tả sản phẩm"
           name="description"
           rules={[{ required: true, message: 'Vui lòng nhập mô tả sản phẩm!' },
-          {
-            pattern: /^[\p{L}\p{N}\s]{6,}$/u,
-            message: "Mô tả phải có ít nhất 6 ký tự ",
-          }
           ]} >
           <Input.TextArea rows={4} placeholder="Nhập mô tả sản phẩm" />
         </Form.Item>
@@ -285,8 +281,8 @@ const ProductAdd: React.FC = () => {
                                       {...sizeRestField}
                                       name={[sizeName, 'price']}
                                       label="Giá"
-                                      rules={[{ required: true, message: 'Nhập giá' }]}>
-                                      <InputNumber min={0} placeholder="Giá" style={{ width: '100%' }} />
+                                      rules={[{ type: 'number', min: 1, message: 'Giá phải lớn hơn 0' }, { required: true, message: 'Giá sản phẩm không được để trống' }]}>
+                                      <InputNumber placeholder="Giá" style={{ width: '100%' }} />
                                     </Form.Item>
                                   </Col>
                                   <Col span={6}>
@@ -294,8 +290,8 @@ const ProductAdd: React.FC = () => {
                                       {...sizeRestField}
                                       name={[sizeName, 'inventory']}
                                       label="Số lượng"
-                                      rules={[{ required: true, message: 'Nhập số lượng' }]}>
-                                      <InputNumber min={0} placeholder="Số lượng" style={{ width: '100%' }} />
+                                      rules={[{ type: 'number', min: 1, message: 'Giá phải lớn hơn 0' }, { required: true, message: 'Giá sản phẩm không được để trống' }]}>
+                                      <InputNumber placeholder="Số lượng" style={{ width: '100%' }} />
                                     </Form.Item>
                                   </Col>
                                   <Col span={6} style={{ textAlign: 'right' }}>
