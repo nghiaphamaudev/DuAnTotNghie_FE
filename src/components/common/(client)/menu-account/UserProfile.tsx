@@ -1,18 +1,15 @@
 import {
   Button,
+  Form,
   Input,
   Radio,
-  Form,
-  Typography,
-  Upload,
-  UploadFile,
+  Typography
 } from "antd";
-import { useAuth } from "../../../../contexts/AuthContext";
-import { User } from "../../../../common/types/User";
-import { z } from "zod";
 import { useState } from "react";
+import { z } from "zod";
+import { User } from "../../../../common/types/User";
+import { useAuth } from "../../../../contexts/AuthContext";
 import { UserProfileSchema } from "./zod-menu";
-import { PlusOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -20,7 +17,6 @@ const UserProfile = () => {
   const { userData, updateUser } = useAuth();
   const [form] = Form.useForm();
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({}); // Kiểu dữ liệu cho formErrors
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
 
   const validateForm = (values: User) => {
     const errors: { [key: string]: string } = {}; // Đối tượng để lưu lỗi
@@ -151,7 +147,7 @@ const UserProfile = () => {
             />
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             label="Ảnh đại diện"
             name="avatar"
             valuePropName="file"
@@ -171,7 +167,7 @@ const UserProfile = () => {
                 <div style={{ marginTop: 8 }}>Tải ảnh</div>
               </div>
             </Upload>
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item>
             <Button
