@@ -98,7 +98,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
       swiperRef.current.navigation.update();
     }
   }, []);
-  console.log(selectedVariant?.sizes);
+  // console.log(selectedVariant?.sizes);
 
   useEffect(() => {
     if (cartData && cartData?.items.length > 0) {
@@ -148,8 +148,8 @@ const AddToCart: React.FC<AddToCartProps> = ({
 
   const handleAddItemToCart = async (id: string) => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
-    const newProduct = await getDataProductById(id)
-    const newVariants = newProduct?.data?.variants
+    const newProduct = await getDataProductById(id);
+    const newVariants = newProduct?.data?.variants;
     if (!token || !isLogin) {
       notification.error({
         message: "Vui lòng đăng nhập để tiếp tục",
@@ -159,13 +159,13 @@ const AddToCart: React.FC<AddToCartProps> = ({
       setIsModalVisible(false);
       return;
     }
-    if(!newProduct.data.isActive) {
+    if (!newProduct.data.isActive) {
       notification.error({
         message: "Sản phẩm không còn tồn tại. Vui lòng chọn sản phẩm khác",
         placement: "topRight",
         duration: 2
       });
-      return
+      return;
     }
     if (quantity > inventory) {
       notification.error({
@@ -174,7 +174,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
         duration: 2
       });
       setIsModalVisible(false);
-      
+
       return;
     }
     if (inventory === 0) {
@@ -210,7 +210,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
       });
     }
   };
-  
+
   return (
     <Modal
       open={isModalVisible}
@@ -294,7 +294,10 @@ const AddToCart: React.FC<AddToCartProps> = ({
         {/* Right side - Product details */}
         <div className="col-span-12 md:col-span-7">
           <h2 className="text-xl font-bold">{item?.name}</h2>
-          <p className="text-gray-500 mb-2">{inventory > 0 ? `Số lượng: ${inventory}` : "Hết hàng"} | Thương hiệu: FSHIRT</p>
+          <p className="text-gray-500 mb-2">
+            {inventory > 0 ? `Số lượng: ${inventory}` : "Hết hàng"} | Thương
+            hiệu: FSHIRT
+          </p>
 
           {/* Rating section */}
           <div className="flex items-center mb-4">
@@ -334,11 +337,13 @@ const AddToCart: React.FC<AddToCartProps> = ({
           <div className="mb-4">
             <p className="text-gray-700 font-semibold">Kích thước:</p>
             <Radio.Group onChange={onChangeSize} value={size}>
-              {selectedVariant?.sizes?.filter(item => item.status === true).map((sizeOption: ProductSize) => (
-                <Radio.Button key={sizeOption.id} value={sizeOption.id}>
-                  {sizeOption.nameSize}
-                </Radio.Button>
-              ))}
+              {selectedVariant?.sizes
+                ?.filter((item) => item.status === true)
+                .map((sizeOption: ProductSize) => (
+                  <Radio.Button key={sizeOption.id} value={sizeOption.id}>
+                    {sizeOption.nameSize}
+                  </Radio.Button>
+                ))}
             </Radio.Group>
           </div>
 

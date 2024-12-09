@@ -25,19 +25,28 @@ const ProductCard = ({ item }: ProductCardProps) => {
     item?.variants.reduce((total, variant) => total + variant.sizes.length, 0);
 
   const showModal = async (id: string) => {
-    queryClient.invalidateQueries({ queryKey: ["products"] });
-    const res = await getDataProductById(id)
-    if (res?.data?.isActive === false) {
+    try {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      const res = await getDataProductById(id);
+      if (!res?.data?.isActive) {
+        notification.error({
+          message: "Sản phẩm không còn tồn tại!",
+          placement: "topRight",
+          duration: 4
+        });
+      } else {
+        setIsModalVisible(true);
+      }
+    } catch (error) {
+      console.error("Error fetching product data:", error);
       notification.error({
-        message: "Sản phẩm không còn tồn tại!",
+        message: "Lỗi khi lấy dữ liệu sản phẩm!",
         placement: "topRight",
         duration: 4
       });
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-    } else {
-      setIsModalVisible(true);
     }
   };
+
   const handleOk = () => {
     setIsModalVisible(true);
   };
@@ -93,7 +102,7 @@ const ProductCard = ({ item }: ProductCardProps) => {
       </div>
       <div className="flex justify-between text-gray-500 text-[12px] mb-2">
         <span>+{countColors()} Màu Sắc</span>
-        <span>+{countSizes()} Kích Thước</span>
+        <span>+{countSizes()} Biến thể</span>
       </div>
       <h3 className="text-[14px] font-semibold mb-1 line-clamp-1">
         {item?.name}
