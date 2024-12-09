@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Select } from "antd";
+import { Col, Row, Select } from "antd";
 import { getAllCategory } from "../../../services/categoryServices";
 
 const { Option } = Select;
@@ -25,6 +25,7 @@ const CategoryDropdown = ({ onSelect }: { onSelect: (value: string) => void }) =
     }, []);
 
     return (
+
         <Select
             placeholder="Chọn danh mục"
             style={{ width: "100%" }}
@@ -33,11 +34,12 @@ const CategoryDropdown = ({ onSelect }: { onSelect: (value: string) => void }) =
             allowClear
         >
             {categories.map((category: any) => (
-                <Option key={category.id} value={category.id}>
+                <Option key={category.id} value={category.id} style={{ height: "30px", width: "100%" }} >
                     {category.name}
                 </Option>
             ))}
         </Select>
+
     );
 };
 
