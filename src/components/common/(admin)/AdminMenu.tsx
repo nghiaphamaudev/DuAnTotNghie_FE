@@ -75,14 +75,14 @@ export default function AdminMenu({ small }: Props) {
         {
           key: "category-dropdown",
           label: (
-            <div style={{ padding: "0 16px" }}>
+            <div style={{ width: "120px", justifyContent: "center" }}>
               <CategoryDropdown onSelect={handleCategorySelect} />
             </div>
           )
         }
       ]
     },
-   
+
     {
       key: "voucher",
       icon: <GiftOutlined />,
@@ -90,13 +90,13 @@ export default function AdminMenu({ small }: Props) {
     },
     ...(userDataAdmin?.role === "superadmin"
       ? [
-          {
-            key: "users",
-          icon: <TeamOutlined/>,
-            label: <Link to="/admin/users">User</Link>,
-          },
-        ]
-      : []), 
+        {
+          key: "users",
+          icon: <TeamOutlined />,
+          label: <Link to="/admin/users">User</Link>,
+        },
+      ]
+      : []),
     {
       key: "comments",
       icon: <CommentOutlined />,
@@ -113,7 +113,7 @@ export default function AdminMenu({ small }: Props) {
     <Menu
       className="admin-menu"
       mode="inline"
-      
+
       defaultSelectedKeys={["dashboard"]}
       defaultOpenKeys={openKeys}
       selectedKeys={[]}
@@ -122,7 +122,7 @@ export default function AdminMenu({ small }: Props) {
       items={menuItems}
       style={{
         fontSize: "20px",
-        fontFamily:'serif'
+        fontFamily: 'serif'
       }}
     />
   );

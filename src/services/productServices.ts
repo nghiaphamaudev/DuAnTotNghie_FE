@@ -73,7 +73,6 @@ export const toggleVariantStatus = async (productId: string, variantId: string, 
         });
 
         if (response.status === 200) {
-            message.success(response.data.message);
         } else {
             message.error('Đã có lỗi xảy ra');
         }
@@ -90,7 +89,6 @@ export const toggleSizeStatus = async (productId: string, variantId: string, siz
         });
 
         if (response.status === 200) {
-            message.success(response.data.message);
         } else {
             message.error('Đã có lỗi xảy ra');
         }

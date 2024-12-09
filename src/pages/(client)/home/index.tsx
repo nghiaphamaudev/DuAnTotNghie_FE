@@ -67,7 +67,6 @@ const HomePage = () => {
     if (loading) return <p>Đang tải...</p>;
     if (!activeCategoryProducts || activeCategoryProducts?.length === 0)
       return <p>Không có sản phẩm nào.</p>;
-    console.log("activeCategoryProducts", activeCategoryProducts);
 
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

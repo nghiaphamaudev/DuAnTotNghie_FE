@@ -12,7 +12,8 @@ import {
   UploadFile,
   message,
   Spin,
-  Switch
+  Switch,
+  Space
 } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
@@ -22,7 +23,7 @@ import {
   updateProduct
 } from "../../../services/productServices";
 import { getAllCategory } from "../../../services/categoryServices";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 const { Option } = Select;
 
@@ -269,8 +270,6 @@ const ProductEdit: React.FC = () => {
     }
 
     const variant = initialData.variants[variantIndex];
-    console.log("Variant Data:", variant);
-
     if (!variant || !variant.id) {
       console.error("Không tìm thấy biến thể tại index:", variantIndex);
       return;
@@ -278,11 +277,6 @@ const ProductEdit: React.FC = () => {
 
     const newStatus = currentStatus ? false : true;
     const variantId = variant.id; // Sử dụng `id` thay vì `_id`
-
-    console.log("Product ID:", productId);
-    console.log("Variant ID:", variantId);
-    console.log("New Status:", newStatus);
-
     toggleVariantStatus(productId, variantId, newStatus)
       .then(() => message.success("Cập nhật trạng thái thành công!"))
       .catch((err) => {
@@ -309,7 +303,6 @@ const ProductEdit: React.FC = () => {
         "Không tìm thấy biến thể hoặc kích thước tại index:",
         variantIndex
       );
-      message.error("Dữ liệu kích thước không hợp lệ.");
       return;
     }
 
@@ -321,11 +314,6 @@ const ProductEdit: React.FC = () => {
 
     const newStatus = !currentStatus; // Đổi trạng thái
     const sizeId = size.id; // Sử dụng `id` thay vì `_id`
-
-    console.log("Product ID:", productId);
-    console.log("Variant ID:", variant.id);
-    console.log("Size ID:", sizeId);
-    console.log("New Status:", newStatus);
 
     // Gọi API cập nhật trạng thái size
     toggleSizeStatus(productId, variant.id, sizeId, newStatus)
@@ -354,11 +342,11 @@ const ProductEdit: React.FC = () => {
           label="Tên sản phẩm"
           name="name"
           rules={[
-            { required: true, message: "Vui lòng nhập tên sản phẩm!" }
-            // {
-            //   pattern: /^[\p{L}\p{N}\s]{6,}$/u,
-            //   message: "Tên mã giảm giá phải có ít nhất 6 ký tự gồm chữ cái và số",
-            // }
+            { required: true, message: "Vui lòng nhập tên sản phẩm!" },
+            {
+              pattern: /^[\p{L}\p{N}\s]{6,}$/u,
+              message: "Tên mã giảm giá phải có ít nhất 6 ký "
+            }
           ]}
         >
           <Input placeholder="Nhập tên sản phẩm" />
@@ -367,7 +355,7 @@ const ProductEdit: React.FC = () => {
         <Form.Item
           label="Category"
           name="category"
-          rules={[{ required: true, message: "Please select a category!" }]}
+          rules={[{ required: true, message: "vui lòng nhập danh mục!" }]}
         >
           <Select placeholder="Chọn danh mục">
             {categories.map((category) => (
@@ -440,30 +428,28 @@ const ProductEdit: React.FC = () => {
                           </Form.Item>
                         </Col>
 
-                        {!isAddingVariant && (
-                          <Col span={6}>
-                            <Form.Item
-                              {...restField}
-                              name={[name, "status"]}
-                              label="Trạng thái"
-                            >
-                              <Switch
-                                checked={restField.value?.status}
-                                onChange={async (checked: boolean) => {
-                                  setLoading(true);
-                                  const currentStatus = checked;
-                                  const productId = id;
-                                  handleStatusChange(
-                                    productId,
-                                    name,
-                                    currentStatus
-                                  ); // Gửi variantIndex
-                                  setLoading(false);
-                                }}
-                              />
-                            </Form.Item>
-                          </Col>
-                        )}
+                        <Col span={6}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "status"]}
+                            label="Trạng thái"
+                          >
+                            <Switch
+                              checked={restField.value?.status}
+                              onChange={async (checked: boolean) => {
+                                setLoading(true);
+                                const currentStatus = checked;
+                                const productId = id;
+                                handleStatusChange(
+                                  productId,
+                                  name,
+                                  currentStatus
+                                ); // Gửi variantIndex
+                                setLoading(false);
+                              }}
+                            />
+                          </Form.Item>
+                        </Col>
 
                         <Col span={18}>
                           <Form.Item
@@ -630,7 +616,6 @@ const ProductEdit: React.FC = () => {
                   <Button
                     type="dashed"
                     onClick={() => {
-                      setIsAddingVariant(true);
                       add();
                     }}
                     icon={<PlusOutlined />}
@@ -644,9 +629,14 @@ const ProductEdit: React.FC = () => {
         )}
 
         <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Cập nhật sản phẩm
-          </Button>
+          <Space>
+            <Button type="primary" htmlType="submit">
+              Cập nhật sản phẩm
+            </Button>
+            <Button type="default" htmlType="button" block>
+              <Link to={`/admin/product`}>Thoát</Link>
+            </Button>
+          </Space>
         </Form.Item>
       </Form>
     </Spin>
