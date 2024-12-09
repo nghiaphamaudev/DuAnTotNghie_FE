@@ -177,7 +177,7 @@ const OrderDetail = () => {
               "Hoàn đơn",
               "Đang giao hàng",
               "Đã giao hàng",
-              "Hoàn thành"
+              "Đã nhận được hàng"
             ].includes(orderInfor?.status)}
           >
             Hủy đơn hàng
@@ -188,7 +188,7 @@ const OrderDetail = () => {
               loading={loading}
               onClick={() => handleComplete()}
             >
-              Hoàn thành đơn hàng
+              Xác nhận đơn hàng
             </Button>
           )}
         </div>
@@ -261,7 +261,7 @@ const OrderDetail = () => {
               dataIndex: "totalItemPrice",
               render: (price) => `${price.toLocaleString()} đ`
             },
-            ...(orderInfor?.status === "Hoàn thành"
+            ...(orderInfor?.status === "Đã nhận được hàng"
               ? [
                   {
                     title: "Phản hồi",
@@ -293,30 +293,26 @@ const OrderDetail = () => {
 
       {/* Thông tin giao dịch */}
       <Card title="Thông tin giao dịch">
-        {orderInfor?.status === "Hoàn thành đơn hàng" ||
-        (orderInfor?.status === "Đã hủy" &&
-          orderInfor?.paymentMethod === "VNPAY") ? (
-          orderInfor?.paymentMethod === "VNPAY" ? (
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="Hình thức thanh toán">
-                {historyTransaction?.type}
+        {historyTransaction?.totalPrice !== undefined ? (
+          <Descriptions bordered column={1}>
+            {historyTransaction?.transactionVnPayId && (
+              <Descriptions.Item label="Mã giao dịch">
+                {historyTransaction.transactionVnPayId}
               </Descriptions.Item>
-              <Descriptions.Item label="Số tiền thanh toán">
-                {`${historyTransaction?.totalPrice?.toLocaleString()} đ`}
-              </Descriptions.Item>
-              <Descriptions.Item label="Ngày giao dịch">
-                {historyTransaction?.createdAt}
-              </Descriptions.Item>
-            </Descriptions>
-          ) : (
-            <p className="italic text-gray-500">
-              Phương thức thanh toán không phải VNPAY. Thông tin giao dịch không
-              khả dụng.
-            </p>
-          )
+            )}
+            <Descriptions.Item label="Hình thức thanh toán">
+              {historyTransaction?.type}
+            </Descriptions.Item>
+            <Descriptions.Item label="Số tiền thanh toán">
+              {`${historyTransaction?.totalPrice?.toLocaleString()} đ`}
+            </Descriptions.Item>
+            <Descriptions.Item label="Ngày giao dịch">
+              {historyTransaction?.createdAt}
+            </Descriptions.Item>
+          </Descriptions>
         ) : (
           <p className="italic text-gray-500">
-            Thông tin giao dịch sẽ hiển thị khi đơn hàng hoàn thành hoặc bị hủy.
+            Thông tin giao dịch không khả dụng.
           </p>
         )}
       </Card>
@@ -324,16 +320,20 @@ const OrderDetail = () => {
       <Card title="Thông tin thanh toán">
         <Descriptions bordered column={1}>
           <Descriptions.Item label="Tổng tiền hàng">
-            {`${totalPrice?.toLocaleString()} đ`}
+            <strong>{`${(
+              totalPrice +
+              discountVoucher -
+              shippingCost
+            ).toLocaleString()} đ`}</strong>
           </Descriptions.Item>
           <Descriptions.Item label="Phí vận chuyển">
-            {`${shippingCost?.toLocaleString()} đ`}
+            + {`${shippingCost?.toLocaleString()} đ`}
           </Descriptions.Item>
           <Descriptions.Item label="Voucher giảm giá">
-            {`${discountVoucher?.toLocaleString()} đ`}
+            - {`${discountVoucher?.toLocaleString()} đ`}
           </Descriptions.Item>
           <Descriptions.Item label="Tổng thanh toán">
-            <strong>{`${totalCost?.toLocaleString()} đ`}</strong>
+            <strong> {`${totalPrice?.toLocaleString()} đ`}</strong>
           </Descriptions.Item>
         </Descriptions>
       </Card>
