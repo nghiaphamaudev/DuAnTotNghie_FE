@@ -1,10 +1,21 @@
 import React, { useState, ReactNode } from "react";
 import LogoFshirt from "../../../assets/images/logofshirt-rmbg.png";
-import { Layout, Menu, Avatar, Badge, Dropdown, Row, Col, Grid } from "antd";
+import {
+  Layout,
+  Menu,
+  Avatar,
+  Badge,
+  Dropdown,
+  Row,
+  Col,
+  Grid,
+  Modal,
+} from "antd";
 import {
   AiOutlineMenuFold,
   AiOutlineMenuUnfold,
   AiOutlineLogout,
+  AiOutlineKey,
 } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -45,15 +56,21 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
     navigate("/loginadmin");
   };
 
+  const showLogoutModal = async () => {
+    Modal.confirm({
+      title: "Xác nhận đăng xuất",
+      content: "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?",
+      okText: "Đăng xuất",
+      cancelText: "Hủy",
+      onOk: handleLogout,
+      onCancel: () => {},
+    });
+  };
+
   const menu = (
     <Menu>
-      <Menu.Item key="3" onClick={() => handleLogout()}>
+      <Menu.Item key="3" onClick={() => showLogoutModal()}>
         <AiOutlineLogout style={{ marginRight: "8px" }} /> Đăng xuất
-      </Menu.Item>
-      <Menu.Item key="4">
-        <Link to={`/home`}>
-          <HomeOutlined /> Trang chủ
-        </Link>
       </Menu.Item>
     </Menu>
   );

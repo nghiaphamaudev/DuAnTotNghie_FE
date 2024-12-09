@@ -42,7 +42,7 @@ const HomePage = () => {
       const now = new Date();
       const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
       const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-      return diffInDays <= 7; //! Chỉ lấy sản phẩm được tạo trong vòng 4 ngày
+      return diffInDays <= 10; //! Chỉ lấy sản phẩm được tạo trong vòng 4 ngày
     });
   // Hàm hiển thị thêm sản phẩm
   const handleShowMore = () => {
@@ -65,17 +65,27 @@ const HomePage = () => {
   // console.log(category);
   const renderProductsByCategory = () => {
     if (loading) return <p>Đang tải...</p>;
-    if (!activeCategoryProducts || activeCategoryProducts?.length === 0)
-      return <p>Không có sản phẩm nào.</p>;
-    console.log("activeCategoryProducts", activeCategoryProducts);
+    if (!activeCategoryProducts || activeCategoryProducts.length === 0)
+      return (
+        <p className="text-sm text-gray-500 italic">Không có sản phẩm nào.</p>
+      );
+
+    const activeProducts = activeCategoryProducts.filter(
+      (item) => item.isActive
+    );
+
+    if (activeProducts.length === 0)
+      return (
+        <p className="text-sm text-gray-500 italic">
+          Không có sản phẩm nào đang hoạt động.
+        </p>
+      );
 
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {activeCategoryProducts
-          ?.filter((item) => item?.isActive == true)
-          .map((product) => (
-            <ProductCard key={product?.id} item={product} />
-          ))}
+        {activeProducts.map((product) => (
+          <ProductCard key={product.id} item={product} />
+        ))}
       </div>
     );
   };
@@ -136,7 +146,7 @@ const HomePage = () => {
               <p className="text-[12px] md:text-[16px] font-semibold">
                 Miễn phí vận chuyển
               </p>
-              <p className="text-[12px] md:text-[14px]">
+              <p className="text-[12px] md:text-[14px] italic">
                 Áp dụng cho mọi đơn hàng từ 500k
               </p>
             </div>
@@ -147,7 +157,7 @@ const HomePage = () => {
               <p className="text-[12px] md:text-[16px] font-semibold">
                 Đổi hàng dễ dàng
               </p>
-              <p className="text-[12px] md:text-[14px]">
+              <p className="text-[12px] md:text-[14px] italic">
                 7 ngày đổi hàng vì bất kì lí do gì
               </p>
             </div>
@@ -158,7 +168,7 @@ const HomePage = () => {
               <p className="text-[12px] md:text-[16px] font-semibold">
                 Hỗ trợ nhanh chóng
               </p>
-              <p className="text-[12px] md:text-[14px]">
+              <p className="text-[12px] md:text-[14px] italic">
                 HOTLINE 24/7 : 0964942121
               </p>
             </div>
@@ -169,7 +179,7 @@ const HomePage = () => {
               <p className="text-[12px] md:text-[16px] font-semibold">
                 Thanh toán đa dạng
               </p>
-              <p className="text-[12px] md:text-[14px]">
+              <p className="text-[12px] md:text-[14px] italic">
                 Thanh toán khi nhận hàng, Napas, Visa, Chuyển Khoản
               </p>
             </div>
@@ -276,7 +286,9 @@ const HomePage = () => {
         </div>
 
         <div className="flex flex-col justify-start items-center w-full px-4 sm:px-10 md:px-20 py-16 my-5">
-          <h1 className="text-2xl font-semibold text-center">Bộ sưu tập</h1>
+          <h1 id="collection" className="text-2xl font-semibold text-center">
+            Bộ sưu tập
+          </h1>
           <Tabs
             defaultActiveKey="0"
             onChange={(key) => getDataCategoryById(allCategory[key]?.id)}

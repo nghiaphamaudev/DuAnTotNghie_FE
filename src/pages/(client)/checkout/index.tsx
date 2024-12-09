@@ -44,7 +44,7 @@ const CheckoutPage: React.FC = () => {
   const [modalVisibleVoucher, setModalVisibleVoucher] = useState(false);
   const [addresses, setAddresses] = useState<AddressRequest[] | undefined>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
-  const shippingFee: number = totalPrice >= 500000 ? 0 : 20000;
+  const shippingFee: number = totalPrice >= 500000 ? 0 : 30000;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
   const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(
@@ -141,7 +141,8 @@ const CheckoutPage: React.FC = () => {
         message.success("Đặt hàng thành công!");
         localStorage.removeItem("selectedProducts");
         form.resetFields();
-        navigate("/home");
+        //
+        window.location.href = "/home";
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {

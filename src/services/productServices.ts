@@ -73,7 +73,6 @@ export const toggleVariantStatus = async (productId: string, variantId: string, 
         });
 
         if (response.status === 200) {
-            message.success(response.data.message);
         } else {
             message.error('Đã có lỗi xảy ra');
         }
@@ -81,6 +80,23 @@ export const toggleVariantStatus = async (productId: string, variantId: string, 
         message.error('Lỗi khi thay đổi trạng thái biến thể');
     }
 };
+
+
+export const toggleSizeStatus = async (productId: string, variantId: string, sizeId: string, currentStatus: boolean) => {
+    try {
+        const response = await instance.put(`/products/${productId}/variant/${variantId}/size/${sizeId}`, {
+            status: currentStatus ? false : true,
+        });
+
+        if (response.status === 200) {
+        } else {
+            message.error('Đã có lỗi xảy ra');
+        }
+    } catch (error) {
+        message.error('Lỗi khi thay đổi trạng thái kích thước');
+    }
+};
+
 
 
 
