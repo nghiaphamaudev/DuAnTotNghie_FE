@@ -59,14 +59,13 @@ const ProductPage = () => {
 
   useEffect(() => {
     console.log("SelectedCategory", selectedCategory);
-
     if (selectedCategory) {
       setIsLoading(true);
       getDataCategoryById(selectedCategory).finally(() => setIsLoading(false));
     } else {
       setFilteredProducts(allProduct); // Nếu không chọn danh mục, sử dụng tất cả sản phẩm
     }
-  }, [selectedCategory, allProduct]);
+  }, [selectedCategory]);
 
   const handleCategoryChange = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
