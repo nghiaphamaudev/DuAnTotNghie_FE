@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  Descriptions,
-  Table,
-  Timeline,
-  Tag,
-  Card,
-  Spin,
   Button,
-  Modal,
+  Card,
+  Descriptions,
   Input,
-  message
+  message,
+  Modal,
+  Spin,
+  Table,
+  Tag,
+  Timeline
 } from "antd";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   getOrderDetailService,
   updateOrderService
 } from "../../../../services/orderService";
+import { MessageSquareMore } from "lucide-react";
+import FeedbackSection from "../Feedback";
 
 const OrderDetail = () => {
   const { orderId } = useParams();
@@ -24,8 +26,10 @@ const OrderDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelNote, setCancelNote] = useState("");
-  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
-  const [returnNote, setReturnNote] = useState("");
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
 
   const statusColorMap = {
     "Chờ xác nhận": "blue",
@@ -33,7 +37,7 @@ const OrderDetail = () => {
     "Đóng gói chờ vận chuyển": "orange",
     "Đang giao hàng": "purple",
     "Đã giao hàng": "cyan",
-    "Hoàn thành": "green",
+    "Đã nhận được hàng": "green",
     "Hoàn đơn": "magenta",
     "Đã hủy": "red"
   };
@@ -78,41 +82,41 @@ const OrderDetail = () => {
       setIsCancelModalOpen(false);
     }
   };
-
-  const handleReturnOrder = async () => {
+  const handleComplete = async () => {
     try {
-      const response = await updateOrderService(
-        orderId,
-        "Hoàn đơn",
-        returnNote
-      );
+      const response = await updateOrderService(orderId, "Đã nhận được hàng");
       if (response?.status) {
-        message.success("Đơn hàng đã được hoàn thành công.");
-        await fetchOrderDetail();
+        message.success("Bạn đã hoàn thành đơn hàng thành công.");
+        // await fetchOrderDetail();
       } else {
-        message.error(response?.message || "Hoàn đơn hàng thất bại.");
+        message.error(response?.message || "Hoàn thành đơn hàng thất bại.");
       }
     } catch (error) {
-      message.error("Có lỗi xảy ra khi hoàn đơn hàng.");
-    } finally {
-      setIsReturnModalOpen(false);
+      message.error("Có lỗi xảy ra khi hoàn thành đơn hàng.");
     }
+  };
+
+  const handleFeedback = (record: any) => {
+    setSelectedProductId(record.productId); // Lưu productId của sản phẩm được chọn
+    setIsFeedbackModalOpen(true); // Mở modal đánh giá
   };
 
   if (loading) {
     return <Spin size="large" style={{ display: "block", margin: "auto" }} />;
   }
-
+  console.log(orderDetail);
   const {
     orderInfor,
     orderItems,
     historyBill,
+    historyTransaction,
     totalPrice,
     shippingCost,
     discountVoucher,
     totalCost,
     createdAt
   } = orderDetail;
+  console.log("orderDetailCLI: ", orderDetail);
 
   return (
     <div
@@ -173,20 +177,20 @@ const OrderDetail = () => {
               "Hoàn đơn",
               "Đang giao hàng",
               "Đã giao hàng",
-              "Hoàn thành"
+              "Đã nhận được hàng"
             ].includes(orderInfor?.status)}
           >
             Hủy đơn hàng
           </Button>
-          <Button
-            onClick={() => setIsReturnModalOpen(true)}
-            disabled={
-              !["Đã giao hàng", "Hoàn thành"].includes(orderInfor?.status) ||
-              ["Đã hủy", "Hoàn đơn"].includes(orderInfor?.status)
-            }
-          >
-            Hoàn đơn
-          </Button>
+          {orderInfor?.status === "Đã giao hàng" && (
+            <Button
+              type="primary"
+              loading={loading}
+              onClick={() => handleComplete()}
+            >
+              Xác nhận đơn hàng
+            </Button>
+          )}
         </div>
       </Card>
 
@@ -206,23 +210,7 @@ const OrderDetail = () => {
         />
       </Modal>
 
-      <Modal
-        title="Xác nhận hoàn đơn"
-        visible={isReturnModalOpen}
-        onOk={handleReturnOrder}
-        onCancel={() => setIsReturnModalOpen(false)}
-        okText="Xác nhận"
-        cancelText="Hủy"
-      >
-        <p>Bạn có chắc chắn muốn hoàn đơn hàng này?</p>
-        <Input.TextArea
-          placeholder="Nhập lý do hoàn đơn hàng (không bắt buộc)"
-          value={returnNote}
-          onChange={(e) => setReturnNote(e.target.value)}
-        />
-      </Modal>
-
-      <Card title="Thông tin đơn hàng">
+      <Card title="Thông tin đơn hàng" style={{ marginBottom: "20px" }}>
         <Descriptions bordered column={2}>
           <Descriptions.Item label="Mã hóa đơn">
             {orderInfor?.code}
@@ -239,11 +227,21 @@ const OrderDetail = () => {
           <Descriptions.Item label="Địa chỉ">
             {orderInfor?.address}
           </Descriptions.Item>
+          <Descriptions.Item label="Phương thức thanh toán">
+            <Tag
+              color={
+                orderInfor?.paymentMethod === "COD" ? "#2db7f5" : "#87d068"
+              }
+            >
+              {orderInfor?.paymentMethod}
+            </Tag>
+          </Descriptions.Item>
           <Descriptions.Item label="Trạng thái">
             <Tag color={statusColorMap[orderInfor?.status]}>
               {orderInfor?.status}
             </Tag>
           </Descriptions.Item>
+          <Descriptions.Item label="Ngày tạo">{createdAt}</Descriptions.Item>
         </Descriptions>
       </Card>
 
@@ -262,26 +260,80 @@ const OrderDetail = () => {
               title: "Tổng",
               dataIndex: "totalItemPrice",
               render: (price) => `${price.toLocaleString()} đ`
-            }
+            },
+            ...(orderInfor?.status === "Đã nhận được hàng"
+              ? [
+                  {
+                    title: "Phản hồi",
+                    dataIndex: "feedback",
+                    render: (_, record) => (
+                      <MessageSquareMore
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleFeedback(record)}
+                      />
+                    )
+                  }
+                ]
+              : [])
           ]}
           pagination={false}
           bordered
         />
+        <Modal
+          title="Đánh giá sản phẩm"
+          visible={isFeedbackModalOpen}
+          onCancel={() => setIsFeedbackModalOpen(false)}
+          footer={null}
+        >
+          {selectedProductId && (
+            <FeedbackSection productId={selectedProductId} />
+          )}
+        </Modal>
+      </Card>
+
+      {/* Thông tin giao dịch */}
+      <Card title="Thông tin giao dịch">
+        {historyTransaction?.totalPrice !== undefined ? (
+          <Descriptions bordered column={1}>
+            {historyTransaction?.transactionVnPayId && (
+              <Descriptions.Item label="Mã giao dịch">
+                {historyTransaction.transactionVnPayId}
+              </Descriptions.Item>
+            )}
+            <Descriptions.Item label="Hình thức thanh toán">
+              {historyTransaction?.type}
+            </Descriptions.Item>
+            <Descriptions.Item label="Số tiền thanh toán">
+              {`${historyTransaction?.totalPrice?.toLocaleString()} đ`}
+            </Descriptions.Item>
+            <Descriptions.Item label="Ngày giao dịch">
+              {historyTransaction?.createdAt}
+            </Descriptions.Item>
+          </Descriptions>
+        ) : (
+          <p className="italic text-gray-500">
+            Thông tin giao dịch không khả dụng.
+          </p>
+        )}
       </Card>
 
       <Card title="Thông tin thanh toán">
         <Descriptions bordered column={1}>
           <Descriptions.Item label="Tổng tiền hàng">
-            {`${totalPrice?.toLocaleString()} đ`}
+            <strong>{`${(
+              totalPrice +
+              discountVoucher -
+              shippingCost
+            ).toLocaleString()} đ`}</strong>
           </Descriptions.Item>
           <Descriptions.Item label="Phí vận chuyển">
-            {`${shippingCost?.toLocaleString()} đ`}
+            + {`${shippingCost?.toLocaleString()} đ`}
           </Descriptions.Item>
           <Descriptions.Item label="Voucher giảm giá">
-            {`${discountVoucher?.toLocaleString()} đ`}
+            - {`${discountVoucher?.toLocaleString()} đ`}
           </Descriptions.Item>
           <Descriptions.Item label="Tổng thanh toán">
-            <strong>{`${totalCost?.toLocaleString()} đ`}</strong>
+            <strong> {`${totalPrice?.toLocaleString()} đ`}</strong>
           </Descriptions.Item>
         </Descriptions>
       </Card>

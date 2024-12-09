@@ -71,7 +71,7 @@ const MyOrders = () => {
           "Đóng gói chờ vận chuyển": "orange",
           "Đang giao hàng": "purple",
           "Đã giao hàng": "cyan",
-          "Hoàn thành": "green",
+          "Đã nhận được hàng": "green",
           "Hoàn đơn": "magenta",
           "Đã hủy": "red"
         };
@@ -111,7 +111,7 @@ const MyOrders = () => {
     { key: "Đóng gói chờ vận chuyển", label: "Đóng gói chờ vận chuyển" },
     { key: "Đang giao hàng", label: "Đang giao hàng" },
     { key: "Đã giao hàng", label: "Đã giao hàng" },
-    { key: "Hoàn thành", label: "Hoàn thành" },
+    { key: "Đã nhận được hàng", label: "Đã nhận được hàng" },
     { key: "Hoàn đơn", label: "Hoàn đơn" },
     { key: "Đã hủy", label: "Đã hủy" }
   ];

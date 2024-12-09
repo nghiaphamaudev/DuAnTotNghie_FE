@@ -59,7 +59,6 @@ const QuickCart: FC<QuickCartProps> = ({
       setArrIdInvalid([])
     }
   }, [isCartDrawerOpen])
-  console.log(cartItems);
 
   //functions
   const remainingAmountForFreeShipping = Math.max(
@@ -147,7 +146,7 @@ const QuickCart: FC<QuickCartProps> = ({
     } else if (itemsWithZeroInventory.length > 0) {
       // Thông báo cho người dùng về thay đổi trong giỏ hàng
       notification.warning({
-        message: "Một số sản phẩm đã hết hàng và đã bị xóa khỏi giỏ hàng.",
+        message: "Giỏ hàng đã có sự thay đổi. Xin vui lòng kiểm tra lại",
         duration: 5,
       });
 
@@ -180,12 +179,15 @@ const QuickCart: FC<QuickCartProps> = ({
       {
         !token && (
           <div className="text-center">
-            <img className="mt-16" src={CartNotToken} alt="cart_not_token" />
+            <div className="w-[352px] h-[352px]">
+              <img className="mt-16 w-full h-full" src={CartNotToken} alt="cart_not_token" />
+            </div>
             <h2 className="text-large font-semibold"> Bạn chưa đăng nhập</h2>
             <div className="mx-auto text-medium">
               Vui lòng ấn
               {' '}
-              <button onClick={() => { handleLogin() }} className="text-blue-500">đăng nhập</button>/
+              <button onClick={() => { handleLogin() }} className="text-blue-500">đăng nhập</button>
+              {' hoặc '}
               <button onClick={() => { handleRegister() }} className="text-blue-500">đăng ký</button>
               {' '}
               để tiếp tục

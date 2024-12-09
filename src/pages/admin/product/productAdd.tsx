@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Select, Button, InputNumber, Row, Col, Upload, UploadFile, message, Spin } from 'antd';
+import { Form, Input, Select, Button, InputNumber, Row, Col, Upload, UploadFile, message, Spin, Space } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { getAllCategory } from '../../../services/categoryServices';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const { Option } = Select;
 
@@ -159,15 +159,15 @@ const ProductAdd: React.FC = () => {
           label="Tên sản phẩm"
           name="name"
           rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' },
-            {
-              pattern: /^[\p{L}\p{N}\s]{6,}$/u,
-              message: "Tên mã giảm giá phải có ít nhất 6 ký tự gồm chữ cái và số",
-            }
+          {
+            pattern: /^[\p{L}\p{N}\s]{6,}$/u,
+            message: "phải có ít nhất 6 ký tự ",
+          }
           ]} >
           <Input placeholder="Nhập tên sản phẩm" />
         </Form.Item>
 
-        <Form.Item label="Category" name="category" rules={[{ required: true, message: 'Please select a category!' }]}>
+        <Form.Item label="Category" name="category" rules={[{ required: true, message: 'Hãy chọn danh mục' }]}>
           <Select>
             {categories.map((category) => (
               <Select.Option key={category.id} value={category.id}>
@@ -181,7 +181,11 @@ const ProductAdd: React.FC = () => {
         <Form.Item
           label="Mô tả sản phẩm"
           name="description"
-          rules={[{ required: true, message: 'Vui lòng nhập mô tả sản phẩm!' }
+          rules={[{ required: true, message: 'Vui lòng nhập mô tả sản phẩm!' },
+          {
+            pattern: /^[\p{L}\p{N}\s]{6,}$/u,
+            message: "Mô tả phải có ít nhất 6 ký tự ",
+          }
           ]} >
           <Input.TextArea rows={4} placeholder="Nhập mô tả sản phẩm" />
         </Form.Item>
@@ -347,9 +351,14 @@ const ProductAdd: React.FC = () => {
         }
 
         <Form.Item>
-          <Button type="primary" htmlType="submit" block>
-            Thêm Sản Phẩm
-          </Button>
+          <Space>
+            <Button type="primary" htmlType="submit" block>
+              Thêm Sản Phẩm
+            </Button>
+            <Button type="default" htmlType="button" block>
+              <Link to={`/admin/product`}>Thoát</Link>
+            </Button>
+          </Space>
         </Form.Item>
       </Form >
 

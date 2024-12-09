@@ -42,8 +42,8 @@ const TopCustomersTable = () => {
 
     const handleFilter = () => {
         if (timeRange === 'range' && dateRange.length === 2) {
-            const startDate = dayjs(dateRange[0]).format('YYYY-MM-DD');
-            const endDate = dayjs(dateRange[1]).format('YYYY-MM-DD');
+            const startDate = dayjs(dateRange[0]).toISOString();
+            const endDate = dayjs(dateRange[1]).toISOString();
             fetchTopCustomers('range', startDate, endDate);
         }
     };

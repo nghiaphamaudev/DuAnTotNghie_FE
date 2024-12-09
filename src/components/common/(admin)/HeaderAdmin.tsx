@@ -1,6 +1,16 @@
 import React, { useState, ReactNode } from "react";
 import LogoFshirt from "../../../assets/images/logofshirt-rmbg.png";
-import { Layout, Menu, Avatar, Badge, Dropdown, Row, Col, Grid, Modal } from "antd";
+import {
+  Layout,
+  Menu,
+  Avatar,
+  Badge,
+  Dropdown,
+  Row,
+  Col,
+  Grid,
+  Modal,
+} from "antd";
 import {
   AiOutlineMenuFold,
   AiOutlineMenuUnfold,
@@ -59,23 +69,8 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
 
   const menu = (
     <Menu>
-      <Menu.Item key="1">
-        <Link to={`/admin/infomation/`}>
-          <Avatar /> Tài khoản của tôi
-        </Link>
-      </Menu.Item>
-      <Menu.Item key="2">
-        <Link to={`/admin/change-password`}>
-          <AiOutlineKey style={{ marginRight: "8px" }} /> Đổi mật khẩu
-        </Link>
-      </Menu.Item>
       <Menu.Item key="3" onClick={() => showLogoutModal()}>
         <AiOutlineLogout style={{ marginRight: "8px" }} /> Đăng xuất
-      </Menu.Item>
-      <Menu.Item key="4">
-        <Link to={`/home`}>
-          <HomeOutlined /> Trang chủ
-        </Link>
       </Menu.Item>
     </Menu>
   );

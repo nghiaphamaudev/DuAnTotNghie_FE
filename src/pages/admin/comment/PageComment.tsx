@@ -138,14 +138,6 @@ export default function PageComment() {
       width: "30%",
     },
     {
-      title: "Lượt thích",
-      dataIndex: "like",
-      key: "like",
-      align: "center" as const,
-      width: "10%",
-      render: (like: number) => <span>{like} lượt thích</span>,
-    },
-    {
       title: "Trạng thái",
       dataIndex: "classify",
       key: "classify",

@@ -42,7 +42,7 @@ const HomePage = () => {
       const now = new Date();
       const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
       const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-      return diffInDays <= 7; //! Chỉ lấy sản phẩm được tạo trong vòng 4 ngày
+      return diffInDays <= 10; //! Chỉ lấy sản phẩm được tạo trong vòng 4 ngày
     });
   // Hàm hiển thị thêm sản phẩm
   const handleShowMore = () => {
@@ -67,7 +67,6 @@ const HomePage = () => {
     if (loading) return <p>Đang tải...</p>;
     if (!activeCategoryProducts || activeCategoryProducts?.length === 0)
       return <p>Không có sản phẩm nào.</p>;
-    console.log("activeCategoryProducts", activeCategoryProducts);
 
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

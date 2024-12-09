@@ -1,18 +1,32 @@
-import { Button, Image, Input, Modal, Rate, message, notification, InputNumber } from 'antd';
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import ProductCard from '../../../components/common/(client)/ProductCard';
-import { useCart } from '../../../contexts/CartContext';
-import { useProduct } from '../../../contexts/ProductContext';
-import './css.css';
-import { useAuth } from '../../../contexts/AuthContext';
-import axios from 'axios';
-import { deleteFeedback, getFeedbacksByProductId, toggleLikeFeedback, updateFeedback } from '../../../services/Feedbacks';
-import { LikeFilled, LikeOutlined } from '@ant-design/icons';
+import {
+  Button,
+  Image,
+  Input,
+  Modal,
+  Rate,
+  message,
+  notification,
+  InputNumber
+} from "antd";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import ProductCard from "../../../components/common/(client)/ProductCard";
+import { useCart } from "../../../contexts/CartContext";
+import { useProduct } from "../../../contexts/ProductContext";
+import "./css.css";
+import { useAuth } from "../../../contexts/AuthContext";
+import axios from "axios";
+import {
+  deleteFeedback,
+  getFeedbacksByProductId,
+  toggleLikeFeedback,
+  updateFeedback
+} from "../../../services/Feedbacks";
+import { LikeFilled, LikeOutlined } from "@ant-design/icons";
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getProductById } from '../../../services/productServices';
-import instance from '../../../config/axios';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getProductById } from "../../../services/productServices";
+import instance from "../../../config/axios";
 
 const DetailProduct = () => {
   //context
@@ -29,9 +43,9 @@ const DetailProduct = () => {
   const { addItemToCart } = useCart();
   const { allProduct } = useProduct();
   const [selectedThumbnail, setSelectedThumbnail] = useState(0);
-  const [mainImage, setMainImage] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
+  const [mainImage, setMainImage] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const [selectedPrice, setSelectedPrice] = useState(0); // New state for selected price
   const [quantity, setQuantity] = useState(1);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -39,11 +53,11 @@ const DetailProduct = () => {
   const [startIndex, setStartIndex] = useState(0);
   const [quantityCart, setQuantityCart] = useState(0);
   const [inventory, setInventory] = useState(0);
-  const [idVariantSelect, setIdVariantSelect] = useState('');
+  const [idVariantSelect, setIdVariantSelect] = useState("");
   const productsPerPage = 4;
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [rating, setRating] = useState(5);
   const [images, setImages] = useState([]);
   const [editingFeedback, setEditingFeedback] = useState(null);
@@ -62,10 +76,10 @@ const DetailProduct = () => {
     if (product?.data?.variants?.length > 0) {
       const defaultVariant = product.data.variants[0];
       const defaultSize = defaultVariant.sizes?.[0];
-      setSelectedColor(defaultVariant.color || '');
-      setSelectedSize(defaultSize?.nameSize || '');
+      setSelectedColor(defaultVariant.color || "");
+      setSelectedSize(defaultSize?.nameSize || "");
       setSelectedPrice(defaultSize?.price || 0);
-      setMainImage(defaultVariant.images[0] || '');
+      setMainImage(defaultVariant.images[0] || "");
       setSelectedThumbnail(0);
       setPrice(defaultSize?.price || 0);
     }
@@ -75,10 +89,10 @@ const DetailProduct = () => {
     if (cartData && product?.data?.variants?.length > 0) {
       // Tìm variant và size được chọn
       const selectedVariant = product?.data?.variants.find(
-        variant => variant.color === selectedColor
+        (variant) => variant.color === selectedColor
       );
       const selectedSizeObject = selectedVariant?.sizes.find(
-        size => size.nameSize === selectedSize
+        (size) => size.nameSize === selectedSize
       );
 
       // Cập nhật inventory
@@ -86,13 +100,12 @@ const DetailProduct = () => {
 
       // Tìm quantity trong cartData.items
       const dataCartVariantSelected = cartData?.items.find(
-        item => item.sizeId === selectedSizeObject?.id
+        (item) => item.sizeId === selectedSizeObject?.id
       );
       setQuantityCart(dataCartVariantSelected?.quantity || 0);
-      setQuantity(1)
+      setQuantity(1);
     }
   }, [cartData, product, selectedColor, selectedSize]);
-
 
   // function
 
@@ -101,18 +114,20 @@ const DetailProduct = () => {
       const data = await getFeedbacksByProductId(productId);
       setFeedbacks(data);
     } catch (error) {
-      if (error.message.includes('HTML')) {
-        message.error('Lỗi khi tải feedbacks, nhận được trang lỗi từ server.');
-      } else if (error.message.includes('Không có feedbacks')) {
-        message.error('Không có feedbacks cho sản phẩm này.');
+      if (error.message.includes("HTML")) {
+        message.error("Lỗi khi tải feedbacks, nhận được trang lỗi từ server.");
+      } else if (error.message.includes("Không có feedbacks")) {
+        message.error("Không có feedbacks cho sản phẩm này.");
       }
     }
   };
 
-
   const handleArrowClick = (direction: any) => {
-    const images = product?.data?.variants.find((variant: any) => variant.color === selectedColor)?.images;
-    const newIndex = (selectedThumbnail + direction + images.length) % images.length;
+    const images = product?.data?.variants.find(
+      (variant: any) => variant.color === selectedColor
+    )?.images;
+    const newIndex =
+      (selectedThumbnail + direction + images.length) % images.length;
     setSelectedThumbnail(newIndex);
     setMainImage(images[newIndex]);
   };
@@ -122,7 +137,9 @@ const DetailProduct = () => {
     setSelectedThumbnail(index);
   };
   const handleColorSelect = (color) => {
-    const variant = product.data.variants.find(variant => variant.color === color);
+    const variant = product.data.variants.find(
+      (variant) => variant.color === color
+    );
     setSelectedColor(color);
     setMainImage(variant.images[0]);
     setSelectedThumbnail(0);
@@ -136,15 +153,19 @@ const DetailProduct = () => {
   const handleSizeSelect = (size) => {
     setSelectedSize(size);
 
-    const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
-    const selectedSizeObject = selectedVariant?.sizes.find(sizeObj => sizeObj.nameSize === size);
+    const selectedVariant = product?.data?.variants.find(
+      (variant) => variant.color === selectedColor
+    );
+    const selectedSizeObject = selectedVariant?.sizes.find(
+      (sizeObj) => sizeObj.nameSize === size
+    );
     if (selectedSizeObject) {
       setPrice(selectedSizeObject.price);
     }
   };
 
   const handleQuantityChange = (change: any) => {
-    setQuantity(prevQuantity => Math.max(1, prevQuantity + change));
+    setQuantity((prevQuantity) => Math.max(1, prevQuantity + change));
   };
 
   const showModal = () => setIsModalVisible(true);
@@ -169,9 +190,10 @@ const DetailProduct = () => {
 
   const toggleAccordion = (header) => {
     const content = header.nextElementSibling;
-    const icon = header.querySelector('i');
-    content.style.display = content.style.display === 'none' ? 'block' : 'none';
-    icon.className = content.style.display === 'none' ? 'fas fa-plus' : 'fas fa-minus';
+    const icon = header.querySelector("i");
+    content.style.display = content.style.display === "none" ? "block" : "none";
+    icon.className =
+      content.style.display === "none" ? "fas fa-plus" : "fas fa-minus";
   };
   const [openAccordion, setOpenAccordion] = useState(null);
 
@@ -180,99 +202,106 @@ const DetailProduct = () => {
   };
 
   const onChangeQuantity = (value: number | null) => {
-    if (value !== null && value <= (inventory - quantityCart)) {
+    if (value !== null && value <= inventory - quantityCart) {
       setQuantity(value);
     } else if (value === null) {
       notification.error({
         message: "Vui lòng nhập số lượng!",
         placement: "topRight",
-        duration: 2,
+        duration: 2
       });
     } else {
       notification.error({
-        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho1!",
         placement: "topRight",
-        duration: 2,
+        duration: 2
       });
     }
   };
 
   const handleAddToCart = async (option?: string) => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
     queryClient.invalidateQueries({ queryKey: ["carts"] });
 
     const productId = product?.data?.id;
-    const selectedVariant = product?.data?.variants.find(variant => variant.color === selectedColor);
-    const selectedSizeObject = selectedVariant?.sizes.find(size => size.nameSize === selectedSize);
+    const selectedVariant = product?.data?.variants.find(
+      (variant) => variant.color === selectedColor
+    );
+    const selectedSizeObject = selectedVariant?.sizes.find(
+      (size) => size.nameSize === selectedSize
+    );
     if (!token || !isLogin) {
       notification.error({
         message: "Vui lòng đăng nhập để tiếp tục",
         placement: "topRight",
         duration: 2
       });
-      return
+      return;
     }
 
     if (id) {
-      const res = await getDataProductById(id)
+      const res = await getDataProductById(id);
       const sizeObjects = res.data.variants
-        .flatMap(variant => variant.sizes)
-        .filter(size => size.id === selectedSizeObject.id);
-      const newSizeObjectInventory = sizeObjects?.[0]?.inventory
+        .flatMap((variant) => variant.sizes)
+        .filter((size) => size.id === selectedSizeObject.id);
+      const newSizeObjectInventory = sizeObjects?.[0]?.inventory;
       if (!res.data.isActive) {
         notification.error({
           message: "Sản phẩm không còn tồn tại!",
           placement: "topRight",
-          duration: 4,
+          duration: 4
         });
         queryClient.invalidateQueries({ queryKey: ["products"] });
-        nav('/home')
-        return
+        nav("/home");
+        return;
       } else {
         if (newSizeObjectInventory === 0) {
           notification.error({
-            message: "Sản phẩm không còn tồn tại!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
-            duration: 4,
+            duration: 4
           });
+          nav("/home");
         } else if (newSizeObjectInventory < quantity) {
           notification.error({
-            message: "Số lượng sản phẩm yêu cầu được chọn vượt quá số lượng tồn kho!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
-            duration: 4,
+            duration: 4
           });
+          nav("/home");
         } else if (quantity > inventory - quantityCart) {
           notification.error({
-            message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+            message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 2
           });
-          return
+          nav("/home");
+
+          return;
         } else {
           const productData = {
             productId,
             variantId: selectedVariant.id,
             sizeId: selectedSizeObject.id,
-            quantity,
+            quantity
           };
 
           const res = await addItemToCart(productData);
           if (res && res?.status) {
-            if (option === 'buy-now') {
-              nav('/cart')
+            if (option === "buy-now") {
+              nav("/cart");
             } else {
               notification.success({
                 message: "Thêm sản phẩm thành công",
                 placement: "topRight",
-                duration: 2,
+                duration: 2
               });
             }
-
-
           } else {
             notification.error({
               message: "Sản phẩm không còn tồn tại",
               placement: "topRight",
-              duration: 2,
+              duration: 2
             });
           }
         }
@@ -280,22 +309,20 @@ const DetailProduct = () => {
     }
 
     if (!product?.data) {
-      message.error('Không tìm thấy thông tin sản phẩm.');
+      message.error("Không tìm thấy thông tin sản phẩm.");
       return;
     }
 
     if (!productId || !selectedVariant || !selectedSizeObject) {
-      message.error('Vui lòng chọn đầy đủ thông tin sản phẩm.');
+      message.error("Vui lòng chọn đầy đủ thông tin sản phẩm.");
       return;
     }
-
   };
-
 
   //sản phẩm cùng loại
   const getProductid = useQuery({
     queryKey: ["PRODUCT", id],
-    queryFn: () => getProductById(id), // Sử dụng hàm getProductById
+    queryFn: () => getProductById(id) // Sử dụng hàm getProductById
   });
 
   const { data: relatedProducts } = useQuery({
@@ -304,17 +331,16 @@ const DetailProduct = () => {
       const categoryId = getProductid.data?.data?.category?.id;
       const productId = getProductid.data?.data?.id;
 
-      const { data } = await instance.get(`http://127.0.0.1:8000/api/v1/products/${categoryId}/related/${productId}`);
-      console.log('API response:', data);
+      const { data } = await instance.get(
+        `http://127.0.0.1:8000/api/v1/products/${categoryId}/related/${productId}`
+      );
+      console.log("API response:", data);
       return data.data || [];
     },
     enabled: !!getProductid.data?.data?.category?.id
   });
 
   //end
-
-
-
 
   return (
     <>
@@ -323,104 +349,153 @@ const DetailProduct = () => {
           <div className="image-gallery">
             <div className="thumbnail-container">
               <div className="thumbnail-images">
-                {product?.data?.variants?.find(variant => variant.color === selectedColor)?.images.map((image, index) => (
-                  <img
-                    key={index}
-                    alt={`Thumbnail ${index + 1}`}
-                    className={`thumbnail-image ${selectedThumbnail === index ? 'selected' : ''}`}
-                    src={image}
-                    onClick={() => handleThumbnailClick(index, image)}
-                  />
-                ))}
+                {product?.data?.variants
+                  ?.find((variant) => variant.color === selectedColor)
+                  ?.images.map((image, index) => (
+                    <img
+                      key={index}
+                      alt={`Thumbnail ${index + 1}`}
+                      className={`thumbnail-image ${
+                        selectedThumbnail === index ? "selected" : ""
+                      }`}
+                      src={image}
+                      onClick={() => handleThumbnailClick(index, image)}
+                    />
+                  ))}
               </div>
             </div>
 
-            <div className="main-image-container" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div className="arrow-button left" onClick={() => handleArrowClick(-1)}>&#8592;</div>
+            <div
+              className="main-image-container"
+              style={{
+                position: "relative",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center"
+              }}
+            >
+              <div
+                className="arrow-button left"
+                onClick={() => handleArrowClick(-1)}
+              >
+                &#8592;
+              </div>
               <Image
                 className="main-image"
                 src={mainImage}
                 style={{
-                  width: '678px',
-                  height: '700px',
-                  cursor: 'pointer',
-                  display: 'block',
-                  margin: '0 auto',
-                  marginTop: '-5px',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+                  width: "678px",
+                  height: "700px",
+                  cursor: "pointer",
+                  display: "block",
+                  margin: "0 auto",
+                  marginTop: "-5px",
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)"
                 }}
                 preview={false}
                 onClick={showModal}
               />
-              <Modal open={isModalVisible} onCancel={handleCancel} footer={null} width={600}>
-
-                <Image src={mainImage || product?.data?.coverImg} preview={false} />
+              <Modal
+                open={isModalVisible}
+                onCancel={handleCancel}
+                footer={null}
+                width={600}
+              >
+                <Image
+                  src={mainImage || product?.data?.coverImg}
+                  preview={false}
+                />
               </Modal>
-
-
-              <div className="arrow-button right" onClick={() => handleArrowClick(1)}>&#8594;</div>
+              {inventory - (quantityCart || 0) <= 0 && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 text-white rounded-[8px] text-sm px-4 py-2">
+                  Hết hàng
+                </div>
+              )}
+              <div
+                className="arrow-button right"
+                onClick={() => handleArrowClick(1)}
+              >
+                &#8594;
+              </div>
             </div>
           </div>
         </div>
 
         <div className="right-column">
           <h1 className="product-title">{product?.data?.name}</h1>
-          <span>{inventory > 0 ? `Số lượng: ${inventory}` : "Hết hàng"}</span>
-          <hr />
-          <div className="product-price">
-            {price.toLocaleString()}₫
+          <div className="flex items-center justify-start gap-4">
+            {" "}
+            <Rate allowHalf disabled value={product?.data?.ratingAverage} />
+            <span
+              className="italic text-sm text-gray-500"
+              style={{ marginTop: "10px", display: "block" }}
+            >
+              {inventory > 0 ? `Số lượng: ${inventory}` : "Hết hàng"}
+            </span>
           </div>
 
+          <div className="product-price">{price.toLocaleString()}₫</div>
 
           <div className="product-options">
-            <label htmlFor="color" className="product-options1">Màu Sắc</label>
+            <label htmlFor="color" className="product-options1">
+              Màu Sắc
+            </label>
             <div className="color-options">
               {product?.data?.variants?.map((variant, index) => (
                 <Button
                   key={index}
-                  className={`color-option ${selectedColor === variant.color ? "selected" : ""}`}
+                  className={`color-option ${
+                    selectedColor === variant.color ? "selected" : ""
+                  }`}
                   onClick={() => handleColorSelect(variant.color)}
                   style={{
                     padding: 0,
-                    margin: '5px',
-                    border: selectedColor === variant.color ? '2px solid #000' : '1px solid #ccc',
-                    borderRadius: '50%',
-                    width: '40px',
-                    height: '40px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                    margin: "5px",
+                    border:
+                      selectedColor === variant.color
+                        ? "2px solid #000"
+                        : "1px solid #ccc",
+                    width: "100px",
+                    height: "40px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center"
                   }}
                 >
-                  {variant.images?.[0] ? (
-                    <img
-                      src={variant.images[0]}
-                      alt={variant.color}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                      }}
-                    />
+                  {variant.color?.[0] ? (
+                    <div>{variant.color}</div>
                   ) : (
-                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', backgroundColor: '#ccc' }}></div>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: "50%",
+                        backgroundColor: "#ccc"
+                      }}
+                    ></div>
                   )}
                 </Button>
               ))}
             </div>
 
-            <label className="product-options1" htmlFor="size">Kích Thước</label>
+            <label className="product-options1" htmlFor="size">
+              Kích Thước
+            </label>
             <div className="size-options">
               {product?.data?.variants
-                ?.find(variant => variant.color === selectedColor)?.sizes.map(size => (
+                ?.find((variant) => variant.color === selectedColor)
+                ?.sizes.filter((item) => item.status === true)
+                .map((size) => (
                   <Button
                     key={size._id}
                     onClick={() => handleSizeSelect(size.nameSize)}
                     style={{
-                      border: selectedSize === size.nameSize ? '2px solid #000' : '1px solid #ccc',
+                      border:
+                        selectedSize === size.nameSize
+                          ? "2px solid #000"
+                          : "1px solid #ccc"
                     }}
                   >
                     {size.nameSize}
@@ -428,12 +503,16 @@ const DetailProduct = () => {
                 ))}
             </div>
 
-
-            <Modal open={isSizeGuideVisible} onCancel={handleSizeGuideCancel} footer={null} width={600}>
+            <Modal
+              open={isSizeGuideVisible}
+              onCancel={handleSizeGuideCancel}
+              footer={null}
+              width={600}
+            >
               <Image
                 src="../../../assets/images/size.png"
                 alt="Hướng dẫn chọn size"
-                style={{ width: '100%', height: 'auto' }}
+                style={{ width: "100%", height: "auto" }}
                 preview={false}
               />
             </Modal>
@@ -448,7 +527,7 @@ const DetailProduct = () => {
             </Button>
             <InputNumber
               readOnly
-              type='number'
+              type="number"
               min={1}
               max={inventory}
               value={quantity}
@@ -464,9 +543,19 @@ const DetailProduct = () => {
             </Button>
           </div>
 
-          <div className="action-buttons">
-            <button className="add-to-cart rounded-sm" onClick={() => handleAddToCart()}>THÊM VÀO GIỎ HÀNG</button>
-            <button onClick={() => handleAddToCart('buy-now')} className="buy-now rounded-sm">MUA NGAY</button>
+          <div className="action-buttons mt-4">
+            <button
+              className="add-to-cart rounded-sm"
+              onClick={() => handleAddToCart()}
+            >
+              THÊM VÀO GIỎ HÀNG
+            </button>
+            <button
+              onClick={() => handleAddToCart("buy-now")}
+              className="buy-now rounded-sm"
+            >
+              MUA NGAY
+            </button>
           </div>
           <div className="action-button2">
             <button className="like-add">
@@ -477,77 +566,90 @@ const DetailProduct = () => {
             </button>
           </div>
 
-
           <div className="infor">
-
             <p>{product?.data?.description}</p>
-
           </div>
         </div>
-      </div>
-      <div className=''>
 
         <div>
           <div className="feedback-from">
             <div className="product-feedbacks">
               <h2>XEM BÌNH LUẬN</h2>
-              {feedbacks.map((feedback) => (
-                <div key={feedback.id} className="feedback-item">
-                  <div className="feedback-header">
-                    <img
-                      src={feedback.user.avatar}
-                      alt="avatar"
-                      className="feedback-avatar"
-                    />
-                    <div>
-                      <strong className="feedback-username">{feedback.user.fullName}</strong>
-                      <p className="feedback-rating">
-                        Đánh giá:
-                        {[...Array(5)].map((_, index) => (
-                          <span
-                            key={index}
-                            className={index < feedback.rating ? "star-filled" : "star-empty"}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </p>
+              {feedbacks
+                .filter((feedback) => feedback.classify === true)
+                .map((feedback) => (
+                  <div key={feedback.id} className="feedback-item">
+                    <div className="feedback-header">
+                      <img
+                        src={feedback.user.avatar}
+                        alt="avatar"
+                        className="feedback-avatar"
+                      />
+                      <div>
+                        <strong className="feedback-username">
+                          {feedback.user.fullName}
+                        </strong>
+                        <p className="feedback-rating">
+                          Đánh giá:
+                          {[...Array(5)].map((_, index) => (
+                            <span
+                              key={index}
+                              className={
+                                index < feedback.rating
+                                  ? "star-filled"
+                                  : "star-empty"
+                              }
+                            >
+                              ★
+                            </span>
+                          ))}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="feedback-content">
+                      <p>{feedback.comment}</p>
                     </div>
                   </div>
-                  <div className="feedback-content">
-                    <p>{feedback.comment}</p>
-                  </div>
-                </div>
-              ))
-              }
+                ))}
             </div>
           </div>
-
         </div>
+      </div>
+      <div className="">
         <div className="product-like">
+          <h3 className="text-2xl font-bold my-5">Sản phẩm cùng loại</h3>
           <div className="product-list">
             <i
-              className={`fas fa-chevron-left arrow ${startIndex === 0 ? 'disabled' : ''}`}
+              className={`fas fa-chevron-left arrow ${
+                startIndex === 0 ? "disabled" : ""
+              }`}
               onClick={handlePrevious}
-              style={{ cursor: startIndex === 0 ? 'not-allowed' : 'pointer' }}
+              style={{ cursor: startIndex === 0 ? "not-allowed" : "pointer" }}
             />
-            {Array.isArray(relatedProducts) && relatedProducts.length > 0 && relatedProducts.slice(startIndex, startIndex + productsPerPage).map((item, index) => (
-              <ProductCard key={index} item={item} />
-            ))}
+            {Array.isArray(relatedProducts) &&
+              relatedProducts.length > 0 &&
+              relatedProducts
+                .slice(startIndex, startIndex + productsPerPage)
+                .map((item, index) => <ProductCard key={index} item={item} />)}
             <i
-              className={`fas fa-chevron-right arrow ${startIndex + productsPerPage >= allProduct.length ? 'disabled' : ''}`}
+              className={`fas fa-chevron-right arrow ${
+                startIndex + productsPerPage >= allProduct.length
+                  ? "disabled"
+                  : ""
+              }`}
               onClick={handleNext}
-              style={{ cursor: startIndex + productsPerPage >= allProduct.length ? 'not-allowed' : 'pointer' }}
+              style={{
+                cursor:
+                  startIndex + productsPerPage >= allProduct.length
+                    ? "not-allowed"
+                    : "pointer"
+              }}
             />
           </div>
-
         </div>
       </div>
     </>
-
-
   );
 };
-
 
 export default DetailProduct;

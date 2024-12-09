@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { notification } from "antd";
 import { Eye, ShoppingBag } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Product } from "../../../common/types/Product";
 import { useProduct } from "../../../contexts/ProductContext";
@@ -18,26 +18,38 @@ const ProductCard = ({ item }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const queryClient = useQueryClient();
-  // console.log(item);
 
   const countColors = (): number => item?.variants.length;
   const countSizes = (): number =>
     item?.variants.reduce((total, variant) => total + variant.sizes.length, 0);
 
-  const showModal = async (id: string) => {
+  useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
-    const res = await getDataProductById(id)
-    if (res?.data?.isActive === false) {
+  }, [isModalVisible])
+
+  const showModal = async (id: string) => {
+    try {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      const res = await getDataProductById(id);
+      if (!res?.data?.isActive) {
+        notification.error({
+          message: "Sản phẩm không còn tồn tại!",
+          placement: "topRight",
+          duration: 4
+        });
+      } else {
+        setIsModalVisible(true);
+      }
+    } catch (error) {
+      console.error("Error fetching product data:", error);
       notification.error({
-        message: "Sản phẩm không còn tồn tại!",
+        message: "Lỗi khi lấy dữ liệu sản phẩm!",
         placement: "topRight",
         duration: 4
       });
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-    } else {
-      setIsModalVisible(true);
     }
   };
+
   const handleOk = () => {
     setIsModalVisible(true);
   };
@@ -93,7 +105,7 @@ const ProductCard = ({ item }: ProductCardProps) => {
       </div>
       <div className="flex justify-between text-gray-500 text-[12px] mb-2">
         <span>+{countColors()} Màu Sắc</span>
-        <span>+{countSizes()} Kích Thước</span>
+        <span>+{countSizes()} Biến thể</span>
       </div>
       <h3 className="text-[14px] font-semibold mb-1 line-clamp-1">
         {item?.name}
