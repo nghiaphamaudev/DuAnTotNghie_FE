@@ -32,6 +32,7 @@ const ShoppingCart: React.FC = () => {
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
+    queryClient.invalidateQueries({ queryKey: ["cart"] });
   }, []);
 
   // Update the localStorage every time the selection changes

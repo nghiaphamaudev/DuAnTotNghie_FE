@@ -167,7 +167,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
       !newStatusVariants[0].status ||
       !newStatusSizes[0].status
     ) {
-      notification.error({
+      notification.warning({
         message: "Sản phẩm không còn tồn tại. Vui lòng chọn sản phẩm khác",
         placement: "topRight",
         duration: 2
@@ -175,7 +175,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
       return;
     }
     if (quantity > inventory) {
-      notification.error({
+      notification.warning({
         message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
         placement: "topRight",
         duration: 2
@@ -185,7 +185,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
       return;
     }
     if (inventory === 0) {
-      notification.error({
+      notification.warning({
         message: "Sản phẩm không còn tồn tại. Vui lòng chọn sản phẩm khác",
         placement: "topRight",
         duration: 2
