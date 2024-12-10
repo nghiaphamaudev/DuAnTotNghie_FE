@@ -6,68 +6,76 @@ import {
   PhoneCall,
   Search,
   ShoppingBag,
-  X,
+  X
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import LogoFshirt from "../../../assets/images/logofshirt-rmbg.png";
 import { useAuth } from "../../../contexts/AuthContext";
 import QuickCart from "./QuickCart";
 import { useCart } from "../../../contexts/CartContext";
+import { useProduct } from "../../../contexts/ProductContext";
+import { useDebounce } from "../../../hooks/useDebounce";
 
 const HeaderClient = () => {
-  // state
+  // State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
-  // context
+  // Debounced search term
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // Context
   const { cartData, countItemCart } = useCart();
-  const { isLogin, showLogoutModal,  user } = useAuth();
+  const { isLogin, showLogoutModal, user } = useAuth();
+  const { allProduct } = useProduct();
 
   const cartItems = cartData?.items || [];
   const totalPrice = cartData?.totalCartPrice ?? 0;
 
-  const toggleDrawer = () => {
-    setIsDrawerOpen(!isDrawerOpen);
-  };
+  // Toggle Drawer
+  const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
+  const toggleCartDrawer = () => setIsCartDrawerOpen(!isCartDrawerOpen);
+  const closeCartDrawer = () => setIsCartDrawerOpen(false);
+  const closeNavDrawer = () => setIsDrawerOpen(false);
 
-  const toggleCartDrawer = () => {
-    setIsCartDrawerOpen(!isCartDrawerOpen);
-  };
+  // Search functionality
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      const results = allProduct.filter((product) =>
+        product.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+      );
+      setFilteredProducts(results);
+    } else {
+      setFilteredProducts([]);
+    }
+  }, [debouncedSearchTerm, allProduct]);
 
-  const closeCartDrawer = () => {
-    setIsCartDrawerOpen(false);
-  };
-
-  const closeNavDrawer = () => {
-    setIsDrawerOpen(false);
-  };
-
+  // Menu items
   const items: MenuProps["items"] = isLogin
     ? [
         {
           key: "2",
-          label: <Link to="/my-account">Thông tin cá nhân</Link>,
+          label: <Link to="/my-account">Thông tin cá nhân</Link>
         },
         {
           key: "5",
           label: "Đăng xuất",
-          onClick: showLogoutModal,
-        },
+          onClick: showLogoutModal
+        }
       ]
     : [
         {
           key: "1",
-          label: <Link to="/login">Đăng nhập</Link>,
+          label: <Link to="/login">Đăng nhập</Link>
         },
         {
           key: "2",
-          label: <Link to="/register">Đăng ký</Link>,
-        },
+          label: <Link to="/register">Đăng ký</Link>
+        }
       ];
-
-  // Example cart items and total price
-  const freeShippingThreshold = 500000;
 
   return (
     <div className="w-full">
@@ -110,32 +118,46 @@ const HeaderClient = () => {
           </ul>
 
           {/* Search and Icons */}
-          <div className="flex items-center justify-between w-full md:w-auto">
-            <div className="w-[180px] md:w-[220px]">
-              <form className="flex items-center w-full mx-auto">
-                <label htmlFor="voice-search" className="sr-only">
-                  Tìm kiếm
-                </label>
-                <div className="relative w-full flex justify-end">
-                  <div className="absolute inset-y-0 end-0 flex items-center pr-3 pointer-events-none">
-                    <Search />
-                  </div>
-                  <input
-                    type="text"
-                    className="border border-gray-300 text-black text-sm rounded-3xl block w-[80%] ps-5 p-2.5 transition-all duration-300 ease-in-out focus:w-[100%] focus:origin-right dark:bg-[#fff]"
-                    placeholder="Tìm kiếm..."
-                    required
-                  />
+          <div className="flex items-center justify-between w-full md:w-auto ">
+            {/* Search Bar */}
+            <div className="w-[180px] md:w-[220px] relative ">
+              <div className="absolute inset-y-0 start-1 flex items-center pr-5 pointer-events-none w-16 text-black opacity-100">
+                <Search />
+              </div>
+              <input
+                type="text"
+                placeholder="Tìm kiếm sản phẩm..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="border border-gray-300  text-black text-sm rounded-3xl block w-[80%] ps-8 p-2 transition-all duration-300 ease-in-out focus:w-[90%] focus:origin-right dark:bg-[#fff]"
+              />
+              {filteredProducts.length > 0 && (
+                <ul className="absolute z-10 bg-white border border-gray-300 rounded-md mt-2 w-full max-h-48 overflow-y-auto">
+                  {filteredProducts.map((product) => (
+                    <li
+                      key={product?.id}
+                      className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-500"
+                      S
+                    >
+                      <Link to={`/home/product/${product?.id}`}>
+                        {product?.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {filteredProducts.length === 0 && debouncedSearchTerm && (
+                <div className="absolute z-10 bg-white border border-gray-300 rounded-md mt-2 w-full p-2 text-sm text-gray-500 italic">
+                  Không tìm thấy sản phẩm nào
                 </div>
-              </form>
+              )}
             </div>
 
-            {/* Account and Cart Icons (visible in all views) */}
+            {/* Account and Cart Icons */}
             <div className="flex space-x-4 md:space-x-3 items-center ml-2">
               {/* Account */}
               {user && (
                 <span className="font-semibold text-sm mr-2">
-                  {" "}
                   Xin chào, {user.fullName}
                 </span>
               )}
@@ -185,13 +207,13 @@ const HeaderClient = () => {
         </ul>
       </Drawer>
 
-      {/* QuickCart Component (Always accessible outside of drawer) */}
+      {/* QuickCart Component */}
       <QuickCart
         isCartDrawerOpen={isCartDrawerOpen}
         closeCartDrawer={closeCartDrawer}
         cartItems={cartItems}
         totalPrice={totalPrice}
-        freeShippingThreshold={freeShippingThreshold}
+        freeShippingThreshold={500000}
       />
     </div>
   );
