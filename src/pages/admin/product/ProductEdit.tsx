@@ -380,7 +380,7 @@ const ProductEdit: React.FC = () => {
           rules={[
             { required: true, message: "Vui lòng nhập tên sản phẩm!" },
             {
-              pattern: /^[\p{L}\p{N}\s]{6,}$/u,
+              pattern: /^(?!.*^(?:\p{L}+|\p{N}+)$)[\p{L}\p{N}\s\p{P}\p{S}]{6,}$/u,
               message: "Tên sản phẩm phải có ít nhất 6 ký "
             }
           ]}
@@ -389,9 +389,9 @@ const ProductEdit: React.FC = () => {
         </Form.Item>
 
         <Form.Item
-          label="Category"
+          label="Danh mục"
           name="category"
-          rules={[{ required: true, message: "vui lòng nhập danh mục!" }]}
+          rules={[{ required: true, message: "Vui lòng nhập danh mục!" }]}
         >
           <Select placeholder="Chọn danh mục">
             {categories.map((category) => (
@@ -457,7 +457,11 @@ const ProductEdit: React.FC = () => {
                                 required: true,
                                 message: "Vui lòng nhập màu sắc"
                               },
-                              { validator: validateUniqueColor }
+                              { validator: validateUniqueColor },
+                              {
+                                pattern: /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯăạảãầấậẩẫằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ ]+$/,
+                                message: "Không được nhập số hoặc kí tự đặc biệt",
+                              }
                             ]}
                           >
                             <Input placeholder="Nhập màu sắc" />
@@ -571,12 +575,11 @@ const ProductEdit: React.FC = () => {
                                       {...sizeRestField}
                                       name={[sizeName, "price"]}
                                       label="Giá"
-                                      rules={[
-                                        { required: true, message: "Nhập giá" }
-                                      ]}
+                                      rules=
+                                        {[{ type: 'number', min: 1, message:'Giá phải lớn hơn 0' }, { required: true, message: 'Giá sản phẩm không được để trống' }]}
                                     >
                                       <InputNumber
-                                        min={0}
+                                        
                                         placeholder="Giá"
                                         style={{ width: "100%" }}
                                       />
@@ -587,15 +590,10 @@ const ProductEdit: React.FC = () => {
                                       {...sizeRestField}
                                       name={[sizeName, "inventory"]}
                                       label="Số lượng"
-                                      rules={[
-                                        {
-                                          required: true,
-                                          message: "Nhập số lượng"
-                                        }
-                                      ]}
+                                      rules={[{ type: 'number', min: 0}, { required: true, message: 'Số lượng không được để trống' }]}
                                     >
                                       <InputNumber
-                                        min={0}
+                                        
                                         placeholder="Số lượng"
                                         style={{ width: "100%" }}
                                       />
