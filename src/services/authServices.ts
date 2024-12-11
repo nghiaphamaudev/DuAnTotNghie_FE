@@ -1,4 +1,3 @@
-
 import {
   ForgotPasswordRequest,
   RegisterAdminRequest,
@@ -14,6 +13,7 @@ import {
   UserRegisterRequest,
 } from "../common/types/User";
 import instance from "../config/axios";
+import instanceAdmin from "../config/axiosadmin";
 
 export const loginAccount = async (payload: UserLoginRequest) => {
   try {
@@ -71,6 +71,10 @@ export const resetPassword = async (
 
 export const getProfile = async () => {
   try {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      throw new Error("Không có token, yêu cầu đăng nhập lại.");
+    }
     const { data } = await instance.get("/users/getMe");
     return data;
   } catch (error) {
@@ -137,7 +141,7 @@ export const deleteAddress = async (payload: { id: string }) => {
 
 export const getAllUserAccounts = async () => {
   try {
-    const { data } = await instance.get("/superadmins/users");
+    const { data } = await instanceAdmin.get("/superadmins/users");
     return data;
   } catch (error) {
     throw error;
@@ -146,7 +150,7 @@ export const getAllUserAccounts = async () => {
 
 export const getSuperAndAdmin = async () => {
   try {
-    const { data } = await instance.get("/superadmins/manage-account");
+    const { data } = await instanceAdmin.get("/superadmins/manage-account");
     return data;
   } catch (error) {
     throw error;
@@ -155,7 +159,7 @@ export const getSuperAndAdmin = async () => {
 
 export const loginAdmin = async (payload: UserLoginRequest) => {
   try {
-    const { data } = await instance.post("/superadmins/login", payload);
+    const { data } = await instanceAdmin.post("/superadmins/login", payload);
     return data;
   } catch (error) {
     throw error;
@@ -168,7 +172,7 @@ export const toggleBlockUser = async (payload: {
   note?: string;
 }) => {
   try {
-    const { data } = await instance.patch(
+    const { data } = await instanceAdmin.patch(
       `/superadmins/blocked-account-user/${payload.idUser}`,
       {
         status: payload.status,
@@ -186,7 +190,7 @@ export const toggleBlockAdmin = async (payload: {
   status: boolean;
 }) => {
   try {
-    const { data } = await instance.patch(
+    const { data } = await instanceAdmin.patch(
       `/superadmins/blocked-account/${payload.idAdmin}`,
       {
         status: payload.status, // Đảm bảo status được gửi đúng (false trong trường hợp này)
@@ -200,7 +204,7 @@ export const toggleBlockAdmin = async (payload: {
 
 export const registerAdmin = async (payload: RegisterAdminRequest) => {
   try {
-    const { data } = await instance.post(
+    const { data } = await instanceAdmin.post(
       "/superadmins/create-account",
       payload
     );
@@ -214,7 +218,7 @@ export const updatePasswordAdminAnhSuperAdmin = async (
   payload: UpdatePasswordRequestAdmin
 ) => {
   try {
-    const { data } = await instance.patch(
+    const { data } = await instanceAdmin.patch(
       "/superadmins/update-password",
       payload
     );
@@ -226,7 +230,11 @@ export const updatePasswordAdminAnhSuperAdmin = async (
 
 export const getMeAdmin = async () => {
   try {
-    const { data } = await instance.get("/superadmins/get-me");
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      throw new Error("Không có token, yêu cầu đăng nhập lại.");
+    }
+    const { data } = await instanceAdmin.get("/superadmins/get-me");
     return data;
   } catch (error) {
     throw error;
@@ -239,7 +247,7 @@ export const updatePasswordAdmin = async (payload: {
   resetPassword: string;
 }) => {
   try {
-    const { data } = await instance.patch(
+    const { data } = await instanceAdmin.patch(
       `/superadmins/update-infor-admin/${payload.idAdmin}`,
       payload
     );
@@ -251,7 +259,7 @@ export const updatePasswordAdmin = async (payload: {
 
 export const updateRoleUser = async (userId: string, role: string) => {
   try {
-    const { data } = await instance.patch(
+    const { data } = await instanceAdmin.patch(
       `/users/admin/${userId}/change-user-role`,
       {
         role,
