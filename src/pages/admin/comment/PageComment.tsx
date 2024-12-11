@@ -1,4 +1,4 @@
-import { Card, Col, Row, Select, Table, Switch, Radio } from "antd";
+import { Card, Col, Row, Select, Table, Switch, Radio, Input } from "antd";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -19,10 +19,13 @@ const CustomHeaderCell: React.FC<CustomTableHeaderCellProps> = (props) => (
 );
 
 export default function PageComment() {
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<number | null>(null);
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [dataSource, setDataSource] = useState<any>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [userSearchTerm, setUserSearchTerm] = useState<string>("");
+
 
   // Call API to fetch feedbacks
   const fetchFeedbacks = async () => {
@@ -71,6 +74,18 @@ export default function PageComment() {
   };
 
 
+  const filteredFeedbacks = feedbacks
+    .filter((feedback) => {
+      if (statusFilter === 1) return feedback.classify === true;
+      if (statusFilter === 0) return feedback.classify === false;
+      return true;
+    })
+    .filter((feedback) =>
+      feedback.productId?.name?.toLowerCase().includes(searchTerm.trim().toLowerCase())
+    )
+    .filter((feedback) =>
+      feedback.user?.fullName?.toLowerCase().includes(userSearchTerm.trim().toLowerCase())
+    );
 
 
 
@@ -159,30 +174,29 @@ export default function PageComment() {
       <BreadcrumbsCustom listLink={[]} nameHere={"Bình luận"} />
       <Card bordered={false}>
         <Row gutter={16} style={{ marginTop: "12px" }}>
-          <Col span={5}>
-            <span>Sản phẩm: </span>
-            <Select style={{ width: "100%" }} value={1}>
-              <Select.Option value={null}>Tất cả</Select.Option>
-            </Select>
+          <Col span={4}>
+            <Input
+              placeholder="Tìm kiếm theo tên sản phẩm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </Col>
           <Col span={5}>
-            <span>Khách hàng: </span>
-            <Select style={{ width: "100%" }} value={1}>
-              <Select.Option value={null}>Tất cả</Select.Option>
-              <Select.Option value={1}>User 1</Select.Option>
-            </Select>
+            <Input
+              placeholder="Tìm kiếm theo tên người dùng"
+              value={userSearchTerm}
+              onChange={(e) => setUserSearchTerm(e.target.value)}
+            />
           </Col>
-          <Col span={14}>
+          <Col span={12}>
             <span>Trạng thái: </span>
             <Radio.Group
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-              }}
+              onChange={(e) => setStatusFilter(e.target.value)}
               value={statusFilter}
             >
               <Radio value={null}>Tất cả</Radio>
-              <Radio value="1">Hoạt động</Radio>
-              <Radio value="0">Ngừng hoạt động</Radio>
+              <Radio value={1}>Hoạt động</Radio>
+              <Radio value={0}>Ngừng hoạt động</Radio>
             </Radio.Group>
           </Col>
         </Row>
@@ -195,7 +209,7 @@ export default function PageComment() {
             },
           }}
           columns={columns}
-          dataSource={feedbacks}
+          dataSource={filteredFeedbacks}
           loading={loading}
           rowKey="id"
         />
