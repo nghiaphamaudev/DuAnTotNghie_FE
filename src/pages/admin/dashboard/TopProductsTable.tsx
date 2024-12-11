@@ -109,7 +109,7 @@ const TopProductsTable = () => {
                     columns={columns}
                     dataSource={data}
                     rowKey="id"
-                    pagination={{ pageSize: 3, showSizeChanger: false }}
+                    pagination={{ pageSize: 5, showSizeChanger: false }}
                     bordered
                 />
             )}
