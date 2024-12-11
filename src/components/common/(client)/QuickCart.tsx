@@ -126,9 +126,10 @@ const QuickCart: FC<QuickCartProps> = ({
 
   const handleClickToCart = async () => {
     const itemsWithZeroInventory = cartItems.filter(item => item.inventory === 0);
+    const itemsWithSmallerInventory = cartItems.filter(item => item.inventory < item.quantity);
 
     if (!isActiveProduct) {
-      notification.error({
+      notification.warning({
         message: "Giỏ hàng đã có sự thay đổi. Xin vui lòng kiểm tra lại",
         duration: 4,
       });
@@ -143,6 +144,11 @@ const QuickCart: FC<QuickCartProps> = ({
         }
         queryClient.invalidateQueries({ queryKey: ["carts"] });
       }
+    } else if (itemsWithSmallerInventory.length > 0) {
+      notification.warning({
+        message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
+        duration: 5,
+      });
     } else if (itemsWithZeroInventory.length > 0) {
       // Thông báo cho người dùng về thay đổi trong giỏ hàng
       notification.warning({
