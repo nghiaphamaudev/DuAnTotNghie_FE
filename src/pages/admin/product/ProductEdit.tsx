@@ -389,9 +389,9 @@ const ProductEdit: React.FC = () => {
         </Form.Item>
 
         <Form.Item
-          label="Category"
+          label="Danh mục"
           name="category"
-          rules={[{ required: true, message: "vui lòng nhập danh mục!" }]}
+          rules={[{ required: true, message: "Vui lòng nhập danh mục!" }]}
         >
           <Select placeholder="Chọn danh mục">
             {categories.map((category) => (
@@ -457,7 +457,11 @@ const ProductEdit: React.FC = () => {
                                 required: true,
                                 message: "Vui lòng nhập màu sắc"
                               },
-                              { validator: validateUniqueColor }
+                              { validator: validateUniqueColor },
+                              {
+                                pattern: /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯăạảãầấậẩẫằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ ]+$/,
+                                message: "Không được nhập số hoặc kí tự đặc biệt",
+                              }
                             ]}
                           >
                             <Input placeholder="Nhập màu sắc" />
@@ -586,7 +590,7 @@ const ProductEdit: React.FC = () => {
                                       {...sizeRestField}
                                       name={[sizeName, "inventory"]}
                                       label="Số lượng"
-                                      rules={[{ type: 'number', min: 1, message: 'Giá phải lớn hơn 0' }, { required: true, message: 'Giá sản phẩm không được để trống' }]}
+                                      rules={[{ type: 'number', min: 0}, { required: true, message: 'Số lượng không được để trống' }]}
                                     >
                                       <InputNumber
                                         
