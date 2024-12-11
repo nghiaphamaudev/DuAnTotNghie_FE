@@ -3,7 +3,7 @@ import {
   Form,
   Input,
   Radio,
-  Typography
+  Typography,
 } from "antd";
 import { useState } from "react";
 import { z } from "zod";
@@ -146,28 +146,6 @@ const UserProfile = () => {
               className="h-12 block text-md font-semibold text-black-400 mb-2"
             />
           </Form.Item>
-
-          {/* <Form.Item
-            label="Ảnh đại diện"
-            name="avatar"
-            valuePropName="file"
-            className="block text-md font-semibold text-black-500 mb-2"
-            getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
-          >
-            <Upload
-              name="avatar"
-              listType="picture-card"
-              beforeUpload={() => false}
-              maxCount={1}
-              accept=".jpg,.png,.jpeg,.webp"
-              className="block text-md font-semibold text-black-500 mb-2"
-            >
-              <div>
-                <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Tải ảnh</div>
-              </div>
-            </Upload>
-          </Form.Item> */}
 
           <Form.Item>
             <Button

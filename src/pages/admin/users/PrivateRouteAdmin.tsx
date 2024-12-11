@@ -6,7 +6,7 @@ interface PrivateRouterProps {
 }
 
 export const PrivateRouteAdmin = ({ children }: PrivateRouterProps) => {
-  const userData = localStorage.getItem("user");
+  const userData = localStorage.getItem("useradmin");
   const user = userData ? JSON.parse(userData) : null;
 
   if (user) {
@@ -17,5 +17,3 @@ export const PrivateRouteAdmin = ({ children }: PrivateRouterProps) => {
   // Nếu đã đăng nhập, hiển thị component con
   return <>{children}</>;
 };
-
-

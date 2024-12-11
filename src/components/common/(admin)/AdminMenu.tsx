@@ -9,10 +9,9 @@ import {
   TeamOutlined,
   FundOutlined,
   ProfileOutlined,
-  SkinOutlined
+  SkinOutlined,
 } from "@ant-design/icons";
 import CategoryDropdown from "../../../pages/admin/category/CategoryDropdown";
-import { useAuth } from "../../../contexts/AuthContext";
 
 type Props = {
   small: boolean;
@@ -21,7 +20,6 @@ type Props = {
 export default function AdminMenu({ small }: Props) {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const navigate = useNavigate();
-  const { userDataAdmin } = useAuth();
 
   const handleClickMenu = (e: { key: string }) => {
     const key = e.key;
@@ -55,17 +53,17 @@ export default function AdminMenu({ small }: Props) {
     {
       key: "dashboard",
       icon: <FundOutlined />,
-      label: <Link to="/admin/dashboard">Thống kê</Link>
+      label: <Link to="/admin/dashboard">Thống kê</Link>,
     },
     {
       key: "bill",
       icon: <ProfileOutlined />,
-      label: <Link to="/admin/bill">Đơn hàng</Link>
+      label: <Link to="/admin/bill">Đơn hàng</Link>,
     },
     {
       key: "product",
       icon: <SkinOutlined />,
-      label: <Link to="/admin/product">Sản phẩm</Link>
+      label: <Link to="/admin/product">Sản phẩm</Link>,
     },
     {
       key: "category",
@@ -78,25 +76,21 @@ export default function AdminMenu({ small }: Props) {
             <div style={{ width: "120px", justifyContent: "center" }}>
               <CategoryDropdown onSelect={handleCategorySelect} />
             </div>
-          )
-        }
-      ]
+          ),
+        },
+      ],
     },
 
     {
       key: "voucher",
       icon: <GiftOutlined />,
-      label: <Link to="/admin/voucher">Mã giảm giá</Link>
+      label: <Link to="/admin/voucher">Mã giảm giá</Link>,
     },
-    ...(userDataAdmin?.role === "superadmin"
-      ? [
-        {
-          key: "users",
-          icon: <TeamOutlined />,
-          label: <Link to="/admin/users">User</Link>,
-        },
-      ]
-      : []),
+    {
+      key: "users",
+      icon: <TeamOutlined />,
+      label: <Link to="/admin/users">User</Link>,
+    },
     {
       key: "comments",
       icon: <CommentOutlined />,
@@ -113,7 +107,6 @@ export default function AdminMenu({ small }: Props) {
     <Menu
       className="admin-menu"
       mode="inline"
-
       defaultSelectedKeys={["dashboard"]}
       defaultOpenKeys={openKeys}
       selectedKeys={[]}
@@ -122,7 +115,7 @@ export default function AdminMenu({ small }: Props) {
       items={menuItems}
       style={{
         fontSize: "20px",
-        fontFamily: 'serif'
+        fontFamily: "serif",
       }}
     />
   );

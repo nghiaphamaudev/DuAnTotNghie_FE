@@ -16,5 +16,4 @@ export const UserProfileSchema = z.object({
       /^0\d{9}$/,
       "Số điện thoại phải bắt đầu bằng số 0 và bao gồm 10 chữ số"
     ),
-  avatar: z.string().nonempty("Vui lòng nhập ảnh đại diện"),
 });
