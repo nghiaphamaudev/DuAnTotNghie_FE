@@ -13,7 +13,7 @@ const MyOrders = () => {
       console.log("orders: ", response);
 
       if (response?.data?.orders) {
-        setOrders(response.data.orders);
+        setOrders(response.data.orders.reverse());
       }
     };
     fetchOrders();
@@ -127,7 +127,7 @@ const MyOrders = () => {
             rowKey="id"
             columns={columns}
             dataSource={filterOrdersByStatus(tab.key)}
-            pagination={{ pageSize: 5 }}
+            pagination={{ pageSize: 10 }}
             bordered
           />
         )

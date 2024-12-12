@@ -88,8 +88,8 @@ const HeaderClient = () => {
       </div>
 
       {/* Main Header */}
-      <div className="mx-auto px-4 md:px-8 lg:px-16">
-        <div className="nav py-2 flex items-center justify-between">
+      <div className="mx-auto  md:px-8 lg:px-16">
+        <div className="nav py-2 flex items-center justify-between gap-2">
           {/* Logo and Mobile Menu Icon */}
           <div className="logo flex items-center justify-between">
             <AlignJustify
