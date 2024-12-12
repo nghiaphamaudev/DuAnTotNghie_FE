@@ -167,7 +167,7 @@ const ProductAdd: React.FC = () => {
           <Input placeholder="Nhập tên sản phẩm" />
         </Form.Item>
 
-        <Form.Item label="Category" name="category" rules={[{ required: true, message: 'Hãy chọn danh mục' }]}>
+        <Form.Item label="Danh mục" name="category" rules={[{ required: true, message: 'Hãy chọn danh mục' }]}>
           <Select>
             {categories.map((category) => (
               <Select.Option key={category.id} value={category.id}>
@@ -225,7 +225,13 @@ const ProductAdd: React.FC = () => {
                               {...restField}
                               name={[name, 'color']}
                               label="Màu sắc"
-                              rules={[{ required: true, message: 'Nhập màu sắc' }, { validator: validateUniqueColor }]}>
+                              rules={[
+                                { required: true, message: 'Nhập màu sắc' }, { validator: validateUniqueColor },
+                                {
+                                  pattern: /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯăạảãầấậẩẫằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ ]+$/,
+                                  message: "Không được nhập số hoặc kí tự đặc biệt",
+                                }
+                              ]}>
                               <Input placeholder="Nhập màu sắc" />
                             </Form.Item>
                           </Col>
@@ -290,7 +296,7 @@ const ProductAdd: React.FC = () => {
                                       {...sizeRestField}
                                       name={[sizeName, 'inventory']}
                                       label="Số lượng"
-                                      rules={[{ type: 'number', min: 1, message: 'Giá phải lớn hơn 0' }, { required: true, message: 'Giá sản phẩm không được để trống' }]}>
+                                      rules={[{ type: 'number', min: 1, message: 'Số lượng phải lớn hơn 0' }, { required: true, message: 'Số lượng không được để trống' }]}>
                                       <InputNumber placeholder="Số lượng" style={{ width: '100%' }} />
                                     </Form.Item>
                                   </Col>

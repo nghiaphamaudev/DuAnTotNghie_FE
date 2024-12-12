@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Select, Button, Input, Space, Typography, Spin, message } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { getRevenueProducts } from '../../../services/servicesdashboard/revenueProduct';
@@ -90,12 +90,13 @@ const RevenueBarChart = () => {
                     <Spin indicator={<LoadingOutlined spin />} />
                 </div>
             ) : data.length > 0 ? (
-                <ResponsiveContainer width="100%" height={382} style={{marginTop:'18px'}}>
+                <ResponsiveContainer width="100%" height={445} style={{marginTop:'18px'}}>
                     <BarChart data={data}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="date" />
                         <YAxis />
-                        <Tooltip />
+                            <Tooltip />
+                            <Legend />
                             <Bar dataKey="totalRevenue" name="Tổng Doanh Thu" fill="#1890FF" />
                             <Bar dataKey="totalRefund" name="Hoàn Tiền" fill="#FF4D4F" />
                             <Bar dataKey="totalRealRevenue" name="Doanh Thu Thực" fill="#28A745" />

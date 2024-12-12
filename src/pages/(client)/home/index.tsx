@@ -308,7 +308,7 @@ const HomePage = () => {
                   10th Oct 2024{" "}
                 </time>
 
-                <a href="#">
+                <a href="home/product/6750423fa4f493679db2c153">
                   <h3 className="mt-0.5 text-lg text-white">
                     Áo khoác nam ESEA thiết kế thêu Mỹ áo khoác bóng chày mới
                     thời trang
@@ -341,7 +341,7 @@ const HomePage = () => {
                   10th Oct 2024{" "}
                 </time>
 
-                <a href="#">
+                <a href="http://localhost:5173/home/product/6749b915cbfa920a4e795f87">
                   <h3 className="mt-0.5 text-lg text-white">
                     Áo polo nam cao cấp BASIC DIAMOND
                   </h3>

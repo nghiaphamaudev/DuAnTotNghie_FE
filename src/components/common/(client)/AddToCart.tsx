@@ -64,6 +64,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
   const queryClient = useQueryClient();
   const swiperRef = useRef<SwiperType | null>(null);
   const [quantityCart, setQuantityCart] = useState<number>(0);
+  const [ newSize, setNewSize] = useState({})
 
   //lifecycle
   useEffect(() => {
@@ -153,6 +154,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
     const newStatusSizes = newStatusVariants?.[0].sizes.filter(
       (item) => item.id == size
     );
+    setNewSize(newStatusSizes);
     if (!token || !isLogin) {
       notification.error({
         message: "Vui lòng đăng nhập để tiếp tục",
@@ -167,15 +169,16 @@ const AddToCart: React.FC<AddToCartProps> = ({
       !newStatusVariants[0].status ||
       !newStatusSizes[0].status
     ) {
-      notification.error({
+      notification.warning({
         message: "Sản phẩm không còn tồn tại. Vui lòng chọn sản phẩm khác",
         placement: "topRight",
         duration: 2
       });
+      setIsModalVisible(false);
       return;
     }
     if (quantity > inventory) {
-      notification.error({
+      notification.warning({
         message: "Số lượng sản phẩm yêu cầu đã vượt quá số lượng tồn kho!",
         placement: "topRight",
         duration: 2
@@ -185,11 +188,12 @@ const AddToCart: React.FC<AddToCartProps> = ({
       return;
     }
     if (inventory === 0) {
-      notification.error({
+      notification.warning({
         message: "Sản phẩm không còn tồn tại. Vui lòng chọn sản phẩm khác",
         placement: "topRight",
         duration: 2
       });
+      setIsModalVisible(false);
       return;
     }
 
@@ -266,12 +270,6 @@ const AddToCart: React.FC<AddToCartProps> = ({
                       alt={`Product variant ${color} image ${index + 1}`}
                       className="w-full h-full md:h-[400px] object-cover mb-4"
                     />
-                    {/* Overlay for "Hết hàng" */}
-                    {inventory - (quantityCart || 0) <= 0 && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
-                        Hết hàng
-                      </div>
-                    )}
                   </div>
                 </SwiperSlide>
               ))}
@@ -302,7 +300,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
         <div className="col-span-12 md:col-span-7">
           <h2 className="text-xl font-bold">{item?.name}</h2>
           <p className="text-gray-500 mb-2">
-            {inventory > 0 ? `Số lượng: ${inventory}` : "Hết hàng"} | Thương
+            {inventory > 0 || newSize.status  ?  `Số lượng: ${inventory}` : "Hết hàng"} | Thương
             hiệu: FSHIRT
           </p>
 
@@ -333,9 +331,8 @@ const AddToCart: React.FC<AddToCartProps> = ({
             <p className="text-gray-700 font-semibold">Màu sắc:</p>
             <Radio.Group onChange={onChangeColor} value={color}>
               {item?.variants
-                .filter((item) => item.status === true)
                 .map((variant: ProductVariant) => (
-                  <Radio.Button key={variant.id} value={variant.id}>
+                  <Radio.Button disabled={variant.status === false} key={variant.id} value={variant.id}>
                     {variant.color}
                   </Radio.Button>
                 ))}
@@ -347,9 +344,8 @@ const AddToCart: React.FC<AddToCartProps> = ({
             <p className="text-gray-700 font-semibold">Kích thước:</p>
             <Radio.Group onChange={onChangeSize} value={size}>
               {selectedVariant?.sizes
-                ?.filter((item) => item.status === true)
                 .map((sizeOption: ProductSize) => (
-                  <Radio.Button key={sizeOption.id} value={sizeOption.id}>
+                  <Radio.Button disabled={!sizeOption.status || sizeOption.inventory === 0 || !selectedVariant.status}  key={sizeOption.id} value={sizeOption.id}>
                     {sizeOption.nameSize}
                   </Radio.Button>
                 ))}
@@ -390,7 +386,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
 
           {/* Add to cart button */}
           <button
-            disabled={inventory === 0 || quantityCart === inventory}
+            disabled={inventory === 0}
             onClick={() => handleAddItemToCart(item.id)}
             className="bg-red-500 disabled:bg-gray-400 flex items-center justify-center gap-2 w-full text-white text-base font-semibold uppercase py-3"
           >

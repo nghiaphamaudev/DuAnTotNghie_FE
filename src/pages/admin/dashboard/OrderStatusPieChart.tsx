@@ -43,19 +43,19 @@ const OrderStatusPieChart = () => {
     const getColorByStatus = (status: string) => {
         switch (status.toLowerCase()) {
             case 'đã hủy':
-                return '#FF4D4F'; 
+                return '#FF4D4F';
             case 'chờ xác nhận':
-                return '#FFC107'; 
+                return '#FFC107';
             case 'đã xác nhận':
-                return '#00C49F'; 
+                return '#00C49F';
             case 'đang giao':
-                return '#1890FF'; 
+                return '#1890FF';
             case 'hoàn đơn':
-                return '#722ED1'; 
+                return '#722ED1';
             case 'thành công':
-                return '#28A745'; 
+                return '#28A745';
             default:
-                return '#0088FE'; 
+                return '#0088FE';
         }
     };
     const handleFilter = () => {
@@ -121,7 +121,8 @@ const OrderStatusPieChart = () => {
                     <Spin indicator={<LoadingOutlined spin />} />
                 </div>
             ) : data.length > 0 ? (
-                    <PieChart width={400} height={400}>
+                <div className='mt-3 flex justify-center'>
+                    <PieChart width={400} height={450} >
                         <Pie
                             data={data}
                             dataKey="value"
@@ -141,11 +142,11 @@ const OrderStatusPieChart = () => {
                         <Tooltip />
                         <Legend />
                     </PieChart>
-
+                </div>
             ) : (
-                        <div style={{ textAlign: 'center', padding: '20px' }}>
-                            <p>Không có dữ liệu</p>
-                        </div>
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                    <p>Không có dữ liệu</p>
+                </div>
             )}
         </div>
     );

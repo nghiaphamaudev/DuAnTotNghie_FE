@@ -124,9 +124,12 @@ const QuickCart: FC<QuickCartProps> = ({
     const itemsWithZeroInventory = cartItems.filter(
       (item) => item.inventory === 0
     );
+    const itemsWithSmallerInventory = cartItems.filter(
+      (item) => item.inventory < item.quantity
+    );
 
     if (!isActiveProduct) {
-      notification.error({
+      notification.warning({
         message: "Giỏ hàng đã có sự thay đổi. Xin vui lòng kiểm tra lại",
         duration: 4
       });
@@ -141,6 +144,20 @@ const QuickCart: FC<QuickCartProps> = ({
         }
         queryClient.invalidateQueries({ queryKey: ["carts"] });
       }
+    } else if (itemsWithSmallerInventory.length > 0) {
+      notification.warning({
+        message: "Giỏ hàng đã có sự thay đổi. Xin vui lòng kiểm tra lại",
+        duration: 5
+      });
+
+      for (const item of itemsWithSmallerInventory) {
+        try {
+          await deleteItemCart(item.id);
+        } catch (error) {
+          console.error(`Failed to delete product with ID: ${item.id}`, error);
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ["carts"] });
     } else if (itemsWithZeroInventory.length > 0) {
       // Thông báo cho người dùng về thay đổi trong giỏ hàng
       notification.warning({
