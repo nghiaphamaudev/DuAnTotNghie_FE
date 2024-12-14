@@ -214,10 +214,9 @@ const DetailProduct = () => {
 
   const handleAddToCart = async (option?: string) => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
-    queryClient.invalidateQueries({ queryKey: ["carts"] });
-
-    const productId = product?.data?.id;
-    const selectedVariant = product?.data?.variants.find(
+    const newProduct = await getDataProductById(product?.data?.id);
+    const productId = newProduct?.data?.id;
+    const selectedVariant = newProduct?.data?.variants.find(
       (variant) => variant.color === selectedColor
     );
     const selectedSizeObject = selectedVariant?.sizes.find(
