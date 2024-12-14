@@ -46,6 +46,8 @@ export default function CategoryDetail() {
   });
   const [statusFilter, setStatusFilter] = useState(1);
   const [searchValue, setSearchValue] = useState("");
+  const [dataSource, setDataSource] = useState<Products[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   // Hàm lấy dữ liệu danh mục và sản phẩm theo ID danh mục
   const fetchCategoryData = async () => {
@@ -95,6 +97,24 @@ export default function CategoryDetail() {
   const handleStatusFilterChange = (e: any) => {
     setStatusFilter(e.target.value);
   };
+
+
+
+  const filteredData = products
+    .filter((product) => {
+      // Lọc theo trạng thái
+      if (statusFilter === 2) return product.isActive === true;
+      if (statusFilter === 3) return product.isActive === false;
+      return true;
+    })
+    .filter((product) =>
+      // Lọc theo từ khóa tìm kiếm
+      product.name.toLowerCase().includes(searchValue.toLowerCase())
+    );
+
+
+
+
 
   const columns: ColumnType<Products>[] = [
     {
@@ -239,7 +259,7 @@ export default function CategoryDetail() {
               cell: CustomHeaderCell
             }
           }}
-          dataSource={products}
+          dataSource={filteredData}
           columns={columns}
           rowKey="id"
           pagination={false}
@@ -247,7 +267,7 @@ export default function CategoryDetail() {
         <Pagination
           current={pagination.current}
           pageSize={pagination.pageSize}
-          total={pagination.total}
+          total={filteredData.length}
           onChange={(page, pageSize) => {
             setPagination({ ...pagination, current: page, pageSize });
           }}
