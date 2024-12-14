@@ -10,7 +10,7 @@ const PrivateRoute = ({
   children,
   requireAdmin = false
 }: PrivateRouteProps) => {
-  const userData = localStorage.getItem("user");
+  const userData = localStorage.getItem("useradmin");
   const user = userData ? JSON.parse(userData) : null;
 
   if (!user) {

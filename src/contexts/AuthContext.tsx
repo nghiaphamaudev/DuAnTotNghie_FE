@@ -191,8 +191,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return data;
     },
     onSuccess: (data: UserResponse) => {
-      localStorage.setItem("accessToken", data.adminToken);
-      localStorage.setItem("user", JSON.stringify(data.data));
+      localStorage.setItem("adminToken", data.adminToken);
+      localStorage.setItem("useradmin", JSON.stringify(data.data));
       setUser(data.data);
       notification.success({
         message: "Đăng nhập thành công",
