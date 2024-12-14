@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tag, Tabs, Card, Row, Col } from "antd";
+import { Button, Space, Table, Tabs, Tag } from "antd";
+import { View } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, View } from "lucide-react";
-import {
-  getAllOrdersService,
-  getAllOrdersServiceForAdmin
-} from "../../../services/orderService";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
+import { getAllOrdersServiceForAdmin } from "../../../services/orderService";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -17,7 +14,7 @@ const Orders = () => {
       console.log("orders: ", response);
 
       if (response?.data) {
-        setOrders(response.data);
+        setOrders(response.data.reverse());
       }
     };
     fetchOrders();
@@ -133,7 +130,7 @@ const Orders = () => {
               rowKey="id"
               columns={columns}
               dataSource={filterOrdersByStatus(tab.key)}
-              pagination={{ pageSize: 5 }}
+              pagination={{ pageSize: 10 }}
               bordered
             />
           )
