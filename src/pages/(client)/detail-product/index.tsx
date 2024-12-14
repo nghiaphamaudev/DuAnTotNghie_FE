@@ -1,32 +1,24 @@
 import {
   Button,
   Image,
-  Input,
+  InputNumber,
   Modal,
   Rate,
   message,
-  notification,
-  InputNumber
+  notification
 } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ProductCard from "../../../components/common/(client)/ProductCard";
+import { useAuth } from "../../../contexts/AuthContext";
 import { useCart } from "../../../contexts/CartContext";
 import { useProduct } from "../../../contexts/ProductContext";
+import { getFeedbacksByProductId } from "../../../services/Feedbacks";
 import "./css.css";
-import { useAuth } from "../../../contexts/AuthContext";
-import axios from "axios";
-import {
-  deleteFeedback,
-  getFeedbacksByProductId,
-  toggleLikeFeedback,
-  updateFeedback
-} from "../../../services/Feedbacks";
-import { LikeFilled, LikeOutlined } from "@ant-design/icons";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getProductById } from "../../../services/productServices";
 import instance from "../../../config/axios";
+import { getProductById } from "../../../services/productServices";
 
 const DetailProduct = () => {
   //context
@@ -60,7 +52,6 @@ const DetailProduct = () => {
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(5);
   const [images, setImages] = useState([]);
-  const [editingFeedback, setEditingFeedback] = useState(null);
   const [updatedComment, setUpdatedComment] = useState("");
   const [updatedRating, setUpdatedRating] = useState(1);
 
@@ -112,6 +103,8 @@ const DetailProduct = () => {
   const fetchFeedbacks = async (productId: string) => {
     try {
       const data = await getFeedbacksByProductId(productId);
+      console.log("Feedbacks", data);
+
       setFeedbacks(data);
     } catch (error) {
       if (error.message.includes("HTML")) {
@@ -241,7 +234,7 @@ const DetailProduct = () => {
       notification.error({
         message: "Biến thể sản phẩm này hiện không khả dụng.",
         placement: "topRight",
-        duration: 2,
+        duration: 2
       });
       return;
     }
@@ -249,7 +242,7 @@ const DetailProduct = () => {
       notification.error({
         message: "Kích thước sản phẩm này hiện không khả dụng.",
         placement: "topRight",
-        duration: 2,
+        duration: 2
       });
       return;
     }
@@ -370,8 +363,9 @@ const DetailProduct = () => {
                     <img
                       key={index}
                       alt={`Thumbnail ${index + 1}`}
-                      className={`thumbnail-image ${selectedThumbnail === index ? "selected" : ""
-                        }`}
+                      className={`thumbnail-image ${
+                        selectedThumbnail === index ? "selected" : ""
+                      }`}
                       src={image}
                       onClick={() => handleThumbnailClick(index, image)}
                     />
@@ -462,8 +456,9 @@ const DetailProduct = () => {
               {product?.data?.variants?.map((variant, index) => (
                 <Button
                   key={index}
-                  className={`color-option ${selectedColor === variant.color ? "selected" : ""
-                    }`}
+                  className={`color-option ${
+                    selectedColor === variant.color ? "selected" : ""
+                  }`}
                   onClick={() => handleColorSelect(variant.color)}
                   disabled={!variant.status}
                   style={{
@@ -507,7 +502,9 @@ const DetailProduct = () => {
                     key={size._id}
                     onClick={() => handleSizeSelect(size.nameSize)}
                     disabled={
-                      !product?.data?.variants.find((variant) => variant.color === selectedColor)?.status || // Disable nếu variant.status === false
+                      !product?.data?.variants.find(
+                        (variant) => variant.color === selectedColor
+                      )?.status || // Disable nếu variant.status === false
                       !size.status // Disable nếu size.status === false
                     }
                     style={{
@@ -516,20 +513,23 @@ const DetailProduct = () => {
                           ? "2px solid #000"
                           : "1px solid #ccc",
                       backgroundColor:
-                        !product?.data?.variants.find((variant) => variant.color === selectedColor)?.status || !size.status
+                        !product?.data?.variants.find(
+                          (variant) => variant.color === selectedColor
+                        )?.status || !size.status
                           ? "#f5f5f5"
                           : "white",
                       cursor:
-                        !product?.data?.variants.find((variant) => variant.color === selectedColor)?.status || !size.status
+                        !product?.data?.variants.find(
+                          (variant) => variant.color === selectedColor
+                        )?.status || !size.status
                           ? "not-allowed"
-                          : "pointer",
+                          : "pointer"
                     }}
                   >
                     {size.nameSize}
                   </Button>
                 ))}
             </div>
-
 
             <Modal
               open={isSizeGuideVisible}
@@ -600,7 +600,7 @@ const DetailProduct = () => {
 
         <div>
           <div className="feedback-from">
-            <div className="product-feedbacks">
+            {/* <div className="product-feedbacks">
               <h2>XEM ĐÁNH GIÁ</h2>
               {feedbacks
                 .filter((feedback) => feedback.classify === true)
@@ -643,17 +643,118 @@ const DetailProduct = () => {
                   Chưa có đánh giá nào cho sản phẩm này.
                 </p>
               )}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
-      <div className="">
+      <div className="feedback-section flex flex-col items-center justify-start px-20">
+        <span className="flex items-center">
+          <span className="h-px flex-1 bg-black"></span>
+          <span className="shrink-0 px-6">Xem đánh giá</span>
+          <span className="h-px flex-1 bg-black"></span>
+        </span>
+        {feedbacks
+          .filter((feedback) => feedback.classify === true)
+          .map((fb) => (
+            <article className="rounded-xl border-2 border-gray-100 bg-white w-full my-2">
+              <div className="flex items-start gap-4 p-4 sm:p-6 lg:p-8">
+                <a href="#" className="block shrink-0">
+                  <img
+                    alt=""
+                    src={fb.user.avatar}
+                    className="size-14 rounded-lg object-cover"
+                  />
+                </a>
+
+                <div>
+                  <div className="flex flex-col items-start justify-start mb-3">
+                    <h3 className="font-medium sm:text-lg">
+                      <a href="#" className="hover:underline">
+                        {" "}
+                        {fb.user.fullName}
+                      </a>
+                    </h3>
+                    <Rate
+                      allowHalf
+                      value={fb.rating}
+                      onChange={(value) => {
+                        setRating(value);
+                      }}
+                      style={{ fontSize: 13 }}
+                    />
+                  </div>
+
+                  <p className="line-clamp-2 text-sm text-gray-700">
+                    {fb.comment}
+                  </p>
+
+                  <div className="mt-2 sm:flex sm:items-center sm:gap-2">
+                    <div className="flex items-center gap-1 text-gray-500">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="size-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
+                        />
+                      </svg>
+
+                      <p className="text-xs">{feedbacks.length} comments</p>
+                    </div>
+
+                    <span className="hidden sm:block" aria-hidden="true">
+                      &middot;
+                    </span>
+                    <p className="text-xs"> {fb.like > 0 ? fb.like : 0} like</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end cursor-pointer">
+                <strong
+                  className={`-mb-[2px] -me-[2px] inline-flex items-center gap-1 rounded-ee-xl rounded-ss-xl px-6 py-2 text-white ${
+                    fb.like > 0 ? "bg-green-600" : "bg-gray-500"
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={12}
+                    height={12}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-thumbs-up"
+                  >
+                    <path d="M7 10v12" />
+                    <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+                  </svg>
+
+                  <span className="text-[10px] font-medium sm:text-xs">
+                    like
+                  </span>
+                </strong>
+              </div>
+            </article>
+          ))}
+      </div>
+
+      <div className="seminal product">
         <div className="product-like">
           <h3 className="text-2xl font-bold my-5">Sản phẩm cùng loại</h3>
           <div className="product-list">
             <i
-              className={`fas fa-chevron-left arrow ${startIndex === 0 ? "disabled" : ""
-                }`}
+              className={`fas fa-chevron-left arrow ${
+                startIndex === 0 ? "disabled" : ""
+              }`}
               onClick={handlePrevious}
               style={{ cursor: startIndex === 0 ? "not-allowed" : "pointer" }}
             />
@@ -663,10 +764,11 @@ const DetailProduct = () => {
                 .slice(startIndex, startIndex + productsPerPage)
                 .map((item, index) => <ProductCard key={index} item={item} />)}
             <i
-              className={`fas fa-chevron-right arrow ${startIndex + productsPerPage >= allProduct.length
-                ? "disabled"
-                : ""
-                }`}
+              className={`fas fa-chevron-right arrow ${
+                startIndex + productsPerPage >= allProduct.length
+                  ? "disabled"
+                  : ""
+              }`}
               onClick={handleNext}
               style={{
                 cursor:

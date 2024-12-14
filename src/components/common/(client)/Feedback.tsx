@@ -31,6 +31,8 @@ const FeedbackSection = ({ productId }: { productId: string }) => {
           ...prev,
           { rating, comment, classify, id: new Date().toISOString() }
         ]);
+        console.log("Feedbacks", feedbacks);
+
         setRating(0);
         setComment("");
         setClassify(false);
@@ -56,8 +58,8 @@ const FeedbackSection = ({ productId }: { productId: string }) => {
         <Switch
           checked={classify}
           onChange={(checked) => setClassify(checked)}
-          checkedChildren="Đúng"
-          unCheckedChildren="Sai"
+          checkedChildren="Hiện"
+          unCheckedChildren="Ẩn"
         />
       </div>
       <Input.TextArea

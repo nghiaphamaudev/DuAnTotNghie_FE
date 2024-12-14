@@ -25,7 +25,7 @@ const ProductCard = ({ item }: ProductCardProps) => {
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
-  }, [isModalVisible])
+  }, [isModalVisible]);
 
   const showModal = async (id: string) => {
     try {
@@ -59,7 +59,6 @@ const ProductCard = ({ item }: ProductCardProps) => {
 
   const handleToProductDetail = async (id: string) => {
     const res = await getDataProductById(id);
-
     if (res?.data?.isActive === false) {
       notification.error({
         message: "Sản phẩm không còn tồn tại!",
@@ -84,7 +83,7 @@ const ProductCard = ({ item }: ProductCardProps) => {
           src={item?.coverImg}
           alt={item?.name}
         />
-        {isHovered && (
+        {isHovered && item?.isActive && (
           <div className="absolute inset-0 flex justify-center items-end mb-5 space-x-4">
             <button
               className="bg-white p-2 rounded-full shadow-md flex justify-start items-center gap-1"
@@ -100,6 +99,12 @@ const ProductCard = ({ item }: ProductCardProps) => {
             >
               <Eye size={20} className="text-gray-800" /> {/* Icon Xem */}
             </button>
+          </div>
+        )}
+        {/* Overlay thông báo sản phẩm ngừng kinh doanh */}
+        {!item?.isActive && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center text-white text-base font-bold">
+            Sản phẩm ngừng kinh doanh
           </div>
         )}
       </div>

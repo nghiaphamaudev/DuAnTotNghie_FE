@@ -1,6 +1,7 @@
 import axios from "axios";
 import instance from "../config/axios";
 import { CheckoutFormData } from "../interface/Order";
+import instanceAdmin from "../config/axiosadmin";
 
 // Gửi yêu cầu tạo đơn hàng (Checkout)
 export const createOrderService = async (payload: CheckoutFormData) => {
@@ -85,7 +86,7 @@ export const updateOrderService = async (
       status,
       note
     };
-    const { data } = await instance.patch("/orders/update-order", payload);
+    const { data } = await instanceAdmin.patch("/orders/update-order", payload);
     console.log("Cập nhật trạng thái đơn hàng thành công: ", data);
     return data;
   } catch (error: unknown) {
@@ -103,7 +104,7 @@ export const updateOrderService = async (
 // service lay tat ca don hang cho admin
 export const getAllOrdersServiceForAdmin = async () => {
   try {
-    const { data } = await instance.get("/superadmins/all-order");
+    const { data } = await instanceAdmin.get("/superadmins/all-order");
     return data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -115,7 +116,7 @@ export const getAllOrdersServiceForAdmin = async () => {
 };
 export const getOrderDetailServiceForAdmin = async (orderId: string) => {
   try {
-    const { data } = await instance.get(`/superadmins/bill/${orderId}`);
+    const { data } = await instanceAdmin.get(`/superadmins/bill/${orderId}`);
     return data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -137,7 +138,7 @@ export const updateOrderServiceForAdmin = async (
       status,
       note
     };
-    const { data } = await instance.patch(
+    const { data } = await instanceAdmin.patch(
       "/superadmins/update-order-admin",
       payload
     );
