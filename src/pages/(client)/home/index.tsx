@@ -36,15 +36,13 @@ const HomePage = () => {
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
   const prevRef = useRef(null);
   const nextRef = useRef(null);
-  const newProducts = allProduct
-    .filter((item) => item.isActive === true)
-    .filter((item) => {
-      const createdAt = new Date(item?.createdAt); // Giả sử `createdAt` có định dạng ISO 8601
-      const now = new Date();
-      const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
-      const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-      return diffInDays <= 30; //! Chỉ lấy sản phẩm được tạo trong vòng 30 ngày
-    });
+  const newProducts = allProduct.filter((item) => {
+    const createdAt = new Date(item?.createdAt); // Giả sử `createdAt` có định dạng ISO 8601
+    const now = new Date();
+    const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
+    const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    return diffInDays <= 30; //! Chỉ lấy sản phẩm được tạo trong vòng 30 ngày
+  });
   // Hàm hiển thị thêm sản phẩm
   const handleShowMore = () => {
     setVisibleCount((prev) => prev + 6);
