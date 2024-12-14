@@ -110,7 +110,28 @@ export type UserAdmin = {
   role: 'superadmin' | 'admin' | 'user';
   createdAt: string;
   active: boolean;
-  
+  handleBy:string;
+  blockedDetail: BlockedDetail;
+  totalOrders: string;
+  totalReturnOrders: string;
+  returnRate:string;
 };
+
+export type Orders = {
+  
+    _id: string;
+    code: string;
+    receiver: string;
+    totalPrice: number;
+    createdAt: string;
+    status: string;
+    userId: string;
+    // Các trường khác nếu có
+  }
+
+
+interface BlockedDetail {
+  handleBy: string;
+}
 
 

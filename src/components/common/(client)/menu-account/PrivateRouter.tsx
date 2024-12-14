@@ -10,11 +10,8 @@ const PrivateRouter = ({ children }: PrivateRouterProps) => {
   const user = userData ? JSON.parse(userData) : null;
 
   if (!user) {
-    // Nếu không có thông tin người dùng, chuyển hướng đến trang login
     return <Navigate to="/login" />;
   }
-
-  // Nếu đã đăng nhập, hiển thị component con
   return <>{children}</>;
 };
 
