@@ -63,7 +63,6 @@ const UserProfile = () => {
             avatar: userData.avatar,
           }}
           onValuesChange={(_, values) => {
-            // Kiểm tra lỗi ngay khi giá trị thay đổi
             validateForm(values);
           }}
         >

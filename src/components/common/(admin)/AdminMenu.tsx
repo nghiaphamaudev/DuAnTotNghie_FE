@@ -89,7 +89,7 @@ export default function AdminMenu({ small }: Props) {
     {
       key: "users",
       icon: <TeamOutlined />,
-      label: <Link to="/admin/users">User</Link>,
+      label: <Link to="/admin/users">Tài khoản</Link>,
     },
     {
       key: "comments",

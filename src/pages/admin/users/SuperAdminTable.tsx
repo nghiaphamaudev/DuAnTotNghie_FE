@@ -6,7 +6,14 @@ import { useQuery } from "@tanstack/react-query";
 import { getSuperAndAdmin } from "../../../services/authServices";
 
 const columnsSuperAdmin = [
-  { title: "STT", dataIndex: "stt", key: "stt", width: 60, align: "center", render: (_: unknown, __: UserAdmin, index: number) => index + 1, },
+  {
+    title: "STT",
+    dataIndex: "stt",
+    key: "stt",
+    width: 60,
+    align: "center",
+    render: (_: unknown, __: UserAdmin, index: number) => index + 1,
+  },
   {
     title: "Ảnh",
     dataIndex: "coverImg",
@@ -40,11 +47,22 @@ const columnsSuperAdmin = [
     dataIndex: "role",
     key: "role",
     align: "center",
-    width: 120, 
+    width: 120,
+    render: (role: string) => (
+      <span
+        style={{
+          backgroundColor: "#28a745",
+          color: "white",
+          padding: "4px 8px",
+          borderRadius: "4px",
+          fontWeight: "400",
+        }}
+      >
+        {role}
+      </span>
+    ),
   },
 ];
-
-
 
 const SuperAdminTable: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState<string>("");
@@ -67,7 +85,6 @@ const SuperAdminTable: React.FC = () => {
   const handleSearch = (value: string) => {
     setSearchKeyword(value);
   };
-
 
   return (
     <Card style={{ border: "none" }}>

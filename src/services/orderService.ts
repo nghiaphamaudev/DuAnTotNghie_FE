@@ -1,11 +1,11 @@
 import axios from "axios";
-import instance from "../config/axios";
 import { CheckoutFormData } from "../interface/Order";
+import instanceAdmin from "../config/axiosadmin";
 
 // Gửi yêu cầu tạo đơn hàng (Checkout)
 export const createOrderService = async (payload: CheckoutFormData) => {
   try {
-    const { data } = await instance.post("/orders", payload);
+    const { data } = await instanceAdmin.post("/orders", payload);
     console.log("order data: ", data);
     return data;
   } catch (error: unknown) {
@@ -20,7 +20,7 @@ export const createOrderService = async (payload: CheckoutFormData) => {
 // Khởi tạo thanh toán VNPay
 export const initiateVNPayPayment = async (payload: CheckoutFormData) => {
   try {
-    const { data } = await instance.post("/orders", payload);
+    const { data } = await instanceAdmin.post("/orders", payload);
     console.log("VNPay payment data: ", data);
     return data;
   } catch (error: unknown) {
@@ -35,7 +35,7 @@ export const initiateVNPayPayment = async (payload: CheckoutFormData) => {
 // lay tat ca don hang
 export const getAllOrdersService = async () => {
   try {
-    const { data } = await instance.get("/orders/all-order");
+    const { data } = await instanceAdmin.get("/orders/all-order");
     return data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -48,7 +48,7 @@ export const getAllOrdersService = async () => {
 // Lấy danh sách đơn hàng theo người dùng
 export const getOrdersByUserService = async () => {
   try {
-    const { data } = await instance.get("/orders");
+    const { data } = await instanceAdmin.get("/orders");
     return data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -62,7 +62,7 @@ export const getOrdersByUserService = async () => {
 // Lấy chi tiết đơn hàng theo ID
 export const getOrderDetailService = async (orderId: string) => {
   try {
-    const { data } = await instance.get(`/orders/${orderId}`);
+    const { data } = await instanceAdmin.get(`/orders/${orderId}`);
     return data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -85,7 +85,7 @@ export const updateOrderService = async (
       status,
       note
     };
-    const { data } = await instance.patch("/orders/update-order", payload);
+    const { data } = await instanceAdmin.patch("/orders/update-order", payload);
     console.log("Cập nhật trạng thái đơn hàng thành công: ", data);
     return data;
   } catch (error: unknown) {
@@ -103,7 +103,8 @@ export const updateOrderService = async (
 // service lay tat ca don hang cho admin
 export const getAllOrdersServiceForAdmin = async () => {
   try {
-    const { data } = await instance.get("/superadmins/all-order");
+    const { data } = await instanceAdmin.get("/superadmins/all-order");
+    console.log(data);
     return data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -113,9 +114,23 @@ export const getAllOrdersServiceForAdmin = async () => {
     }
   }
 };
+
+export const getAllOrdersByUserId = async(userId:string) => {
+  try {
+    const {data} = await instanceAdmin.get(`/superadmins/orders/user/${userId}`)
+    return data
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      return error.response?.data;
+    } else {
+      throw new Error("Something went wrong!");
+    }
+  }
+}
+
 export const getOrderDetailServiceForAdmin = async (orderId: string) => {
   try {
-    const { data } = await instance.get(`/superadmins/bill/${orderId}`);
+    const { data } = await instanceAdmin.get(`/superadmins/bill/${orderId}`);
     return data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -137,7 +152,7 @@ export const updateOrderServiceForAdmin = async (
       status,
       note
     };
-    const { data } = await instance.patch(
+    const { data } = await instanceAdmin.patch(
       "/superadmins/update-order-admin",
       payload
     );

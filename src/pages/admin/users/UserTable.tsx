@@ -1,21 +1,150 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, Col, Input, Modal, notification, Radio, RadioChangeEvent, Row, Switch, Table } from "antd";
-import dayjs from "dayjs";
-import { useMemo, useState } from "react";
+import {
+  Button,
+  Card,
+  Col,
+  Input,
+  Modal,
+  notification,
+  Radio,
+  RadioChangeEvent,
+  Row,
+  Switch,
+  Table,
+  Typography,
+} from "antd";
+import { useEffect, useMemo, useState } from "react";
 import { UserAdmin } from "../../../common/types/User";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getAllUserAccounts } from "../../../services/authServices";
 import SearchCustomer from "./SearchCustoms";
+import { getAllOrdersByUserId } from "../../../services/orderService";
+import { Tag } from "lucide-react";
+import { useParams } from "react-router-dom";
 
+const { Title } = Typography;
 export default function Users() {
-  const { IblockUser, UnblockUser } = useAuth();
+  const { IblockUser, UnblockUser, UpdatePaymentRestriction } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<number>(1);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedUserDetail, setSelectedUserDetail] =
+    useState<UserAdmin | null>(null);
+  const [isActive, setIsActive] = useState(selectedUserDetail?.active);
+  const [restrictPayment, setRestrictPayment] = useState(false);
+  const { userId } = useParams<{ userId: string }>();
+
+  const { data: userDataOrder } = useQuery({
+    queryKey: ["userDataAdmin", userId],
+    queryFn: async () => {
+      if (!userId) throw new Error("UserId không tồn tại");
+      const res = await getAllOrdersByUserId(userId);
+      return res.orders;
+    },
+    enabled: !!userId, 
+  })
+
+  const columnOrders = [
+    {
+      title: "STT",
+      dataIndex: "index",
+      key: "index",
+      render: (_, __, index) => index + 1,
+      width: 50,
+    },
+    {
+      title: "Mã hóa đơn",
+      dataIndex: "code",
+      key: "code",
+      width: 150,
+      render: (text) => <span style={{ fontWeight: "500" }}>{text}</span>,
+    },
+    {
+      title: "Tên khách hàng",
+      dataIndex: "creator",
+      key: "creator",
+      width: 150,
+      render: (text) => <span style={{ fontWeight: "500" }}>{text}</span>,
+    },
+    {
+      title: "Tổng tiền",
+      dataIndex: "totalPrice",
+      key: "totalPrice",
+      width: 120,
+      render: (price: number) => (
+        <span
+          style={{ fontWeight: "500" }}
+        >{`${price.toLocaleString()} đ`}</span>
+      ),
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      width: 150,
+      render: (text) => <span style={{ fontWeight: "400" }}>{text}</span>,
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      width: 120,
+      render: (status) => {
+        const colorMap = {
+          "Chờ xác nhận": "blue",
+          "Đã xác nhận": "green",
+          "Đóng gói chờ vận chuyển": "orange",
+          "Đang giao hàng": "purple",
+          "Đã giao hàng": "cyan",
+          "Đã nhận được hàng": "green",
+          "Hoàn đơn": "magenta",
+          "Đã hủy": "red",
+        };
+        return (
+          <Tag color={colorMap[status]} style={{ fontWeight: "500" }}>
+            {status}
+          </Tag>
+        );
+      },
+    },
+  ];
+
+  const handleChange = async () => {
+    try {
+      await UpdatePaymentRestriction({ userId, restrictPayment });
+    } catch (error) {
+      console.error("Error updating payment restriction:", error);
+    }
+  };
+
+  useEffect(() => {
+    setIsActive(selectedUserDetail?.active);
+  }, [selectedUserDetail?.active]);
+
+  const handleSwitchChange = async (checked: boolean) => {
+    if (!checked) {
+      await showBlockModal(selectedUserDetail?.id || "");
+      setIsActive(false);
+    } else {
+      await handleUnBlockId(selectedUserDetail?.id || "");
+      setIsActive(true);
+    }
+  };
+
+  const handleViewDetails = async (record: UserAdmin) => {
+    setSelectedUserDetail(record); // Gán thông tin người dùng vào state
+    setIsDetailModalOpen(true); // Mở modal chi tiết
+  };
+
+  const handleDetailModalCancel = () => {
+    setIsDetailModalOpen(false);
+    setSelectedUserDetail(null);
+  };
 
   const showBlockModal = (idUser: string) => {
     setSelectedUserId(idUser);
@@ -25,6 +154,7 @@ export default function Users() {
   const handleModalCancel = () => {
     setReason("");
     setIsModalOpen(false);
+    setIsActive(true);
   };
 
   const handleConfirmBlock = async () => {
@@ -43,6 +173,7 @@ export default function Users() {
         note: reason,
       });
       handleModalCancel();
+      setIsActive(false);
     } catch (error) {
       console.error("Lỗi khi chặn người dùng:", error);
       notification.error({ message: "Có lỗi xảy ra khi chặn người dùng." });
@@ -65,21 +196,23 @@ export default function Users() {
 
   const filteredAdmins = useMemo(() => {
     let filteredData = userAccountsData;
-  
+
     // Lọc theo trạng thái
-    if (statusFilter === 2) { // Hoạt động
+    if (statusFilter === 2) {
+      // Hoạt động
       filteredData = filteredData.filter((user) => user.active);
-    } else if (statusFilter === 3) { // Ngưng hoạt động
+    } else if (statusFilter === 3) {
+      // Ngưng hoạt động
       filteredData = filteredData.filter((user) => !user.active);
     }
-  
+
     // Lọc theo từ khóa tìm kiếm
     if (searchKeyword) {
       filteredData = filteredData.filter((user) =>
         user.fullName.toLowerCase().includes(searchKeyword.toLowerCase())
       );
     }
-  
+
     return filteredData;
   }, [statusFilter, searchKeyword, userAccountsData]);
 
@@ -90,7 +223,6 @@ export default function Users() {
   const handleSearch = (value: string) => {
     setSearchKeyword(value);
   };
-
 
   const columns = [
     {
@@ -130,45 +262,65 @@ export default function Users() {
     { title: "Tên", dataIndex: "fullName", key: "fullName", align: "center" },
     { title: "Email", dataIndex: "email", key: "email", align: "center" },
     {
-      title: "Vai trò",
-      dataIndex: "role",
-      key: "role",
-      align: "center",
-      width: 120,
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      align: "center",
-      render: (createdAt: string) =>
-        dayjs(createdAt).format("DD/MM/YYYY HH:mm:ss"),
-    },
-    {
       title: "Trạng thái",
       dataIndex: "key",
       key: "action",
       align: "center",
       render: (_: string, record: UserAdmin) => (
-        <Switch
-          checked={record.active}
-          onChange={async (checked) => {
-            if (checked) {
-              await handleUnBlockId(record.id); 
-            } else {
-              await showBlockModal(record.id)
-            }
+        <Button
+          type="primary"
+          style={{
+            backgroundColor: record.active ? "#4CAF50" : "#FF7043",
+            borderColor: record.active ? "#4CAF50" : "#FF7043",
+            color: "white", // Màu chữ trắng
           }}
-        />
+        >
+          {record.active ? "Hoạt động" : "Ngưng hoạt động"}
+        </Button>
       ),
     },
     {
-      title:"Lý do chặn",
-      dataIndex: "blockReason",
-      key:"blockReason",
+      title: "Tổng số đơn hàng",
+      dataIndex: "totalOrders",
+      key: "totalOrders",
       align: "center",
       width: 120,
-    }
+    },
+    {
+      title: "Hoàn trả",
+      dataIndex: "totalReturnOrders",
+      key: "totalReturnOrders",
+      align: "center",
+      width: 120,
+    },
+    {
+      title: "Người thực hiện",
+      dataIndex: "handleBy",
+      key: "handleBy",
+      align: "center",
+      width: 120,
+      render: (_: string, record: UserAdmin) => {
+        if (record.blockedDetail && record.blockedDetail.handleBy) {
+          return `${record.blockedDetail.handleBy}`;
+        }
+      },
+    },
+    {
+      title: "Hành động",
+      dataIndex: "",
+      key: "",
+      align: "center",
+      width: 120,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render: (_: any, record: UserAdmin) => (
+        <button
+          onClick={() => handleViewDetails(record)}
+          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+        >
+          Xem chi tiết
+        </button>
+      ),
+    },
   ];
 
   return (
@@ -220,6 +372,121 @@ export default function Users() {
           rows={4}
           placeholder="Nhập lý do chặn"
         />
+      </Modal>
+      <Modal
+        visible={isDetailModalOpen}
+        onCancel={handleDetailModalCancel}
+        footer={null}
+        width={800}
+        style={{ padding: 20 }}
+        bodyStyle={{ padding: "24px 36px" }}
+      >
+        <Card bordered={false} className="mb-6">
+          <Title level={4} style={{ color: "#28a745" }}>
+            Lịch sử đơn hàng
+          </Title>
+          <Table
+            rowKey="id"
+            columns={columnOrders}
+            dataSource={userDataOrder}
+            pagination={{ pageSize: 5 }}
+            bordered
+          />
+          <Title level={5} className="mt-6">Tháng này</Title>
+          <Title level={5}>Tuần này</Title>
+        </Card>
+
+        <Card bordered={false} className="mb-6">
+          <Title level={4} style={{ color: "#28a745" }}>
+            Thông số
+          </Title>
+          <div className="flex justify-between items-center mt-4">
+            <Title level={5}>Tổng số đơn hàng đã thực hiện</Title>
+            <span>
+              {selectedUserDetail ? selectedUserDetail.totalOrders : 0} đơn hàng
+            </span>
+          </div>
+          <div className="flex justify-between items-center mt-4">
+            <Title level={5}>Thành công</Title>
+            <span>
+              {selectedUserDetail &&
+              typeof selectedUserDetail.totalOrders === "number" &&
+              typeof selectedUserDetail.totalReturnOrders === "number"
+                ? selectedUserDetail.totalOrders -
+                  selectedUserDetail.totalReturnOrders
+                : "Dữ liệu không hợp lệ"}{" "}
+              đơn hàng
+            </span>
+          </div>
+          <div className="flex justify-between items-center mt-4">
+            <Title level={5}>Tỉ lệ thành công</Title>
+            <span>
+              {selectedUserDetail && +selectedUserDetail.totalOrders > 0
+                ? (
+                    ((+selectedUserDetail.totalOrders -
+                      +selectedUserDetail.totalReturnOrders) /
+                      +selectedUserDetail.totalOrders) *
+                    100
+                  ).toFixed(2) + "%"
+                : "0%"}
+            </span>
+          </div>
+          <div className="flex justify-between items-center mt-4">
+            <Title level={5}>Hủy</Title>
+            <span>10</span>
+          </div>
+          <div className="flex justify-between items-center mt-4">
+            <Title level={5}>Tỉ lệ hủy</Title>
+            <span>10%</span>
+          </div>
+          <div className="flex justify-between items-center mt-4">
+            <Title level={5}>Hoàn trả</Title>
+            <span>
+              {selectedUserDetail ? selectedUserDetail.totalReturnOrders : 0}{" "}
+              đơn hàng
+            </span>
+          </div>
+          <div className="flex justify-between items-center mt-4">
+            <Title level={5}>Tỉ lệ hoàn trả</Title>
+            <span>
+              {selectedUserDetail && +selectedUserDetail.totalOrders > 0
+                ? (
+                    (+selectedUserDetail.totalReturnOrders /
+                      +selectedUserDetail.totalOrders) *
+                    100
+                  ).toFixed(2) + "%"
+                : "0%"}
+            </span>
+          </div>
+          <div className="flex justify-between items-center mt-4">
+            <Title level={5}>Thiệt hại cửa hàng</Title>
+            <span>2 triệu VNĐ</span>
+          </div>
+        </Card>
+
+        <Card bordered={false} className="mb-6">
+          <Title level={4} className="mt-6 mb-4 " style={{ color: "#28a745" }}>
+            Hành động
+          </Title>
+          <div className="flex justify-between items-center mt-4">
+            <Button type="primary" style={{ marginBottom: 16 }}>
+              Cảnh báo
+            </Button>
+          </div>
+
+          <div className="flex justify-between items-center mt-6">
+            <Title level={5} style={{ margin: 0 }}>
+              Yêu cầu thanh toán trước
+            </Title>
+            <Switch checked={restrictPayment} onChange={handleChange} />
+          </div>
+          <div className="flex justify-between items-center mt-4">
+            <Title level={5} style={{ margin: 0 }}>
+              Khóa tài khoản tạm thời
+            </Title>
+            <Switch checked={isActive} onChange={handleSwitchChange} />
+          </div>
+        </Card>
       </Modal>
     </div>
   );

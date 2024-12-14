@@ -29,10 +29,16 @@ const AdminTable: React.FC = () => {
   const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
   const [passwordForm] = Form.useForm();
   const [form] = Form.useForm();
-  const { IblockAdmin, UnblockAdmin, IregisterAdmin, changePasswordAdmin } =
-    useAuth();
+  const {
+    IblockAdmin,
+    UnblockAdmin,
+    IregisterAdmin,
+    changePasswordAdmin,
+    user,
+  } = useAuth();
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<number>(1);
+  const isAdmin = user?.role === "admin";
 
   const { data: adminAccount = [] } = useQuery<UserAdmin[]>({
     queryKey: ["AdminAccount"],
@@ -142,6 +148,19 @@ const AdminTable: React.FC = () => {
       key: "role",
       align: "center",
       width: 120,
+      render: (role: string) => (
+        <span
+          style={{
+            backgroundColor: "#28a745",
+            color: "white",
+            padding: "4px 8px",
+            borderRadius: "4px",
+            fontWeight: "400",
+          }}
+        >
+          {role}
+        </span>
+      ),
     },
     {
       title: "Ngày tạo",
@@ -151,6 +170,8 @@ const AdminTable: React.FC = () => {
       render: (createdAt: string) =>
         dayjs(createdAt).format("DD/MM/YYYY HH:mm:ss"),
     },
+  ];
+  const superAdminColumns = [
     {
       title: "Trạng thái",
       dataIndex: "action",
@@ -181,6 +202,10 @@ const AdminTable: React.FC = () => {
     },
   ];
 
+  const columns = isAdmin
+    ? columnsAdmin
+    : [...columnsAdmin, ...superAdminColumns];
+
   return (
     <>
       <Card style={{ border: "none" }}>
@@ -199,24 +224,26 @@ const AdminTable: React.FC = () => {
           </Col>
         </Row>
         <div className="mt-4 flex absolute top-14 right-6">
-          <Button
-            type="primary"
-            style={{
-              marginBottom: 16,
-              marginLeft: "12px",
-              backgroundColor: "white",
-              color: "green",
-              borderColor: "green",
-            }}
-            icon={<PlusCircleFilled />}
-            onClick={() => setIsModalVisible(true)}
-          >
-            Tạo tài khoản Admin
-          </Button>
+          {!isAdmin && (
+            <Button
+              type="primary"
+              style={{
+                marginBottom: 16,
+                marginLeft: "12px",
+                backgroundColor: "white",
+                color: "green",
+                borderColor: "green",
+              }}
+              icon={<PlusCircleFilled />}
+              onClick={() => setIsModalVisible(true)}
+            >
+              Tạo tài khoản Admin
+            </Button>
+          )}
         </div>
         <div className="relative overflow-x-auto mt-14">
           <Table
-            columns={columnsAdmin}
+            columns={columns}
             dataSource={filteredAdmins}
             pagination={false}
             bordered

@@ -39,6 +39,7 @@ import {
   updatePassword,
   updatePasswordAdmin,
   updatePasswordAdminAnhSuperAdmin,
+  updatePaymentRestriction,
   updateProfile,
   updateRoleUser,
   updateStatusAddress,
@@ -101,6 +102,10 @@ type AuthContextProps = {
     },
     unknown
   >;
+  UpdatePaymentRestriction: UseMutateAsyncFunction<any, ApiError, {
+    userId: string;
+    restrictPayment: boolean;
+}, unknown>
 };
 
 const AuthContext = createContext({} as AuthContextProps);
@@ -615,6 +620,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     },
   });
 
+  const { mutateAsync: UpdatePaymentRestriction } = useMutation({
+    mutationFn: async ({ userId, restrictPayment }: { userId: string; restrictPayment: boolean }) => {
+      const data = await updatePaymentRestriction({userId, restrictPayment});
+      return data;
+    },
+    onSuccess: () => { 
+      notification.success({
+        message: "Yêu cầu người dùng thanh toán trước thành công!",
+      });
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Có lỗi xảy ra khi yêu cầu người dùng thanh toán trước",
+        description: errorMessage,
+      });
+    },
+  });
+
   const { mutateAsync: IupdatePasswordAdmin } = useMutation({
     mutationFn: async (formData: UpdatePasswordRequestAdmin) => {
       const data = await updatePasswordAdminAnhSuperAdmin(formData);
@@ -711,7 +735,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         IregisterAdmin,
         IupdatePasswordAdmin,
         changePasswordAdmin,
-        showLogoutModal
+        showLogoutModal,
+        UpdatePaymentRestriction
       }}
     >
       {children}
