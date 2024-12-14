@@ -104,7 +104,6 @@ export const updateOrderService = async (
 export const getAllOrdersServiceForAdmin = async () => {
   try {
     const { data } = await instanceAdmin.get("/superadmins/all-order");
-    console.log(data);
     return data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {

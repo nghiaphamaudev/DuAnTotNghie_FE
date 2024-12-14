@@ -10,7 +10,8 @@ import {
   Row,
   Space,
   Typography,
-  message
+  message,
+  notification
 } from "antd";
 import axios from "axios";
 import { TicketCheck } from "lucide-react";
@@ -27,6 +28,8 @@ import {
   initiateVNPayPayment
 } from "../../../services/orderService";
 import { getVouchers } from "../../../services/vorcherServices";
+import { useProduct } from "../../../contexts/ProductContext";
+import { useQueryClient } from "@tanstack/react-query";
 const { Text } = Typography;
 
 const CheckoutPage: React.FC = () => {
@@ -39,6 +42,7 @@ const CheckoutPage: React.FC = () => {
     items: CartItem[];
     totalCartPrice: number;
   } | null>(null);
+  const { allProduct } = useProduct();
   const [totalPrice, setTotalPrice] = useState<number>(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalVisibleVoucher, setModalVisibleVoucher] = useState(false);
@@ -46,39 +50,116 @@ const CheckoutPage: React.FC = () => {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const shippingFee: number = totalPrice >= 500000 ? 0 : 30000;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-
   const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(
     null
   );
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+    queryClient.invalidateQueries({ queryKey: ["cart"] });
+  }, []);
   const calculateTotalPrice = (selectedProducts: any[]) => {
     return selectedProducts.reduce(
       (total, item) => total + item.totalItemPrice,
       0
     );
   };
-  useEffect(() => {
-    // const fetchCart = async () => {
-    //   try {
-    //     const cartData = await getCartForUserServices();
-    //     setCart(cartData.data);
-    //     setTotalPrice(cartData.data.totalCartPrice);
-    //   } catch (error) {
-    //     if (axios.isAxiosError(error)) {
-    //       message.error(error.response?.data || "Lỗi khi lấy giỏ hàng!");
-    //     }
-    //   }
-    // };
+  const validateCartItems = () => {
+    if (!cart?.items) return false;
 
-    const selectedProducts = localStorage.getItem("selectedProducts");
-    if (selectedProducts) {
-      const parsedProducts = JSON.parse(selectedProducts);
-      setCart({
-        items: parsedProducts,
-        totalCartPrice: calculateTotalPrice(parsedProducts)
+    let isValid = true; // Biến cờ để kiểm tra tính hợp lệ tổng quát
+    const updatedCartItems = []; // Danh sách sản phẩm hợp lệ
+
+    for (const item of cart.items) {
+      const product = allProduct.find((p) => p.id === item.productId);
+      console.log("PRODUCT: ", product);
+
+      if (!product) {
+        notification.error({
+          message: "Sản phẩm không tồn tại!",
+          duration: 4
+        });
+        isValid = false;
+      }
+      if (!product?.isActive) {
+        notification.warning({
+          message: `Sản phẩm ${product?.name} đã ngừng kinh doanh!`,
+          duration: 4
+        });
+        isValid = false;
+      }
+      const variant = product?.variants.find((v) => v.id === item.variantId);
+      if (!variant?.status) {
+        // message.error(`Phiên bản sản phẩm màu ${item.color} không tồn tại!`);
+        notification.error({
+          message: `Phiên bản sản phẩm màu ${item.color} không tồn tại!`,
+          duration: 4
+        });
+        isValid = false;
+      }
+
+      const size = variant?.sizes.find((s) => s.id === item.sizeId);
+      if (!size?.status) {
+        notification.error({
+          message: ` Kích thước sản phẩm ${product.name} với màu ${variant.color} không tồn tại!`,
+          duration: 4
+        });
+        isValid = false;
+      }
+
+      if (size?.inventory < item.quantity) {
+        notification.error({
+          message: `Sản phẩm ${product.name} với kích thước ${size.name} không đủ tồn kho!`,
+          duration: 4
+        });
+        isValid = false;
+      }
+      if (size?.inventory == 0) {
+        notification.error({
+          message: `Sản phẩm ${product.name} với kích thước ${size.name} đã hết hàng!`,
+          duration: 4
+        });
+        isValid = false;
+      }
+
+      // Nếu sản phẩm hợp lệ, thêm vào danh sách mới
+      updatedCartItems.push(item);
+    }
+    console.log("updatedCartItems: ", updatedCartItems);
+
+    // Cập nhật lại giỏ hàng nếu có thay đổi
+    if (updatedCartItems.length !== cart.items.length) {
+      setCart((prevCart) => ({
+        ...prevCart,
+        items: updatedCartItems,
+        totalCartPrice: calculateTotalPrice(updatedCartItems)
+      }));
+      notification.error({
+        message: `Một số sản phẩm trong giỏ hàng đã bị loại bỏ do không hợp lệ. Vui lòng kiểm tra lại !`,
+        duration: 4
       });
-      setTotalPrice(calculateTotalPrice(parsedProducts));
     }
 
+    return isValid && updatedCartItems.length > 0;
+  };
+
+  useEffect(() => {
+    const selectedProducts = localStorage.getItem("selectedProducts");
+    console.log("selectedProductsDATA: ", selectedProducts);
+    console.log("allProductDATA: ", allProduct.splice(0, 2));
+
+    if (selectedProducts) {
+      const parsedProducts = JSON.parse(selectedProducts);
+      const validCart = {
+        items: parsedProducts,
+        totalCartPrice: calculateTotalPrice(parsedProducts)
+      };
+
+      setCart(validCart);
+      setTotalPrice(calculateTotalPrice(parsedProducts));
+      validateCartItems();
+    }
+    console.log("CART", cart);
     const fetchAddresses = async () => {
       try {
         const profile = await getProfile();
@@ -103,12 +184,20 @@ const CheckoutPage: React.FC = () => {
       }
     };
 
-    // fetchCart();
     fetchAddresses();
     fetchCoupons();
   }, []);
 
   const handleFinish = async (values: any) => {
+    validateCartItems();
+    // if (!validateCartItems()) {
+    //   notification.error({
+    //     message: "Sản phẩm đã có sự thay đổi, vui lòng kiểm tra lại.",
+    //     duration: 4
+    //   });
+    //   navigate("/home");
+    // }
+
     try {
       const discountVoucher = isCouponApplied
         ? cart?.totalCartPrice - totalPrice
@@ -141,8 +230,8 @@ const CheckoutPage: React.FC = () => {
         message.success("Đặt hàng thành công!");
         localStorage.removeItem("selectedProducts");
         form.resetFields();
-        //
         window.location.href = "/home";
+        // navigate("/home");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -150,6 +239,7 @@ const CheckoutPage: React.FC = () => {
       }
     }
   };
+
   const handleBackToCart = () => {
     localStorage.removeItem("selectedProducts"); // Xóa sản phẩm khỏi localStorage khi quay lại giỏ hàng
   };
@@ -310,6 +400,12 @@ const CheckoutPage: React.FC = () => {
               rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
             >
               <Input className="rounded-none" />
+            </Form.Item>
+            <Form.Item label="Ghi chú đơn hàng" name="orderNote">
+              <Input
+                className="rounded-none"
+                placeholder="Nhập ghi chú cho đơn hàng của bạn"
+              />
             </Form.Item>
             <Form.Item
               name="paymentMethod"
@@ -494,73 +590,78 @@ const CheckoutPage: React.FC = () => {
         visible={modalVisibleVoucher}
         onCancel={() => setModalVisibleVoucher(false)}
         footer={null}
+        bodyStyle={{ maxHeight: "400px", overflowY: "auto" }}
       >
         <Space direction="vertical" style={{ width: "100%" }}>
-          {coupons.map((coupon) => (
-            <Card
-              key={coupon.code}
-              style={{
-                border: isCouponDisabled(coupon)
-                  ? "1px solid #d9d9d9"
-                  : "1px solid #1890ff",
-                backgroundColor: isCouponDisabled(coupon)
-                  ? "#f5f5f5"
-                  : "#ffffff",
-                cursor: isCouponDisabled(coupon) ? "not-allowed" : "pointer"
-              }}
-              onClick={() =>
-                !isCouponDisabled(coupon) && handleSelectCoupon(coupon)
-              }
-              hoverable={!isCouponDisabled(coupon)}
-            >
-              <Space direction="vertical" size="small">
-                {/* Mã giảm giá */}
-                <Text
-                  strong
-                  style={{
-                    fontSize: 16,
-                    color: isCouponDisabled(coupon) ? "#bfbfbf" : "#000"
-                  }}
-                >
-                  Mã: {coupon.code}
-                </Text>
+          {coupons
+            .slice()
+            .reverse()
+            .slice(0, 5)
+            .map((coupon) => (
+              <Card
+                key={coupon.code}
+                style={{
+                  border: isCouponDisabled(coupon)
+                    ? "1px solid #d9d9d9"
+                    : "1px solid #1890ff",
+                  backgroundColor: isCouponDisabled(coupon)
+                    ? "#f5f5f5"
+                    : "#ffffff",
+                  cursor: isCouponDisabled(coupon) ? "not-allowed" : "pointer"
+                }}
+                onClick={() =>
+                  !isCouponDisabled(coupon) && handleSelectCoupon(coupon)
+                }
+                hoverable={!isCouponDisabled(coupon)}
+              >
+                <Space direction="vertical" size="small">
+                  {/* Mã giảm giá */}
+                  <Text
+                    strong
+                    style={{
+                      fontSize: 16,
+                      color: isCouponDisabled(coupon) ? "#bfbfbf" : "#000"
+                    }}
+                  >
+                    Mã: {coupon.code}
+                  </Text>
 
-                {/* Hiển thị giảm giá theo loại discountType */}
-                <Text
-                  style={{
-                    color: isCouponDisabled(coupon) ? "#bfbfbf" : "#52c41a"
-                  }}
-                >
-                  Giảm giá:{" "}
-                  {coupon.discountType === "percentage"
-                    ? `${coupon?.discountPercentage}%`
-                    : `${coupon?.discountAmount?.toLocaleString()}₫`}
-                </Text>
+                  {/* Hiển thị giảm giá theo loại discountType */}
+                  <Text
+                    style={{
+                      color: isCouponDisabled(coupon) ? "#bfbfbf" : "#52c41a"
+                    }}
+                  >
+                    Giảm giá:{" "}
+                    {coupon.discountType === "percentage"
+                      ? `${coupon?.discountPercentage}%`
+                      : `${coupon?.discountAmount?.toLocaleString()}₫`}
+                  </Text>
 
-                {/* Yêu cầu tối thiểu */}
-                {coupon.minPurchase && (
+                  {/* Yêu cầu tối thiểu */}
+                  {coupon.minPurchaseAmount && (
+                    <Text
+                      style={{
+                        color: isCouponDisabled(coupon) ? "#bfbfbf" : "#595959"
+                      }}
+                    >
+                      Áp dụng cho đơn hàng tối thiểu:{" "}
+                      {coupon?.minPurchaseAmount.toLocaleString()}₫
+                    </Text>
+                  )}
+
+                  {/* Hạn sử dụng */}
                   <Text
                     style={{
                       color: isCouponDisabled(coupon) ? "#bfbfbf" : "#595959"
                     }}
                   >
-                    Áp dụng cho đơn hàng tối thiểu:{" "}
-                    {coupon.minPurchase.toLocaleString()}₫
+                    Hạn sử dụng:{" "}
+                    {new Date(coupon.expirationDate).toLocaleDateString()}
                   </Text>
-                )}
-
-                {/* Hạn sử dụng */}
-                <Text
-                  style={{
-                    color: isCouponDisabled(coupon) ? "#bfbfbf" : "#595959"
-                  }}
-                >
-                  Hạn sử dụng:{" "}
-                  {new Date(coupon.expirationDate).toLocaleDateString()}
-                </Text>
-              </Space>
-            </Card>
-          ))}
+                </Space>
+              </Card>
+            ))}
         </Space>
       </Modal>
     </div>
