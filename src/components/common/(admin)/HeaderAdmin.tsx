@@ -1,30 +1,28 @@
-import React, { useState, ReactNode } from "react";
-import LogoFshirt from "../../../assets/images/logofshirt-rmbg.png";
-import {
-  Layout,
-  Menu,
-  Avatar,
-  Badge,
-  Dropdown,
-  Row,
-  Col,
-  Grid,
-  Modal,
-} from "antd";
-import {
-  AiOutlineMenuFold,
-  AiOutlineMenuUnfold,
-  AiOutlineLogout,
-  AiOutlineKey,
-} from "react-icons/ai";
-import { Link, useNavigate } from "react-router-dom";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 import {
   ClockCircleOutlined,
-  HomeOutlined,
-  UserOutlined,
+  UserOutlined
 } from "@ant-design/icons";
+import {
+  Avatar,
+  Badge,
+  Col,
+  Dropdown,
+  Grid,
+  Layout,
+  Menu,
+  Modal,
+  Row,
+} from "antd";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import React, { ReactNode, useState } from "react";
+import {
+  AiOutlineLogout,
+  AiOutlineMenuFold,
+  AiOutlineMenuUnfold
+} from "react-icons/ai";
+import { useNavigate } from "react-router-dom";
+import LogoFshirt from "../../../assets/images/logofshirt-rmbg.png";
 import AdminMenu from "./AdminMenu";
 import "./HeaderAdmin.css";
 
@@ -52,7 +50,8 @@ export default function HeaderAdmin({ children }: HeaderAdminProps) {
   const screens = useBreakpoint();
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("useradmin");
     navigate("/loginadmin");
   };
 

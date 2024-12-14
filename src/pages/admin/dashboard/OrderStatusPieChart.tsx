@@ -130,12 +130,13 @@ const OrderStatusPieChart = () => {
                             cx="50%"
                             cy="50%"
                             outerRadius={150}
-                            label
+                                label
+                                stroke="none"
                         >
                             {data.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
-                                    fill={getColorByStatus(entry.name)} // Sử dụng màu theo trạng thái
+                                    fill={getColorByStatus(entry.name)} 
                                 />
                             ))}
                         </Pie>
