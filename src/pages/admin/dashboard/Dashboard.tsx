@@ -1,6 +1,5 @@
 
 import { Row, Col, Card, Typography } from 'antd';
-import UserStatisticsTable from './UserStatisticsTable';
 import TopProductsTable from './TopProductsTable';
 import OrderStatusPieChart from './OrderStatusPieChart';
 import InventoryTable from './InventoryTable';
@@ -18,16 +17,6 @@ const Dashboard = () => (
         </Title>
       </Col>
     </Row>
-    <div style={{ padding: '20px' }}>
-      <Row gutter={[16, 24]}>
-        <Col span={24}>
-          <Card  bordered={false}>
-            <UserStatisticsTable />
-          </Card>
-        </Col>
-      </Row>
-    </div>
-
     <div style={{ padding: '20px' }}>
       <Row gutter={[16, 24]}>
         <Col span={24}>
