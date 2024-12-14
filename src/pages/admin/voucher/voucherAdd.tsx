@@ -85,7 +85,7 @@ const VoucherAddPage = () => {
             rules={
               [{ required: true, message: "Vui lòng nhập mã giảm giá!" },
                 {
-                  pattern: /^[\p{L}\p{N}\s]{6,}$/u,
+                  pattern: /^(?!.*^(?:\p{L}+|\p{N}+)$)[\p{L}\p{N}\s\p{P}\p{S}]{6,}$/u,
                   message: "Tên mã giảm giá phải có ít nhất 6 ký tự gồm chữ cái và số",
                 }
               ]}
@@ -163,8 +163,8 @@ const VoucherAddPage = () => {
                   validator(_, value) {
                     const discountType = getFieldValue('discountType');
 
-                    if (discountType === 'amount' && value > 100) {
-                      return Promise.reject('Giảm giá tiền phải nhỏ hơn 100.000');
+                    if (discountType === 'amount' && value > 100000) {
+                      return Promise.reject('Giảm giá tiền phải nhỏ hơn 100.000 nghìn');
                     }
 
                     return Promise.resolve();

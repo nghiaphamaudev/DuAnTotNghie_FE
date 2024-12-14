@@ -69,30 +69,47 @@ const InventoryTable = () => {
             align: "center",
             render: (src: string) => (
                 <div className="image-container">
-                    <img src={src} alt="product" style={{ width: 100 }} />
+                    <img src={src} alt="product" style={{ width: 200 }} />
                 </div>
             ),
         },
         {
+            title: 'Số lượng sản phẩm trong kho',
+            align: "center",
+            dataIndex: "totalStock",
+            key: 'totalStock'
+        },
+        {
+            title: 'Số lượng sản phẩm đã bán',
+            align: "center",
+            dataIndex: "totalSold",
+            key: 'totalSold'
+            
+        },
+        {
             title: 'Số lượng tồn kho',
-            dataIndex: 'totalInventory',
             align: "center",
             key: 'totalInventory',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            render: (data:any) => (data.totalStock - data.totalSold)
         },
        
-        // {
-        //     title: 'Tổng doanh thu',
-        //     dataIndex: 'totalAmount',
-        //     key: 'totalAmount',
-        //     render: (value: number | undefined) =>
-        //         `${(value || 0).toLocaleString()} VND`// Định dạng số
-        // },
+        {
+            title: 'Phần trăm tồn kho',
+            key: 'totalAmount',
+            align: "center",
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            render: (data: any) => {
+                const stockPercentage = (data.totalStock - data.totalSold) / data.totalStock; 
+                return `${(stockPercentage * 100).toFixed(2)}%`; 
+            },
+        },
     ];
 
     return (
         <div>
             <Title level={4} style={{ marginBottom: '20px' }}>
-                Thống Kê Sản Phẩm Tồn Kho Theo Khoảng Thời Gian
+                Thống Kê Top 3 Sản Phẩm Tồn Kho 
             </Title>
             <Space style={{ marginBottom: '20px' }}>
                 <Select value={timeRange} onChange={handleRangeChange} style={{ width: 150 }}>
@@ -118,7 +135,7 @@ const InventoryTable = () => {
                     columns={columns}
                     dataSource={data}
                     rowKey="id"
-                    pagination={{ pageSize: 5, showSizeChanger: false }}
+                    pagination={false}
                     bordered
                 />
             )}

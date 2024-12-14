@@ -70,20 +70,20 @@ const TopProductsTable = () => {
             dataIndex: 'totalSold',
             key: 'totalSold',
         },
-
-        // {
-        //     title: 'Tổng doanh thu',
-        //     dataIndex: 'totalAmount',
-        //     key: 'totalAmount',
-        //     render: (value: number | undefined) =>
-        //         `${(value || 0).toLocaleString()} VND` // Định dạng số
-        // },
+        {
+            title: 'Tổng doanh thu hiện tại',
+            align:"center",
+            dataIndex: 'totalRevenue',
+            key: 'totalRevenue',
+            render: (value: number | undefined) =>
+                `${(value || 0).toLocaleString()} VND` 
+        },
     ];
 
     return (
         <div>
             <Title level={4} style={{ marginBottom: '20px' }}>
-                Thống Kê Sản Phẩm Bán Chạy Theo Khoảng Thời Gian
+                Thống Kê Top 3 Sản Phẩm Bán Chạy 
             </Title>
             <Space style={{ marginBottom: '20px' }}>
                 <Select value={timeRange} onChange={handleRangeChange} style={{ width: 150 }}>
@@ -109,7 +109,7 @@ const TopProductsTable = () => {
                     columns={columns}
                     dataSource={data}
                     rowKey="id"
-                    pagination={{ pageSize: 5, showSizeChanger: false }}
+                    pagination={false}
                     bordered
                 />
             )}
