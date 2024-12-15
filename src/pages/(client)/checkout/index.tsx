@@ -30,9 +30,11 @@ import {
 import { getVouchers } from "../../../services/vorcherServices";
 import { useProduct } from "../../../contexts/ProductContext";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCart } from "../../../contexts/CartContext";
 const { Text } = Typography;
 
 const CheckoutPage: React.FC = () => {
+  const { cartData, setCountItemCart } = useCart();
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [paymentMethod, setPaymentMethod] = useState("COD");
@@ -226,14 +228,29 @@ const CheckoutPage: React.FC = () => {
           message.error("Không thể khởi tạo thanh toán VNPay!");
         }
       } else {
-        await createOrderService(orderData);
-        message.success("Đặt hàng thành công!");
-        localStorage.removeItem("selectedProducts");
-        form.resetFields();
-        window.location.href = "/home";
-        // navigate("/home");
+        try {
+          const res = await createOrderService(orderData);
+          // console.log("order data: ", res);
+          if (res.status) {
+            queryClient.invalidateQueries({ queryKey: ["carts"] });
+            setCountItemCart(cartData?.items?.length);
+            message.success("Đặt hàng thành công!");
+            localStorage.removeItem("selectedProducts");
+            form.resetFields();
+            navigate("/home");
+          } else {
+            notification.error({
+              message: `${res?.message}` || "Something went wrong!",
+              duration: 4
+            });
+          }
+        } catch (error) {
+          console.log("ERROR====: ", error);
+        }
       }
     } catch (error) {
+      console.log("ERROR: ", error);
+
       if (axios.isAxiosError(error)) {
         message.error(error.response?.data || "Đặt hàng thất bại!");
       }

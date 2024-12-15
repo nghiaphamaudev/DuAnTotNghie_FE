@@ -16,6 +16,7 @@ import QuickCart from "./QuickCart";
 import { useCart } from "../../../contexts/CartContext";
 import { useProduct } from "../../../contexts/ProductContext";
 import { useDebounce } from "../../../hooks/useDebounce";
+import { useQueryClient } from "@tanstack/react-query";
 
 const HeaderClient = () => {
   // State
@@ -23,7 +24,7 @@ const HeaderClient = () => {
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
-
+  const queryClient = useQueryClient();
   // Debounced search term
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -52,6 +53,10 @@ const HeaderClient = () => {
       setFilteredProducts([]);
     }
   }, [debouncedSearchTerm, allProduct]);
+  useEffect(() => {
+    // Invalidate cart query to refresh cart state
+    queryClient.invalidateQueries({ queryKey: ["cart"] });
+  }, []);
 
   // Menu items
   const items: MenuProps["items"] = isLogin

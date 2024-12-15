@@ -17,6 +17,7 @@ import {
   updateOrderService
 } from "../../../../services/orderService";
 import FeedbackSection from "../Feedback";
+import { socket } from "../../../../socket";
 
 const OrderDetail = () => {
   const { orderId } = useParams();
@@ -67,6 +68,23 @@ const OrderDetail = () => {
     fetchOrderDetail();
   }, [orderId]);
 
+  useEffect(() => {
+    const handleOrderStatusUpdate = () => {
+      // Khi nhận được sự kiện cập nhật trạng thái, reload lại thông tin đơn hàng
+      fetchOrderDetail(); // Gọi lại hàm lấy thông tin đơn hàng
+    };
+    // Lắng nghe sự kiện "update order status" từ server
+    socket.on("update status order", (id: any) => {
+      console.log(id);
+      if (id && id === orderId) handleOrderStatusUpdate();
+    });
+
+    // Xóa sự kiện khi component bị hủy
+    return () => {
+      socket.off("update status order", handleOrderStatusUpdate());
+    };
+  }, [orderId]);
+
   const handleCancelOrder = async () => {
     try {
       const response = await updateOrderService(orderId, "Đã hủy", cancelNote);
@@ -88,6 +106,7 @@ const OrderDetail = () => {
       const response = await updateOrderService(orderId, "Đã nhận được hàng");
       if (response?.status) {
         message.success("Bạn đã hoàn thành đơn hàng thành công.");
+        socket.emit("user update status order", orderId);
         await fetchOrderDetail();
       } else {
         message.error(response?.message || "Hoàn thành đơn hàng thất bại.");
@@ -339,7 +358,7 @@ const OrderDetail = () => {
               </strong>
 
               <p className=" text-sm text-gray-500 italic">
-                Không giao hàng vào thứ 7
+                {orderInfor?.orderNote || "Không có ghi chú cho đơn hàng này."}
               </p>
             </div>
 
