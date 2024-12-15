@@ -117,6 +117,7 @@ export const getAllOrdersServiceForAdmin = async () => {
 export const getAllOrdersByUserId = async(userId:string) => {
   try {
     const {data} = await instanceAdmin.get(`/superadmins/orders/user/${userId}`)
+    console.log(data);
     return data
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
