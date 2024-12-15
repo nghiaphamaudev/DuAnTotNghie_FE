@@ -16,6 +16,7 @@ import {
   getOrderDetailServiceForAdmin,
   updateOrderServiceForAdmin
 } from "../../../services/orderService";
+import { socket } from "../../../socket";
 
 const AdminOrderDetail = () => {
   const { orderId } = useParams();
@@ -48,6 +49,27 @@ const AdminOrderDetail = () => {
 
   useEffect(() => {
     fetchOrderDetail();
+  }, [orderId]);
+  useEffect(() => {
+    const handleOrderStatusUpdate = () => {
+      // Khi nhận được sự kiện cập nhật trạng thái, reload lại thông tin đơn hàng
+      fetchOrderDetail(); // Gọi lại hàm lấy thông tin đơn hàng
+    };
+    // Lắng nghe sự kiện "update order status" từ server
+    socket.on("update status order", (id: any) => {
+      console.log(id);
+      if (id && id === orderId) handleOrderStatusUpdate();
+    });
+
+    socket.on("user update status order", (id: any) => {
+      console.log(id);
+      if (id && id === orderId) handleOrderStatusUpdate();
+    });
+
+    // Xóa sự kiện khi component bị hủy
+    return () => {
+      socket.off("update status order", handleOrderStatusUpdate());
+    };
   }, [orderId]);
 
   const fetchOrderDetail = async () => {
@@ -98,10 +120,12 @@ const AdminOrderDetail = () => {
         }
       }
       const response = await updateOrderServiceForAdmin(orderId, status, note);
+
       console.log("RES:", response);
 
       if (response?.status) {
         message.success(`Đơn hàng đã chuyển sang trạng thái "${status}"`);
+        socket.emit("update status order", orderId);
         await fetchOrderDetail();
       } else {
         message.error(response?.message || "Cập nhật trạng thái thất bại.");
