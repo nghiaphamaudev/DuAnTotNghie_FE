@@ -15,11 +15,7 @@ import {
   Switch,
   Space
 } from "antd";
-import {
-  DeleteOutlined,
-  MinusCircleOutlined,
-  PlusOutlined
-} from "@ant-design/icons";
+import { DeleteOutlined, MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   getProductById,
   toggleSizeStatus,
@@ -28,7 +24,6 @@ import {
 } from "../../../services/productServices";
 import { getAllCategory } from "../../../services/categoryServices";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { socket } from "../../../socket";
 
 const { Option } = Select;
 
@@ -47,6 +42,7 @@ const ProductEdit: React.FC = () => {
   const [isAddSize, setIsAddSize] = useState<{ [key: number]: boolean }>({});
   const [fields, setFields] = useState([]);
 
+
   // Fetch product details
   const fetchProductDetails = async () => {
     try {
@@ -55,11 +51,11 @@ const ProductEdit: React.FC = () => {
         setInitialData(product.data);
         const coverImageFileList = product.data.coverImg
           ? [
-              {
-                url: product.data.coverImg,
-                name: "coverImage.jpg"
-              }
-            ]
+            {
+              url: product.data.coverImg,
+              name: "coverImage.jpg"
+            }
+          ]
           : [];
         form.setFieldsValue({
           name: product.data.name,
@@ -131,7 +127,7 @@ const ProductEdit: React.FC = () => {
     if (values.variants && values.variants.length > 0) {
       values.variants.forEach((variant: any, index: number) => {
         formData.append(`variants[${index}][color]`, variant.color);
-        formData.append(`variants[${index}][status]`, variant.status);
+        formData.append(`variants[${index}][status]`, variant.status ? "true" : "false");
 
         // Xử lý sizes
         variant.sizes.forEach((size: any, sizeIndex: number) => {
@@ -149,7 +145,7 @@ const ProductEdit: React.FC = () => {
           );
           formData.append(
             `variants[${index}][sizes][${sizeIndex}][status]`,
-            size.status
+            size.status ? "true" : "false"
           );
         });
 
@@ -189,8 +185,7 @@ const ProductEdit: React.FC = () => {
         navigate("/admin/product");
       } else {
         message.error(
-          `Cập nhật sản phẩm thất bại: ${
-            response.message || "Lỗi không xác định"
+          `Cập nhật sản phẩm thất bại: ${response.message || "Lỗi không xác định"
           }`
         );
       }
@@ -284,10 +279,7 @@ const ProductEdit: React.FC = () => {
     const newStatus = currentStatus ? false : true;
     const variantId = variant.id; // Sử dụng `id` thay vì `_id`
     toggleVariantStatus(productId, variantId, newStatus)
-      .then(() => {
-        socket.emit("hidden product", id);
-        message.success("Cập nhật trạng thái thành công!");
-      })
+      .then(() => message.success("Cập nhật trạng thái thành công!"))
       .catch((err) => {
         console.error("Error updating status:", err);
         message.error("Cập nhật trạng thái thất bại.");
@@ -327,7 +319,6 @@ const ProductEdit: React.FC = () => {
     // Gọi API cập nhật trạng thái size
     toggleSizeStatus(productId, variant.id, sizeId, newStatus)
       .then(() => {
-        socket.emit("hidden product", id);
         message.success("Cập nhật trạng thái kích thước thành công!");
         // Cập nhật trạng thái size trên giao diện (nếu cần)
         initialData.variants[variantIndex].sizes[sizeIndex].status = newStatus;
@@ -341,39 +332,37 @@ const ProductEdit: React.FC = () => {
   const handleAddVariant = () => {
     setIsAddingVariant(true);
     setFields([...fields, {}]);
-  };
+  }
   const handleCancelAddVariant = () => {
     setIsAddingVariant(false); // Đánh dấu không còn thêm biến thể mới
-    const variants = form.getFieldValue("variants");
+    const variants = form.getFieldValue('variants');
     variants.pop(); // Xóa biến thể mới khỏi mảng
     form.setFieldsValue({ variants }); // Cập nhật lại giá trị form
   };
 
   const handleAddSize = (variantIndex: number, addSize: () => void) => {
-    addSize(); // Thêm size mới vào form
+    addSize();  // Thêm size mới vào form
     setIsAddSize((prev) => ({
       ...prev,
-      [variantIndex]: true // Đánh dấu trạng thái là đang thêm size cho biến thể này
+      [variantIndex]: true,  // Đánh dấu trạng thái là đang thêm size cho biến thể này
     }));
   };
 
-  const handleCancelAddSize = (
-    variantIndex: number,
-    removeSize: () => void
-  ) => {
+  const handleCancelAddSize = (variantIndex: number, removeSize: () => void) => {
     // Xóa size mới vừa thêm
     removeSize();
     setIsAddSize((prev) => {
       const updated = { ...prev };
-      delete updated[variantIndex]; // Xóa trạng thái của biến thể khỏi isAddSize
+      delete updated[variantIndex];  // Xóa trạng thái của biến thể khỏi isAddSize
       return updated;
     });
 
     // Xóa cả form size mới thêm khỏi biến thể
     const variants = form.getFieldValue("variants");
     variants[variantIndex].sizes.pop(); // Xóa size mới ở biến thể này
-    form.setFieldsValue({ variants }); // Cập nhật lại giá trị form
+    form.setFieldsValue({ variants });  // Cập nhật lại giá trị form
   };
+
 
   return (
     <Spin spinning={loading} tip="Đang xử lý...">
@@ -391,8 +380,7 @@ const ProductEdit: React.FC = () => {
           rules={[
             { required: true, message: "Vui lòng nhập tên sản phẩm!" },
             {
-              pattern:
-                /^(?!.*^(?:\p{L}+|\p{N}+)$)[\p{L}\p{N}\s\p{P}\p{S}]{6,}$/u,
+              pattern: /^(?!.*^(?:\p{L}+|\p{N}+)$)[\p{L}\p{N}\s\p{P}\p{S}]{6,}$/u,
               message: "Tên sản phẩm phải có ít nhất 6 ký "
             }
           ]}
@@ -437,289 +425,269 @@ const ProductEdit: React.FC = () => {
           </Upload>
         </Form.Item>
 
-        <Form.Item label="Loại sản phẩm">
+        {/* <Form.Item label="Loại sản phẩm">
           <Button type="primary" onClick={handleProductTypeClick}>
             {showSubForm ? "Ẩn loại sản phẩm" : "Chọn loại sản phẩm"}
           </Button>
-        </Form.Item>
+        </Form.Item> */}
 
-        {showSubForm && (
-          <Form.List name="variants">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(
-                  ({ key, name, fieldKey, ...restField }, variantIndex) => (
-                    <div
-                      key={key}
-                      style={{
-                        border: "1px solid #f0f0f0",
-                        padding: "16px",
-                        marginBottom: "24px",
-                        borderRadius: "8px"
-                      }}
-                    >
-                      <Row gutter={16}>
-                        <Col span={6}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "color"]}
-                            label="Màu sắc"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Vui lòng nhập màu sắc"
-                              },
-                              { validator: validateUniqueColor },
-                              {
-                                pattern:
-                                  /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯăạảãầấậẩẫằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ ]+$/,
-                                message:
-                                  "Không được nhập số hoặc kí tự đặc biệt"
-                              }
-                            ]}
-                          >
-                            <Input placeholder="Nhập màu sắc" />
-                          </Form.Item>
-                        </Col>
 
-                        <Col span={6}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "status"]}
-                            label="Trạng thái"
-                          >
-                            <Switch
-                              checked={restField.value?.status}
-                              onChange={async (checked: boolean) => {
-                                setLoading(true);
-                                const currentStatus = checked;
-                                const productId = id;
-                                handleStatusChange(
-                                  productId,
-                                  name,
-                                  currentStatus
-                                ); // Gửi variantIndex
-                                setLoading(false);
-                              }}
-                            />
-                          </Form.Item>
-                        </Col>
+        <Form.List name="variants">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(
+                ({ key, name, fieldKey, ...restField }, variantIndex) => (
+                  <div
+                    key={key}
+                    style={{
+                      border: "1px solid #f0f0f0",
+                      padding: "16px",
+                      marginBottom: "24px",
+                      borderRadius: "8px"
+                    }}
+                  >
+                    <Row gutter={16}>
+                      <Col span={6}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "color"]}
+                          label="Màu sắc"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Vui lòng nhập màu sắc"
+                            },
+                            { validator: validateUniqueColor },
+                            {
+                              pattern: /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯăạảãầấậẩẫằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ ]+$/,
+                              message: "Không được nhập số hoặc kí tự đặc biệt",
+                            }
+                          ]}
+                        >
+                          <Input placeholder="Nhập màu sắc" />
+                        </Form.Item>
+                      </Col>
 
-                        <Col span={18}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "images"]}
-                            label="Ảnh màu"
-                            valuePropName="fileList"
-                            getValueFromEvent={(e) =>
-                              Array.isArray(e) ? e : e?.fileList
+                      <Col span={6}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "status"]}
+                          label="Trạng thái"
+                        >
+                          <Switch
+                            checked={restField.value?.status}
+                            onChange={async (checked: boolean) => {
+                              setLoading(true);
+                              const currentStatus = checked;
+                              const productId = id;
+                              handleStatusChange(
+                                productId,
+                                name,
+                                currentStatus
+                              ); // Gửi variantIndex
+                              setLoading(false);
+                            }}
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={18}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "images"]}
+                          label="Ảnh màu"
+                          valuePropName="fileList"
+                          getValueFromEvent={(e) =>
+                            Array.isArray(e) ? e : e?.fileList
+                          }
+                        >
+                          <Upload
+                            name="images"
+                            listType="picture-card"
+                            beforeUpload={() => false} // Không upload ngay lập tức
+                            onChange={({ fileList: newFileList }) =>
+                              handleFileListChange(newFileList, name)
+                            } // Sử dụng đúng index biến thể
+                            maxCount={4}
+                            multiple
+                            accept=".jpg,.png,.jpeg"
+                            defaultFileList={
+                              initialData?.variants[name]?.images?.map(
+                                (url: string, idx: number) => ({
+                                  uid: `${url}-${idx}`, // Tạo UID để không trùng
+                                  name: `image-${idx}.jpg`,
+                                  status: "done",
+                                  url
+                                })
+                              ) || []
                             }
                           >
-                            <Upload
-                              name="images"
-                              listType="picture-card"
-                              beforeUpload={() => false} // Không upload ngay lập tức
-                              onChange={({ fileList: newFileList }) =>
-                                handleFileListChange(newFileList, name)
-                              } // Sử dụng đúng index biến thể
-                              maxCount={4}
-                              multiple
-                              accept=".jpg,.png,.jpeg"
-                              defaultFileList={
-                                initialData?.variants[name]?.images?.map(
-                                  (url: string, idx: number) => ({
-                                    uid: `${url}-${idx}`, // Tạo UID để không trùng
-                                    name: `image-${idx}.jpg`,
-                                    status: "done",
-                                    url
-                                  })
-                                ) || []
-                              }
-                            >
-                              <div>
-                                <PlusOutlined />
-                                <div style={{ marginTop: 8 }}>Tải ảnh</div>
-                              </div>
-                            </Upload>
-                          </Form.Item>
-                        </Col>
-                      </Row>
+                            <div>
+                              <PlusOutlined />
+                              <div style={{ marginTop: 8 }}>Tải ảnh</div>
+                            </div>
+                          </Upload>
+                        </Form.Item>
+                      </Col>
+                    </Row>
 
-                      <Form.List name={[name, "sizes"]}>
-                        {(sizeFields, { add: addSize, remove: removeSize }) => (
-                          <>
-                            {sizeFields.map(
-                              (
-                                {
-                                  key: sizeKey,
-                                  name: sizeName,
-                                  ...sizeRestField
-                                },
-                                sizeIndex
-                              ) => (
-                                <Row
-                                  gutter={16}
-                                  key={sizeKey}
-                                  style={{ alignItems: "center" }}
-                                >
-                                  <Col span={6}>
-                                    <Form.Item
-                                      {...sizeRestField}
-                                      name={[sizeName, "nameSize"]}
-                                      label="Size"
-                                      rules={[
-                                        {
-                                          required: true,
-                                          message: "Chọn size"
-                                        },
-                                        { validator: validateUniqueSize(name) }
-                                      ]}
-                                    >
-                                      <Select placeholder="Chọn size">
-                                        <Option value="S">S</Option>
-                                        <Option value="M">M</Option>
-                                        <Option value="L">L</Option>
-                                        <Option value="XL">XL</Option>
-                                        <Option value="XXL">XXL</Option>
-                                      </Select>
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={6}>
-                                    <Form.Item
-                                      {...sizeRestField}
-                                      name={[sizeName, "price"]}
-                                      label="Giá"
-                                      rules={[
-                                        {
-                                          type: "number",
-                                          min: 1,
-                                          message: "Giá phải lớn hơn 0"
-                                        },
-                                        {
-                                          required: true,
-                                          message:
-                                            "Giá sản phẩm không được để trống"
-                                        }
-                                      ]}
-                                    >
-                                      <InputNumber
-                                        placeholder="Giá"
-                                        style={{ width: "100%" }}
-                                      />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={6}>
-                                    <Form.Item
-                                      {...sizeRestField}
-                                      name={[sizeName, "inventory"]}
-                                      label="Số lượng"
-                                      rules={[
-                                        { type: "number", min: 0 },
-                                        {
-                                          required: true,
-                                          message:
-                                            "Số lượng không được để trống"
-                                        }
-                                      ]}
-                                    >
-                                      <InputNumber
-                                        placeholder="Số lượng"
-                                        style={{ width: "100%" }}
-                                      />
-                                    </Form.Item>
-                                  </Col>
-
-                                  <Col span={6}>
-                                    <Form.Item
-                                      {...sizeRestField}
-                                      name={[sizeName, "status"]}
-                                      label="Trạng thái"
-                                      valuePropName="checked"
-                                    >
-                                      <Switch
-                                        checked={sizeRestField?.status}
-                                        onChange={async (checked: boolean) => {
-                                          setLoading(true);
-                                          const currentStatus = checked;
-                                          const productId = id;
-                                          handleSizeStatusChange(
-                                            productId,
-                                            variantIndex,
-                                            sizeIndex,
-                                            currentStatus
-                                          );
-                                          setLoading(false);
-                                        }}
-                                      />
-                                    </Form.Item>
-                                  </Col>
-                                  {sizeIndex === sizeFields.length - 1 &&
-                                    !sizeRestField?.nameSize &&
-                                    isAddSize[variantIndex] && (
-                                      <Form.Item>
-                                        <Button
-                                          type="link"
-                                          onClick={() =>
-                                            handleCancelAddSize(
-                                              variantIndex,
-                                              removeSize
-                                            )
-                                          }
-                                          icon={<MinusCircleOutlined />}
-                                        >
-                                          Bỏ thêm Size
-                                        </Button>
-                                      </Form.Item>
-                                    )}
-                                </Row>
-                              )
-                            )}
-                            <Form.Item>
-                              <Button
-                                type="dashed"
-                                icon={<PlusOutlined />}
-                                onClick={() =>
-                                  handleAddSize(variantIndex, addSize)
-                                }
-                                block
+                    <Form.List name={[name, "sizes"]}>
+                      {(sizeFields, { add: addSize, remove: removeSize }) => (
+                        <>
+                          {sizeFields.map(
+                            (
+                              {
+                                key: sizeKey,
+                                name: sizeName,
+                                ...sizeRestField
+                              },
+                              sizeIndex
+                            ) => (
+                              <Row
+                                gutter={16}
+                                key={sizeKey}
+                                style={{ alignItems: "center" }}
                               >
-                                Thêm Size
-                              </Button>
-                            </Form.Item>
-                          </>
-                        )}
-                      </Form.List>
-                      {isAddingVariant &&
-                        variantIndex === fields.length - 1 && (
+                                <Col span={6}>
+                                  <Form.Item
+                                    {...sizeRestField}
+                                    name={[sizeName, "nameSize"]}
+                                    label="Size"
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: "Chọn size"
+                                      },
+                                      { validator: validateUniqueSize(name) }
+                                    ]}
+                                  >
+                                    <Select placeholder="Chọn size">
+                                      <Option value="S">S</Option>
+                                      <Option value="M">M</Option>
+                                      <Option value="L">L</Option>
+                                      <Option value="XL">XL</Option>
+                                      <Option value="XXL">XXL</Option>
+                                    </Select>
+                                  </Form.Item>
+                                </Col>
+                                <Col span={6}>
+                                  <Form.Item
+                                    {...sizeRestField}
+                                    name={[sizeName, "price"]}
+                                    label="Giá"
+                                    rules=
+                                    {[{ type: 'number', min: 1, message: 'Giá phải lớn hơn 0' }, { required: true, message: 'Giá sản phẩm không được để trống' }]}
+                                  >
+                                    <InputNumber
+
+                                      placeholder="Giá"
+                                      style={{ width: "100%" }}
+                                    />
+                                  </Form.Item>
+                                </Col>
+                                <Col span={6}>
+                                  <Form.Item
+                                    {...sizeRestField}
+                                    name={[sizeName, "inventory"]}
+                                    label="Số lượng"
+                                    rules={[{ type: 'number', min: 0, message: 'Số lượng không được nhỏ hơn 0' }, { required: true, message: 'Số lượng không được để trống' }]}
+                                  >
+                                    <InputNumber
+
+                                      placeholder="Số lượng"
+                                      style={{ width: "100%" }}
+                                    />
+                                  </Form.Item>
+                                </Col>
+
+                                <Col span={6}>
+                                  <Form.Item
+                                    {...sizeRestField}
+                                    name={[sizeName, "status"]}
+                                    label="Trạng thái"
+                                    valuePropName="checked"
+                                  >
+                                    <Switch
+                                      checked={sizeRestField?.status}
+                                      onChange={async (
+                                        checked: boolean
+                                      ) => {
+                                        setLoading(true);
+                                        const currentStatus = checked;
+                                        const productId = id;
+                                        handleSizeStatusChange(
+                                          productId,
+                                          variantIndex,
+                                          sizeIndex,
+                                          currentStatus
+                                        );
+                                        setLoading(false);
+                                      }}
+                                    />
+                                  </Form.Item>
+                                </Col>
+                                {sizeIndex === sizeFields.length - 1 && !sizeRestField?.nameSize && isAddSize[variantIndex] && (
+                                  <Form.Item>
+                                    <Button
+                                      type="link"
+                                      onClick={() => handleCancelAddSize(variantIndex, removeSize)}
+                                      icon={<MinusCircleOutlined />}
+                                    >
+                                      Bỏ thêm Size
+                                    </Button>
+                                  </Form.Item>
+                                )}
+                              </Row>
+                            )
+                          )}
                           <Form.Item>
                             <Button
-                              type="link"
-                              onClick={handleCancelAddVariant}
-                              icon={<MinusCircleOutlined />}
+                              type="dashed"
+                              icon={<PlusOutlined />}
+                              onClick={() => handleAddSize(variantIndex, addSize)}
+                              block
                             >
-                              Bỏ thêm
+                              Thêm Size
                             </Button>
                           </Form.Item>
-                        )}
-                    </div>
-                  )
-                )}
+
+
+                        </>
+                      )}
+                    </Form.List>
+                    {isAddingVariant && variantIndex === fields.length - 1 && (
+                      <Form.Item>
+                        <Button
+                          type="link"
+                          onClick={handleCancelAddVariant}
+                          icon={<MinusCircleOutlined />}
+                        >
+                          Bỏ thêm
+                        </Button>
+                      </Form.Item>
+                    )}
+                  </div>
+                )
+              )}
+              {fields.length < 4 && (
                 <Form.Item>
                   <Button
                     type="dashed"
                     onClick={() => {
-                      handleAddVariant();
+                      handleAddVariant()
                       add();
                     }}
                     icon={<PlusOutlined />}
+
                   >
                     Thêm biến thể sản phẩm
                   </Button>
                 </Form.Item>
-              </>
-            )}
-          </Form.List>
-        )}
+              )}
+            </>
+          )}
+        </Form.List>
+
 
         <Form.Item>
           <Space>
