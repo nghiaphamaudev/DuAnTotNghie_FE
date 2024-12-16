@@ -59,7 +59,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       setCountItemCart(0);
     } else if (isSuccess) {
       setCartData(data);
-      setCountItemCart(data.items.length);
+      setCountItemCart(data?.items?.length);
     }
   }, [token, data, isSuccess]);
 

@@ -34,24 +34,13 @@ const ChangePassword = () => {
   };
   return (
     <>
-      <BreadcrumbsCustom listLink={[]} nameHere={"Đổi mật khẩu SuperAdmin và Admin"} />
+      <BreadcrumbsCustom listLink={[]} nameHere={"Đổi mật khẩu"} />
       <Card style={{ border: "none" }}>
       <Form
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
         >
-          <Form.Item
-            label="Họ tên"
-            name="fullName"
-            initialValue={userDataAdmin?.fullName}
-          >
-            <Input
-              disabled
-              className="h-12 block text-md font-semibold text-black-400 mb-2"
-              maxLength={50}
-            />
-          </Form.Item>
 
           <Form.Item
             name="resetPassword"
