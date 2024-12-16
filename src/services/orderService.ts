@@ -147,13 +147,15 @@ export const getOrderDetailServiceForAdmin = async (orderId: string) => {
 export const updateOrderServiceForAdmin = async (
   orderId: string,
   status: string,
-  note?: string
+  note?: string,
+  statusShip?: boolean
 ) => {
   try {
     const payload = {
       idOrder: orderId,
       status,
-      note
+      note,
+      statusShip
     };
     const { data } = await instanceAdmin.patch(
       "/superadmins/update-order-admin",
