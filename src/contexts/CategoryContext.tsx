@@ -8,6 +8,7 @@ import {
 } from "react";
 import { getAllCategory, getCategoryById } from "../services/categoryServices";
 import { Category, CategoryRequest } from "../common/types/Category";
+import { socket } from "../socket/index"; // Import socket
 
 type CategoryContextProps = {
   allCategory: Category[];
@@ -37,28 +38,17 @@ export const CategoryProvider = ({
     Category["products"]
   >([]);
 
-  //   const getAllDataCategory = async () => {
-  //     try {
-  //       const { data } = await getAllCategory();
-  //       setAllCategory(data);
-  //     } catch (error) {
-  //       console.error("Error fetching categories:", error);
-  //     }
-  //   };
+  // Lấy tất cả danh mục
   const getAllDataCategory = useCallback(async () => {
     try {
-      const { data } = await getAllCategory(); // Gọi API để lấy danh mục
-      setAllCategory(data); // Cập nhật danh mục vào state
+      const { data } = await getAllCategory();
+      setAllCategory(data);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
   }, []);
 
-  // Fetch tất cả các danh mục khi component được mount lần đầu
-  useEffect(() => {
-    getAllDataCategory();
-  }, [getAllDataCategory]);
-
+  // Lấy sản phẩm của danh mục theo ID
   const getDataCategoryById = async (id: string) => {
     try {
       const response = await getCategoryById(id);
@@ -68,12 +58,40 @@ export const CategoryProvider = ({
     }
   };
 
+  // Mutation thêm danh mục
   const { mutateAsync: addCategory } = useMutation({
     mutationFn: async (formData: CategoryRequest): Promise<any> => {
       const data = await addCategory(formData);
       return data;
     }
   });
+
+  // Lắng nghe sự kiện "hidden product"
+  useEffect(() => {
+    const handleHiddenProduct = (productId: string) => {
+      console.log(`Product hidden: ${productId}`);
+
+      // Cập nhật trạng thái sản phẩm
+      setActiveCategoryProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product.id === productId ? { ...product, isActive: false } : product
+        )
+      );
+    };
+
+    // Lắng nghe sự kiện từ socket
+    socket.on("hidden product", handleHiddenProduct);
+
+    // Cleanup listener
+    return () => {
+      socket.off("hidden product", handleHiddenProduct);
+    };
+  }, []);
+
+  // Fetch danh mục khi component được mount
+  useEffect(() => {
+    getAllDataCategory();
+  }, [getAllDataCategory]);
 
   return (
     <CategoryContext.Provider
