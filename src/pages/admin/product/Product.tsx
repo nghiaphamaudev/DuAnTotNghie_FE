@@ -1,14 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import { Button, Card, Col, Row, Switch, Table, Radio, Input } from "antd";
-import { DownloadOutlined, EditOutlined, EyeOutlined, LoadingOutlined, PlusCircleFilled } from "@ant-design/icons";
+import {
+  DownloadOutlined,
+  EditOutlined,
+  EyeOutlined,
+  LoadingOutlined,
+  PlusCircleFilled
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { deleteProductStatus, getAllProduct } from '../../../services/productServices';
-import { Products, ProductVariant } from '../../../common/types/Product';
-import { ColumnType } from 'antd/es/table';
-import BreadcrumbsCustom from '../../../components/common/(admin)/BreadcrumbsCustom';
-import * as XLSX from 'xlsx';
-import { useQuery } from '@tanstack/react-query';
+import {
+  deleteProductStatus,
+  getAllProduct
+} from "../../../services/productServices";
+import { Products, ProductVariant } from "../../../common/types/Product";
+import { ColumnType } from "antd/es/table";
+import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
+import * as XLSX from "xlsx";
+import { useQuery } from "@tanstack/react-query";
+import { socket } from "../../../socket";
 
 export default function Product() {
   const [dataSource, setDataSource] = useState<Products[]>([]);
@@ -17,7 +27,10 @@ export default function Product() {
   const { Search } = Input;
 
   // Fetch products function
-  const { data, isError, isLoading } = useQuery<{ status: string; data: Products[] }, Error>({
+  const { data, isError, isLoading } = useQuery<
+    { status: string; data: Products[] },
+    Error
+  >({
     queryKey: ["products"],
     queryFn: getAllProduct
   });
@@ -29,22 +42,21 @@ export default function Product() {
   }, [data]);
   console.log(dataSource);
   console.log(data);
-  
 
   const filteredData = dataSource
-    .filter(product => {
+    .filter((product) => {
       if (statusFilter === 2) return product.isActive === true;
       if (statusFilter === 3) return product.isActive === false;
       return true;
     })
-    .filter(product =>
+    .filter((product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
   const handleSearch = (value: string) => {
     setSearchTerm(value.toLowerCase().trim());
   };
-console.log(filteredData);
+  console.log(filteredData);
   console.log("Total Products: ", dataSource.length);
   console.log("Filtered Products: ", filteredData.length);
   const handleStatusChange = async (checked: boolean, id: string) => {
@@ -52,14 +64,17 @@ console.log(filteredData);
       const productData = await deleteProductStatus(id, checked);
       if (productData && productData.data) {
         const { data } = productData;
-        setDataSource(prevDataSource =>
-          prevDataSource.map(product =>
-            product.id === data.id ? { ...product, isActive: data.isActive } : product
+        socket.emit("hidden product", id);
+        setDataSource((prevDataSource) =>
+          prevDataSource.map((product) =>
+            product.id === data.id
+              ? { ...product, isActive: data.isActive }
+              : product
           )
         );
       }
     } catch (error) {
-      console.error('Error updating product status:', error);
+      console.error("Error updating product status:", error);
     }
   };
 
@@ -68,7 +83,11 @@ console.log(filteredData);
   };
 
   if (isLoading) {
-    return <div><LoadingOutlined /></div>;
+    return (
+      <div>
+        <LoadingOutlined />
+      </div>
+    );
   }
   if (isError) {
     return <div>Error fetching data</div>;
@@ -79,21 +98,21 @@ console.log(filteredData);
       title: "STT",
       key: "stt",
       align: "center",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => index + 1
     },
     {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
       width: "20%",
-      align: "center",
+      align: "center"
     },
     {
-      title: 'Ảnh đại diện',
-      dataIndex: 'coverImg',
+      title: "Ảnh đại diện",
+      dataIndex: "coverImg",
       render: (coverImg) => (
         <img src={coverImg} alt="Cover" style={{ width: 100, height: 100 }} />
-      ),
+      )
     },
     {
       title: "Danh mục",
@@ -101,7 +120,8 @@ console.log(filteredData);
       key: "category",
       width: "15%",
       align: "center",
-      render: (category: { name: string }) => category ? category.name : "Chưa có danh mục",
+      render: (category: { name: string }) =>
+        category ? category.name : "Chưa có danh mục"
     },
     {
       title: "Số lượng",
@@ -111,11 +131,14 @@ console.log(filteredData);
       align: "center",
       render: (variants: ProductVariant[]) => {
         const totalQuantity = variants.reduce((total, variant) => {
-          const variantQuantity = variant.sizes.reduce((sum, size) => sum + (size.inventory || 0), 0);
+          const variantQuantity = variant.sizes.reduce(
+            (sum, size) => sum + (size.inventory || 0),
+            0
+          );
           return total + variantQuantity;
         }, 0);
         return totalQuantity;
-      },
+      }
     },
     {
       title: "Trạng thái",
@@ -128,7 +151,7 @@ console.log(filteredData);
           checked={isActive === true}
           onChange={(checked) => handleStatusChange(checked, record.id)}
         />
-      ),
+      )
     },
     {
       title: "Chi tiết",
@@ -136,15 +159,15 @@ console.log(filteredData);
       key: "actions",
       width: "20%",
       render: (_, record) => (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
           <Link to={`/admin/product/${record.id}`}>
-            <EditOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
+            <EditOutlined style={{ fontSize: "20px", color: "#1890ff" }} />
           </Link>
           <Link to={`/admin/product/detail/${record.id}`}>
-            <EyeOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
+            <EyeOutlined style={{ fontSize: "20px", color: "#1890ff" }} />
           </Link>
         </div>
-      ),
+      )
     }
   ];
 
@@ -177,7 +200,7 @@ console.log(filteredData);
                 marginLeft: "12px",
                 backgroundColor: "white",
                 color: "green",
-                borderColor: "green",
+                borderColor: "green"
               }}
               type="default"
               onClick={handleExportExcel}
@@ -196,7 +219,10 @@ console.log(filteredData);
         <Row gutter={16} style={{ marginTop: "12px" }}>
           <Col span={12}>
             <span>Trạng thái: </span>
-            <Radio.Group value={statusFilter} onChange={handleStatusFilterChange}>
+            <Radio.Group
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+            >
               <Radio value={1}>Tất cả</Radio>
               <Radio value={2}>Hoạt động</Radio>
               <Radio value={3}>Ngưng hoạt động</Radio>

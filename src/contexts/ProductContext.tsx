@@ -1,17 +1,19 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { getAllProduct, getProductById } from "../services/productServices";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Products } from "../common/types/Product";
 import { useNavigate } from "react-router-dom";
+import { socket } from "../socket/index";
 
 type ProductContextProps = {
   allProduct: Products[];
   product: Products | null;
-  setAllProduct: React.Dispatch<React.SetStateAction<Products[]>>;
-  getDataProductById: (id: string) => void
+  getDataProductById: (id: string) => void;
 };
 
-const ProductContext = createContext<ProductContextProps | undefined>(undefined);
+const ProductContext = createContext<ProductContextProps | undefined>(
+  undefined
+);
 
 export const useProduct = () => {
   const context = useContext(ProductContext);
@@ -26,21 +28,18 @@ export const ProductProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const nav = useNavigate();
-  const [allProduct, setAllProduct] = useState<Products[]>([]);
   const [product, setProduct] = useState<Products | null>(null);
+  const queryClient = useQueryClient();
+  const nav = useNavigate();
 
-  useQuery({
-    queryKey: ['products'],
+  const { data: allProduct = [] } = useQuery({
+    queryKey: ["products"],
     queryFn: async () => {
-      const data = await getAllProduct();
-      setAllProduct(data.data);
-      return data.data;
+      const { data } = await getAllProduct();
+      return data;
     },
+    refetchOnWindowFocus: false // Tùy chọn cải thiện hiệu năng nếu không cần refetch khi focus
   });
-
-
 
   const { mutateAsync: getDataProductById } = useMutation({
     mutationFn: async (id: string) => {
@@ -49,20 +48,29 @@ export const ProductProvider = ({
         setProduct(data);
         return data;
       } catch (error) {
-        nav('*')
+        nav("*");
       }
     }
   });
 
+  useEffect(() => {
+    const handleHiddenProduct = () => {
+      console.log("Hidden product event detected, refetching...");
+      queryClient.invalidateQueries(["products"]);
+    };
 
+    socket.on("hidden product", handleHiddenProduct);
 
+    return () => {
+      socket.off("hidden product", handleHiddenProduct);
+    };
+  }, [queryClient]);
 
   return (
     <ProductContext.Provider
       value={{
         allProduct,
         product,
-        setAllProduct,
         getDataProductById
       }}
     >
