@@ -1,6 +1,5 @@
 import {
   EditOutlined,
-  GiftOutlined,
   HomeOutlined,
   LockOutlined,
   LogoutOutlined,
@@ -116,12 +115,6 @@ const MenuAccount = () => {
               mode="vertical"
               className="border-none"
               items={[
-                {
-                  key: "1",
-                  icon: <GiftOutlined />,
-                  label: "Mã ưu đãi",
-                  onClick: () => handleMenuClick("1"),
-                },
                 {
                   key: "2",
                   icon: <ShoppingCartOutlined />,
