@@ -1,23 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tag, Tabs } from "antd";
+import { Table, Button, Space, Tag, Tabs, DatePicker, Row, Col } from "antd";
 import { getOrdersByUserService } from "../../../../services/orderService";
 import { Link } from "react-router-dom";
 import { View } from "lucide-react";
+import moment from "moment";
+
+const { RangePicker } = DatePicker;
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [activeTab, setActiveTab] = useState("Tất cả");
+  const [dateRange, setDateRange] = useState([null, null]);
 
+  // Fetch orders
   useEffect(() => {
     const fetchOrders = async () => {
       const response = await getOrdersByUserService();
-      console.log("orders: ", response);
-
       if (response?.data?.orders) {
-        setOrders(response.data.orders);
+        const reversedOrders = response.data.orders.reverse();
+        setOrders(reversedOrders);
+        setFilteredOrders(reversedOrders);
       }
     };
     fetchOrders();
   }, []);
+
+  // Lọc đơn hàng
+  const filterOrders = (status, dates) => {
+    let filtered = orders;
+
+    // Lọc theo trạng thái
+    if (status !== "Tất cả") {
+      filtered = filtered.filter((order) => order.status === status);
+    }
+
+    // Lọc theo khoảng thời gian
+    if (dates && dates[0] && dates[1]) {
+      const [startDate, endDate] = dates.map(
+        (date) => moment(date, "DD-MM-YYYY") // Chuyển đổi ngày từ RangePicker
+      );
+      filtered = filtered.filter((order) => {
+        const orderDate = moment(order.createdAt, "DD/MM/YYYY HH:mm:ss"); // Chuyển đổi createdAt
+        return orderDate.isBetween(startDate, endDate, "day", "[]"); // Bao gồm cả ngày đầu và cuối
+      });
+    }
+
+    setFilteredOrders(filtered);
+  };
+
+  const handleDateChange = (dates) => {
+    setDateRange(dates);
+    filterOrders(activeTab, dates);
+  };
+
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    filterOrders(key, dateRange);
+  };
 
   const columns = [
     {
@@ -46,7 +86,7 @@ const MyOrders = () => {
       dataIndex: "totalPrice",
       key: "totalPrice",
       width: 120,
-      render: (price: number) => (
+      render: (price) => (
         <span
           style={{ fontWeight: "500" }}
         >{`${price.toLocaleString()} đ`}</span>
@@ -99,11 +139,6 @@ const MyOrders = () => {
     }
   ];
 
-  const filterOrdersByStatus = (status: string) =>
-    status === "Tất cả"
-      ? orders
-      : orders.filter((order) => order.status === status);
-
   const tabItems = [
     { key: "Tất cả", label: "Tất cả" },
     { key: "Chờ xác nhận", label: "Chờ xác nhận" },
@@ -117,22 +152,33 @@ const MyOrders = () => {
   ];
 
   return (
-    <Tabs
-      defaultActiveKey="Tất cả"
-      items={tabItems.map((tab) => ({
-        key: tab.key,
-        label: tab.label,
-        children: (
-          <Table
-            rowKey="id"
-            columns={columns}
-            dataSource={filterOrdersByStatus(tab.key)}
-            pagination={{ pageSize: 5 }}
-            bordered
+    <>
+      {/* <Row gutter={[16, 16]} style={{ marginBottom: "16px" }} justify="center">
+        <Col xs={24} sm={12} md={8} lg={6}>
+          <RangePicker
+            onChange={handleDateChange}
+            format="DD-MM-YYYY"
+            style={{ width: "100%" }}
           />
-        )
-      }))}
-    />
+        </Col>
+      </Row> */}
+      <Tabs
+        defaultActiveKey="Tất cả"
+        onChange={handleTabChange}
+        items={tabItems.map((tab) => ({
+          key: tab.key,
+          label: tab.label
+        }))}
+      />
+      <Table
+        rowKey="id"
+        columns={columns}
+        dataSource={filteredOrders}
+        pagination={{ pageSize: 10 }}
+        bordered
+        scroll={{ x: 800 }}
+      />
+    </>
   );
 };
 

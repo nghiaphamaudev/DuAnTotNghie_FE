@@ -270,3 +270,21 @@ export const updateRoleUser = async (userId: string, role: string) => {
     throw error;
   }
 };
+
+export const updatePaymentRestriction = async (payload: {
+  userId: string;
+  restrictPayment: boolean;
+}) => {
+  try {
+    const { data } = await instanceAdmin.patch(
+      `/superadmins/user/${payload.userId}/payment-restriction`,
+      {
+        restrictPayment: payload.restrictPayment, 
+      }
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+

@@ -5,6 +5,7 @@ import { fetchVouchers } from "../../../../services/voucher";
 import { useQuery } from "@tanstack/react-query";
 import { IVoucher } from "../../../../interface/Voucher";
 import dayjs from "dayjs";
+import { Link } from "react-router-dom";
 
 const { Text } = Typography;
 
@@ -74,7 +75,7 @@ const PromoCodePage: React.FC = () => {
                         }}
                         className="bg-blue-500"
                       >
-                        Mua ngay
+                        <Link to={"/product"}>Mua ngay</Link>
                       </Button>
                     </div>
                   </Card>

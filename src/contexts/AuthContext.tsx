@@ -39,6 +39,7 @@ import {
   updatePassword,
   updatePasswordAdmin,
   updatePasswordAdminAnhSuperAdmin,
+  updatePaymentRestriction,
   updateProfile,
   updateRoleUser,
   updateStatusAddress,
@@ -65,7 +66,7 @@ type AuthContextProps = {
   isPendingUpdateStatusAddress: boolean;
   token: string | null;
   showDeleteModal: (addressId: string) => void;
-  showLogoutModal: () => void
+  showLogoutModal: () => void;
   updateMyPassword: (formData: UpdatePasswordRequest) => void;
   IupdatePasswordAdmin: (formData: UpdatePasswordRequestAdmin) => void;
   updatestatusAddress: (formData: AddressRequest) => void;
@@ -98,6 +99,24 @@ type AuthContextProps = {
       idAdmin: string;
       assignedRole: string;
       resetPassword: string;
+    },
+    unknown
+  >;
+  UpdatePaymentRestriction: UseMutateAsyncFunction<
+    any,
+    ApiError,
+    {
+      userId: string;
+      restrictPayment: true;
+    },
+    unknown
+  >;
+  UnUpdatePaymentRestriction: UseMutateAsyncFunction<
+    any,
+    ApiError,
+    {
+      userId: string;
+      restrictPayment: false;
     },
     unknown
   >;
@@ -466,7 +485,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         idUser,
         status: true,
       });
-      console.log(idUser); // Gọi hàm BlockUser từ authServices
       return data;
     },
     onSuccess: () => {
@@ -615,6 +633,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     },
   });
 
+  const { mutateAsync: UpdatePaymentRestriction } = useMutation({
+    mutationFn: async ({
+      userId,
+      restrictPayment,
+    }: {
+      userId: string;
+      restrictPayment: true;
+    }) => {
+      const data = await updatePaymentRestriction({ userId, restrictPayment });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["usersAdmin"] });
+      notification.success({
+        message: "Yêu cầu người dùng thanh toán trước thành công!",
+      });
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Có lỗi xảy ra khi yêu cầu người dùng thanh toán trước",
+        description: errorMessage,
+      });
+    },
+  });
+
+  const { mutateAsync: UnUpdatePaymentRestriction } = useMutation({
+    mutationFn: async ({
+      userId,
+      restrictPayment,
+    }: {
+      userId: string;
+      restrictPayment: false;
+    }) => {
+      const data = await updatePaymentRestriction({ userId, restrictPayment });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["usersAdmin"] });
+      notification.success({
+        message: "Tắt yêu cầu người dùng thanh toán trước thành công!",
+      });
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error?.response?.data?.message || error?.message;
+      notification.error({
+        message: "Có lỗi xảy ra khi tắt yêu cầu người dùng thanh toán trước",
+        description: errorMessage,
+      });
+    },
+  });
+
   const { mutateAsync: IupdatePasswordAdmin } = useMutation({
     mutationFn: async (formData: UpdatePasswordRequestAdmin) => {
       const data = await updatePasswordAdminAnhSuperAdmin(formData);
@@ -711,7 +781,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         IregisterAdmin,
         IupdatePasswordAdmin,
         changePasswordAdmin,
-        showLogoutModal
+        showLogoutModal,
+        UpdatePaymentRestriction,
+        UnUpdatePaymentRestriction,
       }}
     >
       {children}

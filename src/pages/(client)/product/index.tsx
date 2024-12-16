@@ -1,7 +1,8 @@
 import { Col, Row, Select, Slider, Pagination, Spin } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useProduct } from "../../../contexts/ProductContext";
 import { useCategory } from "../../../contexts/CategoryContext";
+import { useSearchParams } from "react-router-dom";
 import ProductCard from "../../../components/common/(client)/ProductCard";
 
 const { Option } = Select;
@@ -22,66 +23,53 @@ const ProductPage = () => {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [filteredProducts, setFilteredProducts] = useState(allProduct);
-
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false); // Trạng thái loading
-  const [popularColors, setPopularColors] = useState<string[]>([]); // Màu phổ biến
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [searchParams] = useSearchParams();
+
   const itemsPerPage = 8;
-  // Lấy 5 màu phổ biến nhất
+
+  // Fetch categories on component mount
   useEffect(() => {
-    const getPopularColors = () => {
-      const colorCount: Record<string, number> = {};
-      console.log(colorCount);
-
-      allProduct.forEach((product) => {
-        product.variants.forEach((variant) => {
-          const color = variant.color;
-          colorCount[color] = (colorCount[color] || 0) + 1;
-        });
-      });
-      const sortedColors = Object.entries(colorCount)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([color]) => color);
-
-      setPopularColors(sortedColors);
-    };
-
-    getPopularColors();
-  }, [allProduct]);
-
-  // Fetch all categories on component mount
-  useEffect(() => {
-    setIsLoading(true);
-    getAllDataCategory().finally(() => setIsLoading(false));
-  }, []);
-
-  useEffect(() => {
-    console.log("SelectedCategory", selectedCategory);
     if (selectedCategory) {
       setIsLoading(true);
       getDataCategoryById(selectedCategory).finally(() => setIsLoading(false));
-    } else {
-      setFilteredProducts(allProduct); // Nếu không chọn danh mục, sử dụng tất cả sản phẩm
     }
   }, [selectedCategory]);
+  // Get category ID from URL query parameters
+  useEffect(() => {
+    const categoryId = searchParams.get("category");
+    if (categoryId) {
+      setSelectedCategory(categoryId);
+    }
+  }, [searchParams]);
 
-  const handleCategoryChange = (categoryId: string | null) => {
-    setSelectedCategory(categoryId);
-  };
+  // Fetch products by category
 
-  const handlePriceChange = (value: number[]) =>
-    setPriceRange([value[0], value[1]]);
+  // Popular colors calculation
+  const popularColors = useMemo(() => {
+    const colorCount: Record<string, number> = {};
+    allProduct.forEach((product) =>
+      product.variants.forEach((variant) => {
+        const color = variant.color;
+        colorCount[color] = (colorCount[color] || 0) + 1;
+      })
+    );
 
-  const handleSortChange = (value: string) => {
-    setSortOption(value);
-    localStorage.setItem("sortOption", value);
-  };
-  console.log("ActiveCategoryProducts", activeCategoryProducts);
+    return Object.entries(colorCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([color]) => color);
+  }, [allProduct]);
 
-  const applyFilters = () => {
-    const filtered = (selectedCategory ? activeCategoryProducts : allProduct)
+  // Filtered products
+  const filteredProducts = useMemo(() => {
+    const sourceProducts = selectedCategory
+      ? activeCategoryProducts
+      : allProduct;
+
+    return sourceProducts
       .filter(
         (product) =>
           product.variants[0].sizes[0].price >= priceRange[0] &&
@@ -98,47 +86,48 @@ const ProductPage = () => {
           product.variants[0].sizes.some(
             (size) => size.nameSize === selectedSize
           )
-      );
-
-    const sorted = [...filtered].sort((a, b) => {
-      if (sortOption === "priceAsc") {
-        return a.variants[0].sizes[0].price - b.variants[0].sizes[0].price;
-      } else if (sortOption === "priceDesc") {
-        return b.variants[0].sizes[0].price - a.variants[0].sizes[0].price;
-      }
-      return 0;
-    });
-
-    if (JSON.stringify(filteredProducts) !== JSON.stringify(sorted)) {
-      setFilteredProducts(sorted);
-    }
-  };
-
-  useEffect(() => {
-    applyFilters();
+      )
+      .sort((a, b) => {
+        if (sortOption === "priceAsc") {
+          return a.variants[0].sizes[0].price - b.variants[0].sizes[0].price;
+        } else if (sortOption === "priceDesc") {
+          return b.variants[0].sizes[0].price - a.variants[0].sizes[0].price;
+        }
+        return 0;
+      });
   }, [
+    allProduct,
+    activeCategoryProducts,
     priceRange,
-    sortOption,
     selectedColor,
     selectedSize,
-    activeCategoryProducts
+    sortOption,
+    selectedCategory
   ]);
 
-  const handlePageChange = (page: number) => setCurrentPage(page);
+  // Paginated products
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+  }, [currentPage, filteredProducts]);
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedProducts = filteredProducts.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const handleCategoryChange = (categoryId: string | null) => {
+    setSelectedCategory(categoryId);
+    setSelectedColor(null);
+    setSelectedSize(null);
+    setPriceRange([0, 3000000]);
+    setCurrentPage(1); // Reset pagination
+  };
 
   return (
     <div className="px-4 py-6">
       <Row gutter={[16, 16]}>
+        {/* Sidebar Filters */}
         <Col xs={24} md={6}>
           <div className="border p-4 rounded-md">
             <h3 className="text-lg font-bold mb-4">Bộ lọc</h3>
 
+            {/* Categories */}
             <h4 className="text-md font-semibold mb-2">Danh mục sản phẩm</h4>
             <ul className="space-y-2">
               <li
@@ -153,27 +142,29 @@ const ProductPage = () => {
                 <li
                   key={category.id}
                   className={`cursor-pointer ${
-                    selectedCategory === category?.id ? "text-blue-500" : ""
+                    selectedCategory === category.id ? "text-blue-500" : ""
                   }`}
-                  onClick={() => handleCategoryChange(category?.id)}
+                  onClick={() => handleCategoryChange(category.id)}
                 >
                   {category.name}
                 </li>
               ))}
             </ul>
 
+            {/* Price Range */}
             <h4 className="text-md font-semibold mt-4 mb-2">Khoảng giá</h4>
             <Slider
               range
               max={3000000}
               step={100000}
               value={priceRange}
-              onChange={handlePriceChange}
+              onChange={(value) => setPriceRange([value[0], value[1]])}
               tooltip={{
                 formatter: (value) => `${(value ?? 0).toLocaleString()}đ`
               }}
             />
 
+            {/* Colors */}
             <h4 className="text-md font-semibold mt-4 mb-2">Màu sắc</h4>
             <div className="grid grid-cols-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {popularColors.map((color) => (
@@ -194,8 +185,9 @@ const ProductPage = () => {
               ))}
             </div>
 
+            {/* Sizes */}
             <h4 className="text-md font-semibold mt-4 mb-2">Size</h4>
-            <div className="flex justify-start flex-wrap items-start gap-2">
+            <div className="flex gap-2">
               {["S", "M", "L", "XL", "XXL"].map((size) => (
                 <span
                   key={size}
@@ -213,6 +205,7 @@ const ProductPage = () => {
           </div>
         </Col>
 
+        {/* Products Section */}
         <Col xs={24} md={18}>
           {isLoading ? (
             <Spin tip="Đang tải sản phẩm..." className="w-full text-center" />
@@ -220,7 +213,10 @@ const ProductPage = () => {
             <>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold">Sản phẩm</h3>
-                <Select value={sortOption} onChange={handleSortChange}>
+                <Select
+                  value={sortOption}
+                  onChange={(value) => setSortOption(value)}
+                >
                   <Option value="featured">Sản phẩm nổi bật</Option>
                   <Option value="priceAsc">Giá tăng dần</Option>
                   <Option value="priceDesc">Giá giảm dần</Option>
@@ -228,20 +224,11 @@ const ProductPage = () => {
               </div>
 
               <Row gutter={[16, 16]}>
-                {paginatedProducts
-                  .filter((item) => item.isActive === true)
-                  .map((product) => (
-                    <Col
-                      key={product.id}
-                      xs={24}
-                      sm={12}
-                      md={12}
-                      lg={6}
-                      className="flex justify-center items-center"
-                    >
-                      <ProductCard item={product} />
-                    </Col>
-                  ))}
+                {paginatedProducts.map((product) => (
+                  <Col key={product.id} xs={24} sm={12} lg={6}>
+                    <ProductCard item={product} />
+                  </Col>
+                ))}
               </Row>
 
               <div className="flex justify-center mt-4">
@@ -249,7 +236,7 @@ const ProductPage = () => {
                   current={currentPage}
                   pageSize={itemsPerPage}
                   total={filteredProducts.length}
-                  onChange={handlePageChange}
+                  onChange={setCurrentPage}
                 />
               </div>
             </>

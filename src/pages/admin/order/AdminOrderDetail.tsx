@@ -1,22 +1,23 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  Descriptions,
-  Table,
-  Timeline,
-  Tag,
-  Card,
-  Spin,
   Button,
-  Modal,
+  Card,
+  Descriptions,
   message,
-  Tooltip
+  Modal,
+  Spin,
+  Table,
+  Tag,
+  Timeline
 } from "antd";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 import {
+  getAllOrdersServiceForAdmin,
   getOrderDetailServiceForAdmin,
   updateOrderServiceForAdmin
 } from "../../../services/orderService";
-import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
+import { socket } from "../../../socket";
 
 const AdminOrderDetail = () => {
   const { orderId } = useParams();
@@ -28,6 +29,7 @@ const AdminOrderDetail = () => {
   const [newStatus, setNewStatus] = useState("");
   const [cancelOrReturnNote, setCancelOrReturnNote] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [statusShip, setStatusShip] = useState(false);
   const navigate = useNavigate();
   const statusOrder = [
     "Đã xác nhận",
@@ -50,13 +52,37 @@ const AdminOrderDetail = () => {
   useEffect(() => {
     fetchOrderDetail();
   }, [orderId]);
+  useEffect(() => {
+    const handleOrderStatusUpdate = () => {
+      fetchOrderDetail();
+    };
+    // Lắng nghe sự kiện "update order status" từ server
+    socket.on("update status order", (id: any) => {
+      console.log(id);
+      if (id && id === orderId) handleOrderStatusUpdate();
+    });
+
+    socket.on("user update status order", (id: any) => {
+      console.log(id);
+      if (id && id === orderId) handleOrderStatusUpdate();
+    });
+
+    // Xóa sự kiện khi component bị hủy
+    return () => {
+      socket.off("update status order", handleOrderStatusUpdate());
+    };
+  }, [orderId]);
 
   const fetchOrderDetail = async () => {
     setLoading(true); // Bật trạng thái loading
+    const response = await getAllOrdersServiceForAdmin();
+    console.log("response", response);
+    const order = response.data.find((order) => order._id === orderId);
+    console.log("orderMatch", order);
 
     try {
       if (!orderId) {
-        throw new Error("Không tìm thấy mã đơn hàng."); // Trường hợp không có orderId
+        throw new Error("Không tìm thấy mã đơn hàng.");
       }
 
       const response = await getOrderDetailServiceForAdmin(orderId);
@@ -69,7 +95,7 @@ const AdminOrderDetail = () => {
     } catch (error) {
       console.error("fetchOrderDetail Error: ", error); // Log lỗi để debug
       message.error(error.message || "Đã xảy ra lỗi. Vui lòng thử lại."); // Hiển thị thông báo lỗi
-      navigate("/admin/bill"); // Điều hướng về trang quản lý tài khoản
+      navigate("/admin/bill");
     } finally {
       setLoading(false); // Tắt trạng thái loading
     }
@@ -99,10 +125,12 @@ const AdminOrderDetail = () => {
         }
       }
       const response = await updateOrderServiceForAdmin(orderId, status, note);
+
       console.log("RES:", response);
 
       if (response?.status) {
         message.success(`Đơn hàng đã chuyển sang trạng thái "${status}"`);
+        socket.emit("update status order", orderId);
         await fetchOrderDetail();
       } else {
         message.error(response?.message || "Cập nhật trạng thái thất bại.");
@@ -143,7 +171,7 @@ const AdminOrderDetail = () => {
     }
   };
 
-  const handleReturnOrder = async (note) => {
+  const handleReturnOrder = async (note, statusShip) => {
     setIsProcessing(true);
     try {
       if (!note.trim()) {
@@ -154,7 +182,8 @@ const AdminOrderDetail = () => {
       const response = await updateOrderServiceForAdmin(
         orderId,
         "Hoàn đơn",
-        note
+        note,
+        statusShip
       );
       if (response?.status) {
         message.success("Đơn hàng đã được hoàn thành công.");
@@ -261,35 +290,26 @@ const AdminOrderDetail = () => {
 
       {/* Các nút thay đổi trạng thái */}
       <Card>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {statusOrder.map((status, index) => (
-            <Tooltip
+            <Button
               key={status}
-              title={
-                index < currentStatusIndex
-                  ? "Trạng thái này đã được thực hiện."
-                  : index > currentStatusIndex
-                  ? "Không thể thực hiện khi chưa đạt trạng thái trước đó."
-                  : "Bấm để cập nhật trạng thái."
+              loading={isProcessing && newStatus === status}
+              disabled={
+                isProcessing ||
+                index !== currentStatusIndex + 1 ||
+                orderInfor?.status === "Đã nhận được hàng" ||
+                orderInfor?.status === "Đã hủy" ||
+                orderInfor?.status === "Hoàn đơn"
               }
+              onClick={() => {
+                setNewStatus(status);
+                setIsModalOpen(true);
+              }}
+              className="mb-2"
             >
-              <Button
-                loading={isProcessing && newStatus === status}
-                disabled={
-                  isProcessing ||
-                  index !== currentStatusIndex + 1 ||
-                  orderInfor?.status === "Đã nhận được hàng" ||
-                  orderInfor?.status === "Đã hủy" ||
-                  orderInfor?.status === "Hoàn đơn"
-                }
-                onClick={() => {
-                  setNewStatus(status);
-                  setIsModalOpen(true);
-                }}
-              >
-                {status}
-              </Button>
-            </Tooltip>
+              {status}
+            </Button>
           ))}
         </div>
 
@@ -301,6 +321,7 @@ const AdminOrderDetail = () => {
           onCancel={() => setIsModalOpen(false)}
           okText="Xác nhận"
           cancelText="Hủy"
+          confirmLoading={isProcessing}
         >
           <p>
             Bạn có chắc muốn chuyển trạng thái đơn hàng sang "{newStatus}"
@@ -349,6 +370,7 @@ const AdminOrderDetail = () => {
           onCancel={() => setIsModalRemoveOpen(false)}
           okText="Xác nhận"
           cancelText="Hủy"
+          confirmLoading={isProcessing}
         >
           <p>Bạn có chắc muốn hủy đơn hàng không?</p>
           <textarea
@@ -369,10 +391,11 @@ const AdminOrderDetail = () => {
         <Modal
           title="Xác nhận hoàn đơn"
           visible={isModalReturnOpen}
-          onOk={() => handleReturnOrder(cancelOrReturnNote)}
+          onOk={() => handleReturnOrder(cancelOrReturnNote, statusShip)}
           onCancel={() => setIsModalReturnOpen(false)}
           okText="Xác nhận"
           cancelText="Hủy"
+          confirmLoading={isProcessing}
         >
           <p>Bạn có chắc muốn hoàn đơn hàng không?</p>
           <textarea
@@ -388,12 +411,75 @@ const AdminOrderDetail = () => {
               marginTop: "10px"
             }}
           />
+
+          <fieldset>
+            <legend className="text-lg font-medium text-gray-900">
+              Phí giao hàng khi hoàn hàng
+            </legend>
+
+            <p className="mt-1 text-pretty text-sm text-gray-700">
+              Khách hàng đã trả phí giao hàng khi hoàn chưa?
+            </p>
+
+            <div className="mt-4 space-y-2">
+              <label
+                htmlFor="Option2"
+                className="flex cursor-pointer items-start gap-4"
+              >
+                <div className="flex items-center">
+                  &#8203;
+                  <input
+                    type="checkbox"
+                    className="size-4 rounded border-gray-300"
+                    id="Option2"
+                    checked={statusShip === true}
+                    onChange={() => setStatusShip(true)}
+                  />
+                </div>
+
+                <div>
+                  <strong className="font-medium text-gray-900"> Đã trả</strong>
+                </div>
+              </label>
+
+              <label
+                htmlFor="Option3"
+                className="flex cursor-pointer items-start gap-4"
+              >
+                <div className="flex items-center">
+                  &#8203;
+                  <input
+                    type="checkbox"
+                    className="size-4 rounded border-gray-300"
+                    id="Option3"
+                    checked={statusShip === false}
+                    onChange={() => setStatusShip(false)}
+                  />
+                </div>
+
+                <div>
+                  <strong className="font-medium text-gray-900">
+                    {" "}
+                    Chưa trả
+                  </strong>
+                </div>
+              </label>
+            </div>
+            <p className="mt-2 text-sm text-gray-700">
+              Trạng thái hiện tại:{" "}
+              <Tag color={statusShip ? "green" : "yellow"}>
+                {statusShip ? "Đã trả" : "Chưa trả"}
+              </Tag>
+            </p>
+          </fieldset>
         </Modal>
       </Card>
-
       {/* Thông tin đơn hàng */}
       <Card title="Thông tin đơn hàng" style={{ marginBottom: "20px" }}>
-        <Descriptions bordered column={2}>
+        <Descriptions
+          bordered
+          column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}
+        >
           <Descriptions.Item label="Mã hóa đơn">
             {orderInfor?.code}
           </Descriptions.Item>
@@ -465,50 +551,137 @@ const AdminOrderDetail = () => {
 
       {/* Thông tin thanh toán */}
       <Card title="Thông tin giao dịch">
-        {historyTransaction?.totalPrice !== undefined ? (
-          <Descriptions bordered column={1}>
-            {historyTransaction?.transactionVnPayId && (
-              <Descriptions.Item label="Mã giao dịch">
-                {historyTransaction.transactionVnPayId}
-              </Descriptions.Item>
-            )}
-            <Descriptions.Item label="Hình thức thanh toán">
-              {historyTransaction?.type}
-            </Descriptions.Item>
-            <Descriptions.Item label="Số tiền thanh toán">
-              {`${historyTransaction?.totalPrice?.toLocaleString()} đ`}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày giao dịch">
-              {historyTransaction?.createdAt}
-            </Descriptions.Item>
-          </Descriptions>
-        ) : (
-          <p className="italic text-gray-500">
-            Thông tin giao dịch không khả dụng.
-          </p>
-        )}
-      </Card>
+        <div className="flex items-start gap-2">
+          {historyTransaction && historyTransaction.length > 0 ? (
+            historyTransaction.map((item, index) => (
+              <article
+                key={item.transactionVnPayId}
+                className="rounded-xl bg-white p-4 ring ring-indigo-50 sm:p-6 lg:p-8 w-full h-full"
+              >
+                <div className="flex items-start sm:gap-8">
+                  <div
+                    className="hidden sm:grid sm:size-20 sm:shrink-0 sm:place-content-center sm:rounded-full sm:border-2 sm:border-indigo-500"
+                    aria-hidden="true"
+                  >
+                    <div className="flex items-center gap-1">
+                      <span className="h-8 w-0.5 rounded-full bg-indigo-500"></span>
+                      <span className="h-6 w-0.5 rounded-full bg-indigo-500"></span>
+                      <span className="h-4 w-0.5 rounded-full bg-indigo-500"></span>
+                      <span className="h-6 w-0.5 rounded-full bg-indigo-500"></span>
+                      <span className="h-8 w-0.5 rounded-full bg-indigo-500"></span>
+                    </div>
+                  </div>
 
-      <Card title="Thông tin thanh toán">
-        <Descriptions bordered column={1}>
-          <Descriptions.Item label="Tổng tiền hàng">
-            <strong>{`${(
-              totalPrice +
-              discountVoucher -
-              shippingCost
-            ).toLocaleString()} đ`}</strong>
-          </Descriptions.Item>
-          <Descriptions.Item label="Phí vận chuyển">
-            + {`${shippingCost?.toLocaleString()} đ`}
-          </Descriptions.Item>
-          <Descriptions.Item label="Voucher giảm giá">
-            - {`${discountVoucher?.toLocaleString()} đ`}
-          </Descriptions.Item>
-          <Descriptions.Item label="Tổng thanh toán">
-            <strong> {`${totalPrice?.toLocaleString()} đ`}</strong>
-          </Descriptions.Item>
-        </Descriptions>
+                  <div>
+                    <strong className="rounded border border-indigo-500 bg-indigo-500 px-3 py-1.5 text-[10px] font-medium text-white">
+                      Giao dịch
+                    </strong>
+
+                    <h3 className="mt-4 text-lg font-medium sm:text-xl">
+                      <span>Phương thức: {item.type}</span>
+                    </h3>
+
+                    <p className="mt-1 text-sm text-gray-700">
+                      <strong>Mã giao dịch:</strong> {item.transactionVnPayId}{" "}
+                      <br />
+                      <strong>Số tiền:</strong>{" "}
+                      {item.totalPrice.toLocaleString()} VNĐ <br />
+                      <strong>Thời gian:</strong> {item.createdAt}
+                    </p>
+
+                    {Object.keys(item.refundDetails).length > 0 && (
+                      <div className="mt-4 text-sm text-red-600">
+                        <p>
+                          <strong>Trạng thái hoàn tiền:</strong>{" "}
+                          {item.refundDetails.transactionType}
+                        </p>
+                        <p>
+                          <strong>Số tiền hoàn:</strong>{" "}
+                          {item.refundDetails.refundAmount.toLocaleString()} VNĐ
+                        </p>
+                        <p>
+                          <strong>Ngày hoàn:</strong>{" "}
+                          {item.refundDetails.refundDate}
+                        </p>
+                        <p>
+                          <strong>Ngân hàng:</strong>{" "}
+                          {item.refundDetails.bankCode}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="mt-4 sm:flex sm:items-center sm:gap-2">
+                      <div className="flex items-center gap-1 text-gray-500">
+                        <svg
+                          className="size-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          ></path>
+                        </svg>
+
+                        <p className="text-xs font-medium">
+                          Thời gian xử lý: {item.createdAt}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="text-center text-gray-600 italic">
+              Thông tin giao dịch không khả dụng
+            </div>
+          )}
+        </div>
       </Card>
+      <span className="flex items-center mt-10 mb-3">
+        <span className="pr-6">Thông tin thanh toán</span>
+        <span className="h-px flex-1 bg-black"></span>
+      </span>
+      <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm ">
+        <dl className="-my-3 divide-y divide-gray-100 text-sm">
+          <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+            <dt className="font-medium text-gray-900">Tổng tiền hàng</dt>
+            <dd className="text-gray-700 sm:col-span-2 text-right">
+              <strong>{`${(
+                totalPrice +
+                discountVoucher -
+                shippingCost
+              ).toLocaleString()} đ`}</strong>
+            </dd>
+          </div>
+
+          <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+            <dt className="font-medium text-gray-900">Phí vận chuyển</dt>
+            <dd className="text-gray-700 sm:col-span-2 text-right">
+              + {`${shippingCost?.toLocaleString()} đ`}
+            </dd>
+          </div>
+
+          <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+            <dt className="font-medium text-gray-900">Voucher giảm giá</dt>
+            <dd className="text-gray-700 sm:col-span-2 text-right">
+              - {`${discountVoucher?.toLocaleString()} đ`}
+            </dd>
+          </div>
+
+          <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+            <dt className="font-medium text-gray-900">Tổng thanh toán</dt>
+            <dd className="text-gray-700 sm:col-span-2 text-right">
+              <strong>{`${totalPrice?.toLocaleString()} đ`}</strong>
+            </dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 };

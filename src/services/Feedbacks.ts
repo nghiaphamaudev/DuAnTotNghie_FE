@@ -122,6 +122,17 @@ export const getRelatedProducts = async (
   }
 };
 
+export const getAllFeedbacks = async () => {
+  try {
+    const { data } = await instance.get("/feedback");
+    console.log("Feedback data:", data);
+    return data;
+  } catch (error) {
+    console.error("Error updating status:", error);
+    throw error;
+  }
+};
+
 export const getFeedbacksByProductId = async (productId: string) => {
   try {
     const response = await instance.get(

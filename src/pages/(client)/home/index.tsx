@@ -8,10 +8,9 @@ import Video from "../../../assets/videos/Ngang - gio.mp4";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-
 import { Tabs } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -19,7 +18,7 @@ import { NavigationOptions } from "swiper/types";
 import ProductCard from "../../../components/common/(client)/ProductCard";
 import { useCategory } from "../../../contexts/CategoryContext";
 import { useProduct } from "../../../contexts/ProductContext";
-// import { Products } from "../../../common/types/Product";
+import { getAllFeedbacks } from "../../../services/Feedbacks";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -33,17 +32,17 @@ const HomePage = () => {
   } = useCategory();
   const [loading, setLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(8);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
   const prevRef = useRef(null);
   const nextRef = useRef(null);
-  const newProducts = allProduct
-    .filter((item) => item.isActive === true)
-    .filter((item) => {
-      const createdAt = new Date(item?.createdAt); // Giả sử `createdAt` có định dạng ISO 8601
-      const now = new Date();
-      const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
-      const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-      return diffInDays <= 30; //! Chỉ lấy sản phẩm được tạo trong vòng 30 ngày
-    });
+  const newProducts = allProduct.filter((item) => {
+    const createdAt = new Date(item?.createdAt); // Giả sử `createdAt` có định dạng ISO 8601
+    const now = new Date();
+    const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
+    const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    return diffInDays <= 30; //! Chỉ lấy sản phẩm được tạo trong vòng 30 ngày
+  });
   // Hàm hiển thị thêm sản phẩm
   const handleShowMore = () => {
     setVisibleCount((prev) => prev + 6);
@@ -82,13 +81,28 @@ const HomePage = () => {
       );
 
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-10 my-3">
         {activeProducts.map((product) => (
           <ProductCard key={product.id} item={product} />
         ))}
       </div>
     );
   };
+
+  useEffect(() => {
+    setLoadingFeedbacks(true);
+    getAllFeedbacks()
+      .then((data) => {
+        const filteredFeedbacks = data.data.feedbacks.filter(
+          (feedback) => feedback.rating >= 3
+        );
+        setFeedbacks(filteredFeedbacks || []);
+        console.log("Feedbacks:", data.data.feedbacks);
+      })
+      .catch((error) => console.error("Error fetching feedbacks:", error))
+      .finally(() => setLoadingFeedbacks(false));
+  }, []);
+  // console.log("FEedbacks", feedbacks);
 
   return (
     <>
@@ -169,7 +183,7 @@ const HomePage = () => {
                 Hỗ trợ nhanh chóng
               </p>
               <p className="text-[12px] md:text-[14px] italic">
-                HOTLINE 24/7 : 0964942121
+                hotline 24/7 : 0964942121
               </p>
             </div>
           </div>
@@ -180,7 +194,7 @@ const HomePage = () => {
                 Thanh toán đa dạng
               </p>
               <p className="text-[12px] md:text-[14px] italic">
-                Thanh toán khi nhận hàng, Napas, Visa, Chuyển Khoản
+                Thanh toán khi nhận hàng, vnpay
               </p>
             </div>
           </div>
@@ -274,31 +288,179 @@ const HomePage = () => {
           )}
         </div>
         {/* EndProductCard */}
-        <div className="video flex flex-col justify-start items-center w-full px-4 sm:px-10 md:px-20 py-10 bg-[#f0f0f0] mt-5">
-          <video
-            className="w-full h-[100px] sm:h-[200px] md:h-[300px] lg:h-[400px]
-            object-cover"
-            src={Video}
-            autoPlay
-            loop
-            muted
-          ></video>
+        <div className="blog flex justify-start items-center gap-4 w-full px-4 sm:px-10 md:px-20 py-10 bg-[#f0f0f0] mt-5">
+          <article className="relative overflow-hidden rounded-lg shadow transition hover:shadow-lg">
+            <img
+              alt=""
+              src="https://res.cloudinary.com/dyv5zfnit/image/upload/v1733313084/products/af440d94-6a53-44cc-aa59-55f719a71619.jpg"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+
+            <div className="relative bg-gradient-to-t from-gray-900/50 to-gray-900/25 pt-32 sm:pt-48 lg:pt-64">
+              <div className="p-4 sm:p-6">
+                <time
+                  datetime="2022-10-10"
+                  className="block text-xs text-white/90"
+                >
+                  {" "}
+                  10th Oct 2024{" "}
+                </time>
+
+                <a href="home/product/6750423fa4f493679db2c153">
+                  <h3 className="mt-0.5 text-lg text-white">
+                    Áo khoác nam ESEA thiết kế thêu Mỹ áo khoác bóng chày mới
+                    thời trang
+                  </h3>
+                </a>
+
+                <p className="mt-2 line-clamp-3 text-sm/relaxed text-white/95">
+                  Áo khoác nam ESEA mang đến phong cách thể thao và hiện đại với
+                  thiết kế thêu Mỹ độc đáo. Được làm từ chất liệu cao cấp, áo
+                  khoác này không chỉ bền bỉ mà còn mang lại cảm giác thoải mái
+                  cho người mặc.
+                </p>
+              </div>
+            </div>
+          </article>
+          <article className="relative overflow-hidden rounded-lg shadow transition hover:shadow-lg">
+            <img
+              alt=""
+              src="https://res.cloudinary.com/dyv5zfnit/image/upload/v1732884753/products/6777aeac-4d8c-4eca-b78e-0df0f5a71054.jpg"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+
+            <div className="relative bg-gradient-to-t from-gray-900/50 to-gray-900/25 pt-32 sm:pt-48 lg:pt-64">
+              <div className="p-4 sm:p-6">
+                <time
+                  datetime="2022-10-10"
+                  className="block text-xs text-white/90"
+                >
+                  {" "}
+                  10th Oct 2024{" "}
+                </time>
+
+                <a href="http://localhost:5173/home/product/6749b915cbfa920a4e795f87">
+                  <h3 className="mt-0.5 text-lg text-white">
+                    Áo polo nam cao cấp BASIC DIAMOND
+                  </h3>
+                </a>
+
+                <p className="mt-2 line-clamp-3 text-sm/relaxed text-white/95">
+                  Áo Polo Nam Tay Ngắn Phối Cổ và Tay Form Fitted của Routine
+                  mang đến phong cách trẻ trung và năng động. Thiết kế phối cổ
+                  và tay áo tạo điểm nhấn độc đáo
+                </p>
+              </div>
+            </div>
+          </article>
         </div>
 
         <div className="flex flex-col justify-start items-center w-full px-4 sm:px-10 md:px-20 py-16 my-5">
-          <h1 id="collection" className="text-2xl font-semibold text-center">
-            Bộ sưu tập
-          </h1>
-          <Tabs
-            defaultActiveKey="0"
-            onChange={(key) => getDataCategoryById(allCategory[key]?.id)}
-            items={allCategory.map((item, index) => ({
-              label: item.name,
-              key: `${index}`
-            }))}
-          />
-          <div className="mt-4">{renderProductsByCategory()}</div>
+          <div className="flex flex-col sm:flex-row md:flex-row lg:flex-row justify-between items-center w-full px-4">
+            <h1
+              id="collection"
+              className="text-2xl font-semibold text-center sm:text-left"
+            >
+              Bộ sưu tập
+            </h1>
+            <div className="w-full sm:w-auto overflow-x-auto min-w-[200px] mt-4 sm:mt-0">
+              <Tabs
+                className="w-full sm:w-auto text-black"
+                defaultActiveKey="0"
+                onChange={(key) => getDataCategoryById(allCategory[key]?.id)}
+                items={allCategory.map((item, index) => ({
+                  label: (
+                    <span className="block text-sm sm:text-base truncate">
+                      {item.name}
+                    </span>
+                  ),
+                  key: `${index}`
+                }))}
+              />
+            </div>
+          </div>
+
+          <div className="">{renderProductsByCategory()}</div>
         </div>
+        {/*----------------------- start feedback section ---------------------------*/}
+        <div className="flex flex-col justify-start items-center w-full px-4 sm:px-10 md:px-20 py-10 my-3 bg-gray-100">
+          {loadingFeedbacks ? (
+            <p className="text-center">Đang tải phản hồi...</p>
+          ) : feedbacks.length === 0 ? (
+            <p className="text-center text-gray-500">Chưa có phản hồi nào.</p>
+          ) : (
+            <section className="bg-white">
+              <div className="mx-auto max-w-screen-xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+                <h2 className="text-center text-2xl sm:text-3xl md:text-4xl uppercase font-bold tracking-tight text-gray-900">
+                  Phản hồi của khách hàng
+                </h2>
+                <div className="mt-8 [column-fill:_balance] sm:columns-2 sm:gap-6 lg:columns-3 lg:gap-8">
+                  {feedbacks
+                    .slice(0, 12)
+                    .reverse()
+                    .map((feedback) => (
+                      <div className="mb-8 sm:break-inside-avoid">
+                        <blockquote className="rounded-lg bg-gray-50 p-6 shadow-sm sm:p-8">
+                          <div className="flex items-center gap-4">
+                            <img
+                              alt={feedback?.user.fullName}
+                              src={feedback?.user.avatar}
+                              className="size-14 rounded-full object-cover"
+                            />
+
+                            <div>
+                              <div className="flex justify-center gap-0.5 text-yellow-500">
+                                {/* <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="size-5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg> */}
+
+                                {Array.from({ length: 5 }, (_, index) => (
+                                  <svg
+                                    key={index}
+                                    className="size-5"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill={
+                                      index < feedback.rating
+                                        ? "currentColor"
+                                        : "none"
+                                    }
+                                    viewBox="0 0 20 20"
+                                  >
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                  </svg>
+                                ))}
+                              </div>
+
+                              <p className="mt-0.5 text-lg font-medium text-gray-900">
+                                {feedback?.user.fullName}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="mt-1 text-sm italic font-medium text-gray-500">
+                            <Link
+                              to={`/home/product/${feedback?.productId.id}`}
+                            >
+                              {" "}
+                              {feedback?.productId.name}
+                            </Link>
+                          </p>
+                          <p className="mt-4 text-gray-700">
+                            {feedback.comment}
+                          </p>
+                        </blockquote>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </section>
+          )}
+        </div>
+        {/*----------------------- end feedback section ---------------------------*/}
       </div>
     </>
   );
