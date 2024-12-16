@@ -590,7 +590,7 @@ const ProductEdit: React.FC = () => {
                                       {...sizeRestField}
                                       name={[sizeName, "inventory"]}
                                       label="Số lượng"
-                                      rules={[{ type: 'number', min: 0}, { required: true, message: 'Số lượng không được để trống' }]}
+                                      rules={[{ type: 'number', min: 0,message:"Số lượng không được nhỏ hơn 0"}, { required: true, message: 'Số lượng không được để trống' }]}
                                     >
                                       <InputNumber
                                         

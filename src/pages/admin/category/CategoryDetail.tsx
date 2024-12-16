@@ -39,11 +39,11 @@ export default function CategoryDetail() {
   const { id } = useParams();
   const [category, setCategory] = useState<any>(null);
   const [products, setProducts] = useState<Products[]>([]);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 5,
-    total: 0
-  });
+  // const [pagination, setPagination] = useState({
+  //   current: 1,
+  //   pageSize: 5,
+  //   total: 0
+  // });
   const [statusFilter, setStatusFilter] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [dataSource, setDataSource] = useState<Products[]>([]);
@@ -262,16 +262,16 @@ export default function CategoryDetail() {
           dataSource={filteredData}
           columns={columns}
           rowKey="id"
-          pagination={false}
+          pagination={{ pageSize: 10, showSizeChanger: false }}
         />
-        <Pagination
+        {/* <Pagination
           current={pagination.current}
           pageSize={pagination.pageSize}
           total={filteredData.length}
           onChange={(page, pageSize) => {
             setPagination({ ...pagination, current: page, pageSize });
           }}
-        />
+        /> */}
       </Card>
     </div>
   );
