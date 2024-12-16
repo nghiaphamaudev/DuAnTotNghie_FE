@@ -328,12 +328,11 @@ export default function Users() {
         style={{ padding: 20 }}
         bodyStyle={{ padding: "24px 36px" }}
       >
-        <Card bordered={false} className="mb-6">
           <Title level={4} style={{ color: "#28a745" }}>
             Lịch sử đơn hàng
           </Title>
           <OrdersTable userId={selectedUserId}/>
-        </Card>
+ 
 
         <Card bordered={false} className="mb-6">
           <Title level={4} style={{ color: "#28a745" }}>
@@ -417,11 +416,6 @@ export default function Users() {
           <Title level={4} className="mt-6 mb-4 " style={{ color: "#28a745" }}>
             Hành động
           </Title>
-          <div className="flex justify-between items-center mt-4">
-            <Button type="primary" style={{ marginBottom: 16 }}>
-              Cảnh báo
-            </Button>
-          </div>
 
           <div className="flex justify-between items-center mt-6">
             <Title level={5} style={{ margin: 0 }}>
@@ -433,7 +427,7 @@ export default function Users() {
             <Title level={5} style={{ margin: 0 }}>
               Khóa tài khoản tạm thời
             </Title>
-            <Switch checked={isActive} onChange={handleSwitchChange} />
+            <Switch checked={!isActive} onChange={(checked) => handleSwitchChange(!checked)} />
           </div>
         </Card>
       </Modal>
