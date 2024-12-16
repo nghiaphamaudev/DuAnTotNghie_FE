@@ -19,13 +19,11 @@ import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCus
 import { useAuth } from "../../../contexts/AuthContext";
 import { getAllUserAccounts } from "../../../services/authServices";
 import SearchCustomer from "./SearchCustoms";
-import { getAllOrdersByUserId } from "../../../services/orderService";
-import { Tag } from "lucide-react";
-import { useParams } from "react-router-dom";
+import OrdersTable from "./OrderTable";
 
 const { Title } = Typography;
 export default function Users() {
-  const { IblockUser, UnblockUser, UpdatePaymentRestriction } = useAuth();
+  const { IblockUser, UnblockUser, UpdatePaymentRestriction, UnUpdatePaymentRestriction } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -36,91 +34,36 @@ export default function Users() {
   const [selectedUserDetail, setSelectedUserDetail] =
     useState<UserAdmin | null>(null);
   const [isActive, setIsActive] = useState(selectedUserDetail?.active);
-  const [restrictPayment, setRestrictPayment] = useState(false);
-  const { userId } = useParams<{ userId: string }>();
+  const [isActivePayment, setIsActivePayment] = useState(selectedUserDetail?.paymentRestriction);
 
-  const { data: userDataOrder } = useQuery({
-    queryKey: ["userDataAdmin", userId],
-    queryFn: async () => {
-      if (!userId) throw new Error("UserId không tồn tại");
-      const res = await getAllOrdersByUserId(userId);
-      return res.orders;
-    },
-    enabled: !!userId, 
-  })
 
-  const columnOrders = [
-    {
-      title: "STT",
-      dataIndex: "index",
-      key: "index",
-      render: (_, __, index) => index + 1,
-      width: 50,
-    },
-    {
-      title: "Mã hóa đơn",
-      dataIndex: "code",
-      key: "code",
-      width: 150,
-      render: (text) => <span style={{ fontWeight: "500" }}>{text}</span>,
-    },
-    {
-      title: "Tên khách hàng",
-      dataIndex: "creator",
-      key: "creator",
-      width: 150,
-      render: (text) => <span style={{ fontWeight: "500" }}>{text}</span>,
-    },
-    {
-      title: "Tổng tiền",
-      dataIndex: "totalPrice",
-      key: "totalPrice",
-      width: 120,
-      render: (price: number) => (
-        <span
-          style={{ fontWeight: "500" }}
-        >{`${price.toLocaleString()} đ`}</span>
-      ),
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      width: 150,
-      render: (text) => <span style={{ fontWeight: "400" }}>{text}</span>,
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      width: 120,
-      render: (status) => {
-        const colorMap = {
-          "Chờ xác nhận": "blue",
-          "Đã xác nhận": "green",
-          "Đóng gói chờ vận chuyển": "orange",
-          "Đang giao hàng": "purple",
-          "Đã giao hàng": "cyan",
-          "Đã nhận được hàng": "green",
-          "Hoàn đơn": "magenta",
-          "Đã hủy": "red",
-        };
-        return (
-          <Tag color={colorMap[status]} style={{ fontWeight: "500" }}>
-            {status}
-          </Tag>
-        );
-      },
-    },
-  ];
-
-  const handleChange = async () => {
-    try {
-      await UpdatePaymentRestriction({ userId, restrictPayment });
-    } catch (error) {
-      console.error("Error updating payment restriction:", error);
+  useEffect(() => {
+    setIsActivePayment(selectedUserDetail?.paymentRestriction);  
+  }, [selectedUserDetail?.paymentRestriction]); 
+  
+  const handleSwitchChangePayMent = async (checked: boolean) => {
+    if (checked) {
+      await handleUpdatePaymentRestriction(selectedUserDetail?.id || "");
+      setIsActivePayment(true);
+    } else {
+      await handleUnUpdatePaymentRestriction(selectedUserDetail?.id || "");
+      setIsActivePayment(false);
     }
   };
+
+  const handleUpdatePaymentRestriction = async (userId: string) => {
+    await UpdatePaymentRestriction({
+      userId,
+      restrictPayment: true,  
+    });
+  }
+
+  const handleUnUpdatePaymentRestriction = async (userId: string) => {
+    await UnUpdatePaymentRestriction({
+      userId,
+      restrictPayment: false, 
+    });
+  }
 
   useEffect(() => {
     setIsActive(selectedUserDetail?.active);
@@ -137,8 +80,9 @@ export default function Users() {
   };
 
   const handleViewDetails = async (record: UserAdmin) => {
-    setSelectedUserDetail(record); // Gán thông tin người dùng vào state
-    setIsDetailModalOpen(true); // Mở modal chi tiết
+    setSelectedUserDetail(record); 
+    setIsDetailModalOpen(true);
+    setSelectedUserId(record.id); 
   };
 
   const handleDetailModalCancel = () => {
@@ -272,7 +216,7 @@ export default function Users() {
           style={{
             backgroundColor: record.active ? "#4CAF50" : "#FF7043",
             borderColor: record.active ? "#4CAF50" : "#FF7043",
-            color: "white", // Màu chữ trắng
+            color: "white", 
           }}
         >
           {record.active ? "Hoạt động" : "Ngưng hoạt động"}
@@ -311,6 +255,7 @@ export default function Users() {
       key: "",
       align: "center",
       width: 120,
+      
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       render: (_: any, record: UserAdmin) => (
         <button
@@ -320,6 +265,7 @@ export default function Users() {
           Xem chi tiết
         </button>
       ),
+      
     },
   ];
 
@@ -347,6 +293,7 @@ export default function Users() {
             dataSource={filteredAdmins}
             pagination={false}
             bordered
+            rowKey={(record) => record.id}
           />
         </div>
       </Card>
@@ -381,86 +328,87 @@ export default function Users() {
         style={{ padding: 20 }}
         bodyStyle={{ padding: "24px 36px" }}
       >
-        <Card bordered={false} className="mb-6">
           <Title level={4} style={{ color: "#28a745" }}>
             Lịch sử đơn hàng
           </Title>
-          <Table
-            rowKey="id"
-            columns={columnOrders}
-            dataSource={userDataOrder}
-            pagination={{ pageSize: 5 }}
-            bordered
-          />
-          <Title level={5} className="mt-6">Tháng này</Title>
-          <Title level={5}>Tuần này</Title>
-        </Card>
+          <OrdersTable userId={selectedUserId}/>
+ 
 
         <Card bordered={false} className="mb-6">
           <Title level={4} style={{ color: "#28a745" }}>
             Thông số
           </Title>
           <div className="flex justify-between items-center mt-4">
-            <Title level={5}>Tổng số đơn hàng đã thực hiện</Title>
+            <div className="mr-2 text-md">Tổng số đơn hàng đã thực hiện:</div>
             <span>
               {selectedUserDetail ? selectedUserDetail.totalOrders : 0} đơn hàng
             </span>
           </div>
           <div className="flex justify-between items-center mt-4">
-            <Title level={5}>Thành công</Title>
+            {/* Thành công */}
+            <div className="flex items-center">
+              <div className="mr-2 text-md">Thành công:</div>
+              <span>
+                {selectedUserDetail ? selectedUserDetail.totalSuccessOrders : 0}{" "}
+                đơn hàng
+              </span>
+            </div>
+
+            {/* Tỉ lệ thành công */}
+            <div className="flex items-center">
+              <div className="mr-2 text-md">Tỉ lệ thành công:</div>
+              <span>
+                {selectedUserDetail ? selectedUserDetail.successRate : 0} %
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center mt-4">
+            {/* Hủy và Tỉ lệ hủy */}
+            <div className="flex items-center">
+              <div className="mr-2 text-md">Hủy:</div>
+              <span>
+                {selectedUserDetail
+                  ? selectedUserDetail.totalCanceledOrders
+                  : 0}{" "}
+                đơn hàng
+              </span>
+            </div>
+            <div className="flex items-center">
+              <div className="mr-2 text-md">Tỉ lệ hủy:</div>
+              <span>
+                {selectedUserDetail ? selectedUserDetail.cancelRate : 0} %
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center mt-4">
+            {/* Hoàn trả và Tỉ lệ hoàn trả */}
+            <div className="flex items-center">
+              <div className="mr-2 text-md">Hoàn trả:</div>
+              <span className="mt-0">
+                {selectedUserDetail ? selectedUserDetail.totalReturnOrders : 0}{" "}
+                đơn hàng
+              </span>
+            </div>
+            <div className="flex items-center ">
+              <div className="mr-2 text-md">Tỉ lệ hoàn trả:</div>
+              <span>
+                {selectedUserDetail ? selectedUserDetail.returnRate : 0} %
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center mt-4">
+            <div className="mr-2 text-md">Thiệt hại cửa hàng:</div>
             <span>
-              {selectedUserDetail &&
-              typeof selectedUserDetail.totalOrders === "number" &&
-              typeof selectedUserDetail.totalReturnOrders === "number"
-                ? selectedUserDetail.totalOrders -
-                  selectedUserDetail.totalReturnOrders
-                : "Dữ liệu không hợp lệ"}{" "}
-              đơn hàng
+              {selectedUserDetail
+                ? new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  }).format(selectedUserDetail.totalDamage)
+                : "0 đ"}
             </span>
-          </div>
-          <div className="flex justify-between items-center mt-4">
-            <Title level={5}>Tỉ lệ thành công</Title>
-            <span>
-              {selectedUserDetail && +selectedUserDetail.totalOrders > 0
-                ? (
-                    ((+selectedUserDetail.totalOrders -
-                      +selectedUserDetail.totalReturnOrders) /
-                      +selectedUserDetail.totalOrders) *
-                    100
-                  ).toFixed(2) + "%"
-                : "0%"}
-            </span>
-          </div>
-          <div className="flex justify-between items-center mt-4">
-            <Title level={5}>Hủy</Title>
-            <span>10</span>
-          </div>
-          <div className="flex justify-between items-center mt-4">
-            <Title level={5}>Tỉ lệ hủy</Title>
-            <span>10%</span>
-          </div>
-          <div className="flex justify-between items-center mt-4">
-            <Title level={5}>Hoàn trả</Title>
-            <span>
-              {selectedUserDetail ? selectedUserDetail.totalReturnOrders : 0}{" "}
-              đơn hàng
-            </span>
-          </div>
-          <div className="flex justify-between items-center mt-4">
-            <Title level={5}>Tỉ lệ hoàn trả</Title>
-            <span>
-              {selectedUserDetail && +selectedUserDetail.totalOrders > 0
-                ? (
-                    (+selectedUserDetail.totalReturnOrders /
-                      +selectedUserDetail.totalOrders) *
-                    100
-                  ).toFixed(2) + "%"
-                : "0%"}
-            </span>
-          </div>
-          <div className="flex justify-between items-center mt-4">
-            <Title level={5}>Thiệt hại cửa hàng</Title>
-            <span>2 triệu VNĐ</span>
           </div>
         </Card>
 
@@ -468,23 +416,18 @@ export default function Users() {
           <Title level={4} className="mt-6 mb-4 " style={{ color: "#28a745" }}>
             Hành động
           </Title>
-          <div className="flex justify-between items-center mt-4">
-            <Button type="primary" style={{ marginBottom: 16 }}>
-              Cảnh báo
-            </Button>
-          </div>
 
           <div className="flex justify-between items-center mt-6">
             <Title level={5} style={{ margin: 0 }}>
               Yêu cầu thanh toán trước
             </Title>
-            <Switch checked={restrictPayment} onChange={handleChange} />
+            <Switch checked={isActivePayment} onChange={handleSwitchChangePayMent}/>
           </div>
           <div className="flex justify-between items-center mt-4">
             <Title level={5} style={{ margin: 0 }}>
               Khóa tài khoản tạm thời
             </Title>
-            <Switch checked={isActive} onChange={handleSwitchChange} />
+            <Switch checked={!isActive} onChange={(checked) => handleSwitchChange(!checked)} />
           </div>
         </Card>
       </Modal>

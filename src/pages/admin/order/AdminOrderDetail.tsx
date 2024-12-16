@@ -13,9 +13,11 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 import {
+  getAllOrdersServiceForAdmin,
   getOrderDetailServiceForAdmin,
   updateOrderServiceForAdmin
 } from "../../../services/orderService";
+import { socket } from "../../../socket";
 
 const AdminOrderDetail = () => {
   const { orderId } = useParams();
@@ -27,6 +29,7 @@ const AdminOrderDetail = () => {
   const [newStatus, setNewStatus] = useState("");
   const [cancelOrReturnNote, setCancelOrReturnNote] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [statusShip, setStatusShip] = useState(false);
   const navigate = useNavigate();
   const statusOrder = [
     "Đã xác nhận",
@@ -49,13 +52,37 @@ const AdminOrderDetail = () => {
   useEffect(() => {
     fetchOrderDetail();
   }, [orderId]);
+  useEffect(() => {
+    const handleOrderStatusUpdate = () => {
+      fetchOrderDetail();
+    };
+    // Lắng nghe sự kiện "update order status" từ server
+    socket.on("update status order", (id: any) => {
+      console.log(id);
+      if (id && id === orderId) handleOrderStatusUpdate();
+    });
+
+    socket.on("user update status order", (id: any) => {
+      console.log(id);
+      if (id && id === orderId) handleOrderStatusUpdate();
+    });
+
+    // Xóa sự kiện khi component bị hủy
+    return () => {
+      socket.off("update status order", handleOrderStatusUpdate());
+    };
+  }, [orderId]);
 
   const fetchOrderDetail = async () => {
     setLoading(true); // Bật trạng thái loading
+    const response = await getAllOrdersServiceForAdmin();
+    console.log("response", response);
+    const order = response.data.find((order) => order._id === orderId);
+    console.log("orderMatch", order);
 
     try {
       if (!orderId) {
-        throw new Error("Không tìm thấy mã đơn hàng."); // Trường hợp không có orderId
+        throw new Error("Không tìm thấy mã đơn hàng.");
       }
 
       const response = await getOrderDetailServiceForAdmin(orderId);
@@ -68,7 +95,7 @@ const AdminOrderDetail = () => {
     } catch (error) {
       console.error("fetchOrderDetail Error: ", error); // Log lỗi để debug
       message.error(error.message || "Đã xảy ra lỗi. Vui lòng thử lại."); // Hiển thị thông báo lỗi
-      navigate("/admin/bill"); // Điều hướng về trang quản lý tài khoản
+      navigate("/admin/bill");
     } finally {
       setLoading(false); // Tắt trạng thái loading
     }
@@ -98,10 +125,12 @@ const AdminOrderDetail = () => {
         }
       }
       const response = await updateOrderServiceForAdmin(orderId, status, note);
+
       console.log("RES:", response);
 
       if (response?.status) {
         message.success(`Đơn hàng đã chuyển sang trạng thái "${status}"`);
+        socket.emit("update status order", orderId);
         await fetchOrderDetail();
       } else {
         message.error(response?.message || "Cập nhật trạng thái thất bại.");
@@ -142,7 +171,7 @@ const AdminOrderDetail = () => {
     }
   };
 
-  const handleReturnOrder = async (note) => {
+  const handleReturnOrder = async (note, statusShip) => {
     setIsProcessing(true);
     try {
       if (!note.trim()) {
@@ -153,7 +182,8 @@ const AdminOrderDetail = () => {
       const response = await updateOrderServiceForAdmin(
         orderId,
         "Hoàn đơn",
-        note
+        note,
+        statusShip
       );
       if (response?.status) {
         message.success("Đơn hàng đã được hoàn thành công.");
@@ -260,9 +290,10 @@ const AdminOrderDetail = () => {
 
       {/* Các nút thay đổi trạng thái */}
       <Card>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {statusOrder.map((status, index) => (
             <Button
+              key={status}
               loading={isProcessing && newStatus === status}
               disabled={
                 isProcessing ||
@@ -275,6 +306,7 @@ const AdminOrderDetail = () => {
                 setNewStatus(status);
                 setIsModalOpen(true);
               }}
+              className="mb-2"
             >
               {status}
             </Button>
@@ -359,7 +391,7 @@ const AdminOrderDetail = () => {
         <Modal
           title="Xác nhận hoàn đơn"
           visible={isModalReturnOpen}
-          onOk={() => handleReturnOrder(cancelOrReturnNote)}
+          onOk={() => handleReturnOrder(cancelOrReturnNote, statusShip)}
           onCancel={() => setIsModalReturnOpen(false)}
           okText="Xác nhận"
           cancelText="Hủy"
@@ -400,6 +432,8 @@ const AdminOrderDetail = () => {
                     type="checkbox"
                     className="size-4 rounded border-gray-300"
                     id="Option2"
+                    checked={statusShip === true}
+                    onChange={() => setStatusShip(true)}
                   />
                 </div>
 
@@ -418,6 +452,8 @@ const AdminOrderDetail = () => {
                     type="checkbox"
                     className="size-4 rounded border-gray-300"
                     id="Option3"
+                    checked={statusShip === false}
+                    onChange={() => setStatusShip(false)}
                   />
                 </div>
 
@@ -429,13 +465,21 @@ const AdminOrderDetail = () => {
                 </div>
               </label>
             </div>
+            <p className="mt-2 text-sm text-gray-700">
+              Trạng thái hiện tại:{" "}
+              <Tag color={statusShip ? "green" : "yellow"}>
+                {statusShip ? "Đã trả" : "Chưa trả"}
+              </Tag>
+            </p>
           </fieldset>
         </Modal>
       </Card>
-
       {/* Thông tin đơn hàng */}
       <Card title="Thông tin đơn hàng" style={{ marginBottom: "20px" }}>
-        <Descriptions bordered column={2}>
+        <Descriptions
+          bordered
+          column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}
+        >
           <Descriptions.Item label="Mã hóa đơn">
             {orderInfor?.code}
           </Descriptions.Item>

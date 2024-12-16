@@ -9,13 +9,15 @@ import {
   X
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LogoFshirt from "../../../assets/images/logofshirt-rmbg.png";
 import { useAuth } from "../../../contexts/AuthContext";
 import QuickCart from "./QuickCart";
 import { useCart } from "../../../contexts/CartContext";
 import { useProduct } from "../../../contexts/ProductContext";
 import { useDebounce } from "../../../hooks/useDebounce";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCategory } from "../../../contexts/CategoryContext";
 
 const HeaderClient = () => {
   // State
@@ -23,7 +25,12 @@ const HeaderClient = () => {
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
-
+  const [isCollectionOpen, setIsCollectionOpen] = useState(false);
+  const toggleCollectionDropdown = () =>
+    setIsCollectionOpen((prevState) => !prevState);
+  const queryClient = useQueryClient();
+  const { allCategory } = useCategory();
+  const navigate = useNavigate();
   // Debounced search term
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -52,6 +59,10 @@ const HeaderClient = () => {
       setFilteredProducts([]);
     }
   }, [debouncedSearchTerm, allProduct]);
+  useEffect(() => {
+    // Invalidate cart query to refresh cart state
+    queryClient.invalidateQueries({ queryKey: ["cart"] });
+  }, []);
 
   // Menu items
   const items: MenuProps["items"] = isLogin
@@ -89,7 +100,7 @@ const HeaderClient = () => {
 
       {/* Main Header */}
       <div className="mx-auto  md:px-8 lg:px-16">
-        <div className="nav py-2 flex items-center justify-between gap-2">
+        <div className="nav py-2 pr-3 flex items-center justify-between gap-2">
           {/* Logo and Mobile Menu Icon */}
           <div className="logo flex items-center justify-between">
             <AlignJustify
@@ -109,8 +120,28 @@ const HeaderClient = () => {
             <li className="block text-[15px] font-semibold whitespace-nowrap">
               <Link to="/product">Sản phẩm</Link>
             </li>
-            <li className="block text-[15px] font-semibold whitespace-nowrap">
-              <a href="#collection">Bộ sưu tập</a>
+            <li className="relative group">
+              <button className="text-sm font-medium flex items-center space-x-1 hover:text-gray-500">
+                <span className="block text-[15px] font-semibold whitespace-nowrap">
+                  Bộ sưu tập
+                </span>
+                <ChevronDown size={16} />
+              </button>
+              <ul className="absolute hidden group-hover:block group-focus-within:block bg-white text-gray-700 shadow-md rounded-lg mt-2 py-2 w-96 transition-opacity duration-300 ">
+                {allCategory.length > 0 &&
+                  allCategory.map((cateItem) => (
+                    <li
+                      key={cateItem.id}
+                      onClick={() =>
+                        navigate(`/product?category=${cateItem.id}`)
+                      }
+                    >
+                      <a className="block px-4 py-2 hover:bg-gray-100 text-sm cursor-pointer">
+                        {cateItem.name}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
             </li>
             <li className="block text-[15px] font-semibold whitespace-nowrap">
               <Link to="/aboutus">Về chúng tôi</Link>
@@ -129,7 +160,7 @@ const HeaderClient = () => {
                 placeholder="Tìm kiếm sản phẩm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="border border-gray-300  text-black text-sm rounded-3xl block w-[80%] ps-8 p-2 transition-all duration-300 ease-in-out focus:w-[90%] focus:origin-right dark:bg-[#fff]"
+                className="border border-gray-300  text-black text-sm rounded-3xl block w-[100%] ps-8 p-2 transition-all duration-300 ease-in-out focus:w-[100%] focus:origin-right dark:bg-[#fff]"
               />
               {filteredProducts.length > 0 && (
                 <ul className="absolute z-10 bg-white border border-gray-300 rounded-md mt-2 w-full max-h-48 overflow-y-auto">
@@ -196,13 +227,40 @@ const HeaderClient = () => {
       >
         <ul className="flex flex-col space-y-4">
           <li className="block text-[15px] font-semibold whitespace-nowrap">
+            <Link to="/home">Trang chủ</Link>
+          </li>
+          <li className="block text-[15px] font-semibold whitespace-nowrap">
             <Link to="/product">Sản phẩm mới</Link>
           </li>
+          {/* Bộ sưu tập */}
           <li className="block text-[15px] font-semibold whitespace-nowrap">
-            <a href="#">Bộ sưu tập</a>
+            <div
+              onClick={toggleCollectionDropdown}
+              className="flex justify-between items-center cursor-pointer"
+            >
+              Bộ sưu tập
+              <ChevronDown size={16} />
+            </div>
+            {isCollectionOpen && (
+              <ul className="mt-2 space-y-2 pl-4">
+                {allCategory.length > 0 &&
+                  allCategory.map((cateItem) => (
+                    <li
+                      key={cateItem.id}
+                      onClick={() => {
+                        navigate(`/product?category=${cateItem.id}`);
+                        closeNavDrawer(); // Đóng Drawer sau khi chọn
+                      }}
+                      className="text-sm text-gray-700 cursor-pointer hover:text-gray-900"
+                    >
+                      {cateItem.name}
+                    </li>
+                  ))}
+              </ul>
+            )}
           </li>
           <li className="block text-[15px] font-semibold whitespace-nowrap">
-            <a href="#">Về chúng tôi</a>
+            <Link to="/aboutus">Về chúng tôi</Link>
           </li>
         </ul>
       </Drawer>
