@@ -114,7 +114,13 @@ export type UserAdmin = {
   blockedDetail: BlockedDetail;
   totalOrders: string;
   totalReturnOrders: string;
+  totalCanceledOrders:string;
   returnRate:string;
+  totalSuccessOrders:string;
+  successRate:string;
+  cancelRate:string;
+  totalDamage:string;
+  paymentRestriction:boolean;
 };
 
 export type Orders = {
