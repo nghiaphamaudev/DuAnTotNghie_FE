@@ -88,7 +88,7 @@ const FeedbackSection = ({ productId }: { productId: string }) => {
                 title={
                   <span>
                     Đánh giá: {item.rating}/5 | Phân loại:{" "}
-                    {item.classify ? "Đúng" : "Sai"}
+                    {item.classify ? "Hiện" : "Ẩn"}
                   </span>
                 }
                 description={item.comment}

@@ -153,11 +153,15 @@ const MyOrders = () => {
 
   return (
     <>
-      <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
-        <Col>
-          <RangePicker onChange={handleDateChange} format="DD-MM-YYYY" />
+      {/* <Row gutter={[16, 16]} style={{ marginBottom: "16px" }} justify="center">
+        <Col xs={24} sm={12} md={8} lg={6}>
+          <RangePicker
+            onChange={handleDateChange}
+            format="DD-MM-YYYY"
+            style={{ width: "100%" }}
+          />
         </Col>
-      </Row>
+      </Row> */}
       <Tabs
         defaultActiveKey="Tất cả"
         onChange={handleTabChange}
@@ -172,6 +176,7 @@ const MyOrders = () => {
         dataSource={filteredOrders}
         pagination={{ pageSize: 10 }}
         bordered
+        scroll={{ x: 800 }}
       />
     </>
   );
