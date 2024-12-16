@@ -77,7 +77,7 @@ const DetailProduct = () => {
   }, [product]);
 
   useEffect(() => {
-    if (cartData && product?.data?.variants?.length > 0) {
+    if (product?.data?.variants?.length > 0) {
       // Tìm variant và size được chọn
       const selectedVariant = product?.data?.variants.find(
         (variant) => variant.color === selectedColor
@@ -87,7 +87,7 @@ const DetailProduct = () => {
       );
 
       // Cập nhật inventory
-      setInventory(selectedSizeObject?.inventory || 0);
+      setInventory(selectedSizeObject?.inventory);
 
       // Tìm quantity trong cartData.items
       const dataCartVariantSelected = cartData?.items.find(
@@ -96,7 +96,10 @@ const DetailProduct = () => {
       setQuantityCart(dataCartVariantSelected?.quantity || 0);
       setQuantity(1);
     }
+
   }, [cartData, product, selectedColor, selectedSize]);
+
+
 
   // function
 
@@ -180,6 +183,7 @@ const DetailProduct = () => {
       setStartIndex(startIndex - productsPerPage);
     }
   };
+  console.log(inventory)
 
   const toggleAccordion = (header) => {
     const content = header.nextElementSibling;
@@ -211,6 +215,18 @@ const DetailProduct = () => {
       });
     }
   };
+
+  const selectedVariantData = product?.data?.variants?.find(
+    (variant) => variant.color === selectedColor
+  );
+  const selectedSizeObjectData = selectedVariantData?.sizes?.find(
+    (size) => size.nameSize === selectedSize
+  );
+
+  const isDisabled =
+    !selectedVariantData?.status ||
+    !selectedSizeObjectData?.status ||
+    (selectedSizeObjectData?.inventory <= 0);
 
   const handleAddToCart = async (option?: string) => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -316,6 +332,7 @@ const DetailProduct = () => {
       }
     }
 
+
     if (!product?.data) {
       message.error("Không tìm thấy thông tin sản phẩm.");
       return;
@@ -330,7 +347,7 @@ const DetailProduct = () => {
   //sản phẩm cùng loại
   const getProductid = useQuery({
     queryKey: ["PRODUCT", id],
-    queryFn: () => getProductById(id) // Sử dụng hàm getProductById
+    queryFn: () => getProductById(id!) // Sử dụng hàm getProductById
   });
 
   const { data: relatedProducts } = useQuery({
@@ -342,8 +359,7 @@ const DetailProduct = () => {
       const { data } = await instance.get(
         `http://127.0.0.1:8000/api/v1/products/${categoryId}/related/${productId}`
       );
-      console.log("API response:", data);
-      return data.data || [];
+      return data.data;
     },
     enabled: !!getProductid.data?.data?.category?.id
   });
@@ -363,9 +379,8 @@ const DetailProduct = () => {
                     <img
                       key={index}
                       alt={`Thumbnail ${index + 1}`}
-                      className={`thumbnail-image ${
-                        selectedThumbnail === index ? "selected" : ""
-                      }`}
+                      className={`thumbnail-image ${selectedThumbnail === index ? "selected" : ""
+                        }`}
                       src={image}
                       onClick={() => handleThumbnailClick(index, image)}
                     />
@@ -437,7 +452,7 @@ const DetailProduct = () => {
             {" "}
             <Rate allowHalf disabled value={product?.data?.ratingAverage} />
             <span
-              className="italic text-sm text-gray-500"
+              className="text-sm text-gray-500"
               style={{ marginTop: "10px", display: "block" }}
             >
               {inventory > 0 ? `Số lượng: ${inventory}` : "Hết hàng"}
@@ -456,9 +471,8 @@ const DetailProduct = () => {
               {product?.data?.variants?.map((variant, index) => (
                 <Button
                   key={index}
-                  className={`color-option ${
-                    selectedColor === variant.color ? "selected" : ""
-                  }`}
+                  className={`color-option ${selectedColor === variant.color ? "selected" : ""
+                    }`}
                   onClick={() => handleColorSelect(variant.color)}
                   disabled={!variant.status}
                   style={{
@@ -574,25 +588,18 @@ const DetailProduct = () => {
             <button
               className="add-to-cart rounded-sm"
               onClick={() => handleAddToCart()}
+              disabled={isDisabled}
             >
               THÊM VÀO GIỎ HÀNG
             </button>
             <button
               onClick={() => handleAddToCart("buy-now")}
               className="buy-now rounded-sm"
+              disabled={isDisabled}
             >
               MUA NGAY
             </button>
           </div>
-          <div className="action-button2">
-            <button className="like-add">
-              <i className="fa fa-heart"></i> YÊU THÍCH
-            </button>
-            <button className="shear-add">
-              CHIA SẺ <i className="fab fa-facebook"></i>
-            </button>
-          </div>
-
           <div className="infor text-gray-500">
             <p>{product?.data?.description}</p>
           </div>
@@ -655,6 +662,11 @@ const DetailProduct = () => {
         </span>
         {feedbacks
           .filter((feedback) => feedback.classify === true)
+          .sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return dateB - dateA;
+          })
           .map((fb) => (
             <article className="rounded-xl border-2 border-gray-100 bg-white w-full my-2">
               <div className="flex items-start gap-4 p-4 sm:p-6 lg:p-8">
@@ -688,7 +700,7 @@ const DetailProduct = () => {
                     {fb.comment}
                   </p>
 
-                  <div className="mt-2 sm:flex sm:items-center sm:gap-2">
+                  {/* <div className="mt-2 sm:flex sm:items-center sm:gap-2">
                     <div className="flex items-center gap-1 text-gray-500">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -711,16 +723,14 @@ const DetailProduct = () => {
                     <span className="hidden sm:block" aria-hidden="true">
                       &middot;
                     </span>
-                    <p className="text-xs"> {fb.like > 0 ? fb.like : 0} like</p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
-              <div className="flex justify-end cursor-pointer">
+              {/* <div className="flex justify-end cursor-pointer">
                 <strong
-                  className={`-mb-[2px] -me-[2px] inline-flex items-center gap-1 rounded-ee-xl rounded-ss-xl px-6 py-2 text-white ${
-                    fb.like > 0 ? "bg-green-600" : "bg-gray-500"
-                  }`}
+                  className={`-mb-[2px] -me-[2px] inline-flex items-center gap-1 rounded-ee-xl rounded-ss-xl px-6 py-2 text-white ${fb.like > 0 ? "bg-green-600" : "bg-gray-500"
+                    }`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -742,7 +752,7 @@ const DetailProduct = () => {
                     like
                   </span>
                 </strong>
-              </div>
+              </div> */}
             </article>
           ))}
       </div>
@@ -752,9 +762,8 @@ const DetailProduct = () => {
           <h3 className="text-2xl font-bold my-5">Sản phẩm cùng loại</h3>
           <div className="product-list">
             <i
-              className={`fas fa-chevron-left arrow ${
-                startIndex === 0 ? "disabled" : ""
-              }`}
+              className={`fas fa-chevron-left arrow ${startIndex === 0 ? "disabled" : ""
+                }`}
               onClick={handlePrevious}
               style={{ cursor: startIndex === 0 ? "not-allowed" : "pointer" }}
             />
@@ -764,11 +773,10 @@ const DetailProduct = () => {
                 .slice(startIndex, startIndex + productsPerPage)
                 .map((item, index) => <ProductCard key={index} item={item} />)}
             <i
-              className={`fas fa-chevron-right arrow ${
-                startIndex + productsPerPage >= allProduct.length
-                  ? "disabled"
-                  : ""
-              }`}
+              className={`fas fa-chevron-right arrow ${startIndex + productsPerPage >= allProduct.length
+                ? "disabled"
+                : ""
+                }`}
               onClick={handleNext}
               style={{
                 cursor:
