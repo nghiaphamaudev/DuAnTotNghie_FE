@@ -671,102 +671,58 @@ const DetailProduct = () => {
           <span className="shrink-0 px-6">Xem đánh giá</span>
           <span className="h-px flex-1 bg-black"></span>
         </span>
-        {feedbacks
-          .filter((feedback) => feedback.classify === true)
-          .sort((a, b) => {
-            const dateA = new Date(a.createdAt).getTime();
-            const dateB = new Date(b.createdAt).getTime();
-            return dateB - dateA;
-          })
-          .map((fb) => (
-            <article className="rounded-xl border-2 border-gray-100 bg-white w-full my-2">
-              <div className="flex items-start gap-4 p-4 sm:p-6 lg:p-8">
-                <a href="#" className="block shrink-0">
-                  <img
-                    alt=""
-                    src={fb.user.avatar}
-                    className="size-14 rounded-lg object-cover"
-                  />
-                </a>
 
-                <div>
-                  <div className="flex flex-col items-start justify-start mb-3">
-                    <h3 className="font-medium sm:text-lg">
-                      <a href="#" className="hover:underline">
-                        {" "}
-                        {fb.user.fullName}
-                      </a>
-                    </h3>
-                    <Rate
-                      allowHalf
-                      value={fb.rating}
-                      onChange={(value) => {
-                        setRating(value);
-                      }}
-                      style={{ fontSize: 13 }}
+        {feedbacks.filter((feedback) => feedback.classify === true).length === 0 ? (
+          <p className="text-gray-500 mt-4">Chưa có bình luận</p>
+        ) : (
+          feedbacks
+            .filter((feedback) => feedback.classify === true)
+            .sort((a, b) => {
+              const dateA = new Date(a.createdAt).getTime();
+              const dateB = new Date(b.createdAt).getTime();
+              return dateB - dateA;
+            })
+            .map((fb) => (
+              <article
+                key={fb.id}
+                className="rounded-xl border-2 border-gray-100 bg-white w-full my-2"
+              >
+                <div className="flex items-start gap-4 p-4 sm:p-6 lg:p-8">
+                  <a href="#" className="block shrink-0">
+                    <img
+                      alt=""
+                      src={fb.user.avatar}
+                      className="size-14 rounded-lg object-cover"
                     />
-                  </div>
+                  </a>
 
-                  <p className="line-clamp-2 text-sm text-gray-700">
-                    {fb.comment}
-                  </p>
-
-                  {/* <div className="mt-2 sm:flex sm:items-center sm:gap-2">
-                    <div className="flex items-center gap-1 text-gray-500">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="size-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-                        />
-                      </svg>
-
-                      <p className="text-xs">{feedbacks.length} comments</p>
+                  <div>
+                    <div className="flex flex-col items-start justify-start mb-3">
+                      <h3 className="font-medium sm:text-lg">
+                        <a href="#" className="hover:underline">
+                          {fb.user.fullName}
+                        </a>
+                      </h3>
+                      <Rate
+                        allowHalf
+                        value={fb.rating}
+                        onChange={(value) => {
+                          setRating(value);
+                        }}
+                        style={{ fontSize: 13 }}
+                      />
                     </div>
 
-                    <span className="hidden sm:block" aria-hidden="true">
-                      &middot;
-                    </span>
-                  </div> */}
+                    <p className="line-clamp-2 text-sm text-gray-700">
+                      {fb.comment}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              {/* <div className="flex justify-end cursor-pointer">
-                <strong
-                  className={`-mb-[2px] -me-[2px] inline-flex items-center gap-1 rounded-ee-xl rounded-ss-xl px-6 py-2 text-white ${fb.like > 0 ? "bg-green-600" : "bg-gray-500"
-                    }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width={12}
-                    height={12}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-thumbs-up"
-                  >
-                    <path d="M7 10v12" />
-                    <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
-                  </svg>
-
-                  <span className="text-[10px] font-medium sm:text-xs">
-                    like
-                  </span>
-                </strong>
-              </div> */}
-            </article>
-          ))}
+              </article>
+            ))
+        )}
       </div>
+
 
       <div className="seminal product">
         <div className="product-like">
