@@ -6,7 +6,8 @@ import {
   Modal,
   notification,
   Radio,
-  RadioChangeEvent
+  RadioChangeEvent,
+  Rate
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { Swiper as SwiperType } from "swiper";
@@ -64,7 +65,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
   const queryClient = useQueryClient();
   const swiperRef = useRef<SwiperType | null>(null);
   const [quantityCart, setQuantityCart] = useState<number>(0);
-  const [ newSize, setNewSize] = useState({})
+  const [newSize, setNewSize] = useState({})
 
   //lifecycle
   useEffect(() => {
@@ -282,9 +283,8 @@ const AddToCart: React.FC<AddToCartProps> = ({
               <div
                 onClick={() => handleThumbnailClick(index)}
                 key={index}
-                className={`w-1/4 aspect-w-1 aspect-h-1 cursor-pointer ${
-                  index === activeIndex ? "border border-blue-500" : ""
-                }`}
+                className={`w-1/4 aspect-w-1 aspect-h-1 cursor-pointer ${index === activeIndex ? "border border-blue-500" : ""
+                  }`}
               >
                 <img
                   src={image}
@@ -300,21 +300,13 @@ const AddToCart: React.FC<AddToCartProps> = ({
         <div className="col-span-12 md:col-span-7">
           <h2 className="text-xl font-bold">{item?.name}</h2>
           <p className="text-gray-500 mb-2">
-            {inventory > 0 || newSize.status  ?  `Số lượng: ${inventory}` : "Hết hàng"} | Thương
+            {inventory > 0 || newSize.status ? `Số lượng: ${inventory}` : "Hết hàng"} | Thương
             hiệu: FSHIRT
           </p>
 
           {/* Rating section */}
           <div className="flex items-center mb-4">
-            <span className="text-yellow-500 text-lg">
-              {"★".repeat(Math.round(item?.ratingAverage))}{" "}
-              {/* Display stars */}
-              {"☆".repeat(5 - Math.round(item?.ratingAverage))}{" "}
-              {/* Empty stars */}
-            </span>
-            <span className="text-gray-400 text-sm ml-2">
-              ({item?.ratingQuantity} đánh giá)
-            </span>
+            <Rate allowHalf disabled value={product?.data?.ratingAverage} />
           </div>
 
           <div className="flex items-center mb-4">
@@ -345,7 +337,7 @@ const AddToCart: React.FC<AddToCartProps> = ({
             <Radio.Group onChange={onChangeSize} value={size}>
               {selectedVariant?.sizes
                 .map((sizeOption: ProductSize) => (
-                  <Radio.Button disabled={!sizeOption.status || sizeOption.inventory === 0 || !selectedVariant.status}  key={sizeOption.id} value={sizeOption.id}>
+                  <Radio.Button disabled={!sizeOption.status || sizeOption.inventory === 0 || !selectedVariant.status} key={sizeOption.id} value={sizeOption.id}>
                     {sizeOption.nameSize}
                   </Radio.Button>
                 ))}

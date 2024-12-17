@@ -90,6 +90,7 @@ const OrderDetail = () => {
       const response = await updateOrderService(orderId, "Đã hủy", cancelNote);
       if (response?.status) {
         message.success("Đơn hàng đã được hủy thành công.");
+        socket.emit("user update status order", orderId);
         await fetchOrderDetail();
       } else {
         message.error(response?.message || "Hủy đơn hàng thất bại.");
@@ -230,9 +231,18 @@ const OrderDetail = () => {
         onCancel={() => setIsCancelModalOpen(false)}
         okText="Xác nhận"
         cancelText="Hủy"
+        loading={isProcessing}
       >
-        <p>Bạn có chắc chắn muốn hủy đơn hàng này?</p>
+        <p className="my-2">Bạn có chắc chắn muốn hủy đơn hàng này?</p>
         <Input.TextArea
+          style={{
+            width: "100%",
+            height: "80px",
+            padding: "8px",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+            marginTop: "10px"
+          }}
           placeholder="Nhập lý do hủy đơn hàng (không bắt buộc)"
           value={cancelNote}
           onChange={(e) => setCancelNote(e.target.value)}
@@ -350,7 +360,6 @@ const OrderDetail = () => {
                 />
               </svg>
             </span>
-
             <div className="flex-1">
               <strong className="block font-medium text-gray-900">
                 {" "}
@@ -361,7 +370,6 @@ const OrderDetail = () => {
                 {orderInfor?.orderNote || "Không có ghi chú cho đơn hàng này."}
               </p>
             </div>
-
             <button className="text-gray-500 transition hover:text-gray-600">
               <span className="sr-only">Dismiss popup</span>
             </button>

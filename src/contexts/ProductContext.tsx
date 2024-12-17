@@ -37,8 +37,8 @@ export const ProductProvider = ({
     queryFn: async () => {
       const { data } = await getAllProduct();
       return data;
-    },
-    refetchOnWindowFocus: false // Tùy chọn cải thiện hiệu năng nếu không cần refetch khi focus
+    }
+    // refetchOnWindowFocus: false // Tùy chọn cải thiện hiệu năng nếu không cần refetch khi focus
   });
 
   const { mutateAsync: getDataProductById } = useMutation({

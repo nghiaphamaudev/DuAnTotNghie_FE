@@ -205,152 +205,147 @@ const ProductAdd: React.FC = () => {
           </Upload>
         </Form.Item>
 
-        <Form.Item label="Loại sản phẩm">
-          <Button type="primary" onClick={handleProductTypeClick}>
-            {showSubForm ? 'Ẩn loại sản phẩm' : 'Chọn loại sản phẩm'}
-          </Button>
-        </Form.Item>
 
-        {
-          showSubForm && (
-            <Form.Item name="variants">
-              <Form.List name="variants">
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map(({ key, name, ...restField }) => (
-                      <div key={key} style={{ border: '1px solid #f0f0f0', padding: '16px', marginBottom: '24px', borderRadius: '8px' }}>
-                        <Row gutter={16}>
-                          <Col span={6}>
-                            <Form.Item
-                              {...restField}
-                              name={[name, 'color']}
-                              label="Màu sắc"
-                              rules={[
-                                { required: true, message: 'Nhập màu sắc' }, { validator: validateUniqueColor },
-                                {
-                                  pattern: /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯăạảãầấậẩẫằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ ]+$/,
-                                  message: "Không được nhập số hoặc kí tự đặc biệt",
-                                }
-                              ]}>
-                              <Input placeholder="Nhập màu sắc" />
-                            </Form.Item>
-                          </Col>
-                          <Col span={18}>
-                            <Form.Item
-                              {...restField}
-                              name={[name, 'images']}
-                              label="Ảnh màu"
-                              valuePropName="fileList"
-                              getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-                              rules={[{ required: true, message: 'Vui lòng tải lên ảnh màu!' }]}>
-                              <Upload
-                                name="images"
-                                listType="picture-card"
-                                beforeUpload={() => false}
-                                maxCount={3}
-                                multiple
-                                accept=".jpg,.png,.jpeg">
-                                <div>
-                                  <PlusOutlined />
-                                  <div style={{ marginTop: 8 }}>Tải ảnh</div>
-                                </div>
-                              </Upload>
-                            </Form.Item>
-                          </Col>
-                        </Row>
 
-                        <Form.List name={[name, 'sizes']}>
-                          {(sizeFields, { add: addSize, remove: removeSize }) => (
-                            <>
-                              {sizeFields.map(({ key: sizeKey, name: sizeName, ...sizeRestField }) => (
-                                <Row gutter={16} key={sizeKey} style={{ alignItems: 'center' }}>
-                                  <Col span={6}>
-                                    <Form.Item
-                                      {...sizeRestField}
-                                      name={[sizeName, 'nameSize']}
-                                      label="Size"
-                                      rules={[
-                                        { required: true, message: 'Chọn size' },
-                                        { validator: validateUniqueSize(name) },
-                                      ]}>
-                                      <Select placeholder="Chọn size">
-                                        <Option value="S">S</Option>
-                                        <Option value="M">M</Option>
-                                        <Option value="L">L</Option>
-                                        <Option value="XL">XL</Option>
-                                        <Option value="XXL">XXL</Option>
-                                      </Select>
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={6}>
-                                    <Form.Item
-                                      {...sizeRestField}
-                                      name={[sizeName, 'price']}
-                                      label="Giá"
-                                      rules={[{ type: 'number', min: 1, message: 'Giá phải lớn hơn 0' }, { required: true, message: 'Giá sản phẩm không được để trống' }]}>
-                                      <InputNumber placeholder="Giá" style={{ width: '100%' }} />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={6}>
-                                    <Form.Item
-                                      {...sizeRestField}
-                                      name={[sizeName, 'inventory']}
-                                      label="Số lượng"
-                                      rules={[{ type: 'number', min: 1, message: 'Số lượng phải lớn hơn 0' }, { required: true, message: 'Số lượng không được để trống' }]}>
-                                      <InputNumber placeholder="Số lượng" style={{ width: '100%' }} />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col span={6} style={{ textAlign: 'right' }}>
-                                    <Button
-                                      icon={<DeleteOutlined />}
-                                      onClick={() => removeSize(sizeName)}
-                                      type="link"
-                                      danger
-                                    />
-                                  </Col>
-                                </Row>
-                              ))}
-                              <Form.Item>
+
+        <Form.Item name="variants">
+          <Form.List name="variants">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <div key={key} style={{ border: '1px solid #f0f0f0', padding: '16px', marginBottom: '24px', borderRadius: '8px' }}>
+                    <Row gutter={16}>
+                      <Col span={6}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'color']}
+                          label="Màu sắc"
+                          rules={[
+                            { required: true, message: 'Nhập màu sắc' }, { validator: validateUniqueColor },
+                            {
+                              pattern: /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯăạảãầấậẩẫằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ ]+$/,
+                              message: "Không được nhập số hoặc kí tự đặc biệt",
+                            }
+                          ]}>
+                          <Input placeholder="Nhập màu sắc" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={18}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'images']}
+                          label="Ảnh màu"
+                          valuePropName="fileList"
+                          getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+                          rules={[{ required: true, message: 'Vui lòng tải lên ảnh màu!' }]}>
+                          <Upload
+                            name="images"
+                            listType="picture-card"
+                            beforeUpload={() => false}
+                            maxCount={3}
+                            multiple
+                            accept=".jpg,.png,.jpeg">
+                            <div>
+                              <PlusOutlined />
+                              <div style={{ marginTop: 8 }}>Tải ảnh</div>
+                            </div>
+                          </Upload>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+
+                    <Form.List name={[name, 'sizes']}>
+                      {(sizeFields, { add: addSize, remove: removeSize }) => (
+                        <>
+                          {sizeFields.map(({ key: sizeKey, name: sizeName, ...sizeRestField }) => (
+                            <Row gutter={16} key={sizeKey} style={{ alignItems: 'center' }}>
+                              <Col span={6}>
+                                <Form.Item
+                                  {...sizeRestField}
+                                  name={[sizeName, 'nameSize']}
+                                  label="Size"
+                                  rules={[
+                                    { required: true, message: 'Chọn size' },
+                                    { validator: validateUniqueSize(name) },
+                                  ]}>
+                                  <Select placeholder="Chọn size">
+                                    <Option value="S">S</Option>
+                                    <Option value="M">M</Option>
+                                    <Option value="L">L</Option>
+                                    <Option value="XL">XL</Option>
+                                    <Option value="XXL">XXL</Option>
+                                  </Select>
+                                </Form.Item>
+                              </Col>
+                              <Col span={6}>
+                                <Form.Item
+                                  {...sizeRestField}
+                                  name={[sizeName, 'price']}
+                                  label="Giá"
+                                  rules={[{ type: 'number', min: 1, message: 'Giá phải lớn hơn 0' }, { required: true, message: 'Giá sản phẩm không được để trống' }]}>
+                                  <InputNumber placeholder="Giá" style={{ width: '100%' }} />
+                                </Form.Item>
+                              </Col>
+                              <Col span={6}>
+                                <Form.Item
+                                  {...sizeRestField}
+                                  name={[sizeName, 'inventory']}
+                                  label="Số lượng"
+                                  rules={[{ type: 'number', min: 1, message: 'Số lượng phải lớn hơn 0' }, { required: true, message: 'Số lượng không được để trống' }]}>
+                                  <InputNumber placeholder="Số lượng" style={{ width: '100%' }} />
+                                </Form.Item>
+                              </Col>
+                              <Col span={6} style={{ textAlign: 'right' }}>
                                 <Button
-                                  type="dashed"
-                                  icon={<PlusOutlined />}
-                                  onClick={() => addSize()}
-                                  block
-                                >
-                                  Thêm Size
-                                </Button>
-                              </Form.Item>
-                            </>
-                          )}
-                        </Form.List>
+                                  icon={<DeleteOutlined />}
+                                  onClick={() => removeSize(sizeName)}
+                                  type="link"
+                                  danger
+                                />
+                              </Col>
+                            </Row>
+                          ))}
+                          <Form.Item>
+                            <Button
+                              type="dashed"
+                              icon={<PlusOutlined />}
+                              onClick={() => addSize()}
+                              block
+                            >
+                              Thêm Size
+                            </Button>
+                          </Form.Item>
+                        </>
+                      )}
+                    </Form.List>
 
-                        <Button
-                          icon={<DeleteOutlined />}
-                          onClick={() => remove(name)}
-                          type="link"
-                          danger
-                          style={{ marginBottom: '16px' }}
-                        >
-                          Xóa biến thể
-                        </Button>
-                      </div>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        icon={<PlusOutlined />}
-                        onClick={() => add()}
-                        block
-                      >
-                        Thêm Biến thể
-                      </Button>
-                    </Form.Item>
-                  </>
+                    <Button
+                      icon={<DeleteOutlined />}
+                      onClick={() => remove(name)}
+                      type="link"
+                      danger
+                      style={{ marginBottom: '16px' }}
+                    >
+                      Xóa biến thể
+                    </Button>
+                  </div>
+                ))}
+                {fields.length < 4 && (
+                  <Form.Item>
+                    <Button
+                      type="dashed"
+                      icon={<PlusOutlined />}
+                      onClick={() => add()}
+                      block
+                    >
+                      Thêm Biến thể
+                    </Button>
+                  </Form.Item>
                 )}
-              </Form.List>
-            </Form.Item>
-          )
-        }
+              </>
+            )}
+          </Form.List>
+        </Form.Item>
 
         <Form.Item>
           <Space>

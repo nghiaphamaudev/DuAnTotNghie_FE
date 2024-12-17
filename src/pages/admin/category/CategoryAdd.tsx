@@ -102,7 +102,7 @@ const CategoryAdd = () => {
             name="name"
             rules={[{ required: true, message: "Vui lòng nhập tên danh mục" },
             {
-              pattern: /[a-zA-Z0-9\s]{6,}$/,
+              pattern: /^(?!.*^(?:\p{L}+|\p{N}+)$)[\p{L}\p{N}\s\p{P}\p{S}]{3,}$/u,
               message: "Tên danh mục phải có ít nhất 3 ký tự gồm chữ cái và số",
             },
             ]}

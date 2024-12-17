@@ -151,9 +151,6 @@ const CheckoutPage: React.FC = () => {
 
   useEffect(() => {
     const selectedProducts = localStorage.getItem("selectedProducts");
-    console.log("selectedProductsDATA: ", selectedProducts);
-    console.log("allProductDATA: ", allProduct.splice(0, 2));
-
     if (selectedProducts) {
       const parsedProducts = JSON.parse(selectedProducts);
       const validCart = {
@@ -165,7 +162,6 @@ const CheckoutPage: React.FC = () => {
       setTotalPrice(calculateTotalPrice(parsedProducts));
       validateCartItems();
     }
-    console.log("CART", cart);
     const fetchAddresses = async () => {
       try {
         const profile = await getProfile();
@@ -181,7 +177,6 @@ const CheckoutPage: React.FC = () => {
       try {
         const vorchers = await getVouchers();
         console.log("vorcher: ", vorchers);
-
         setCoupons(vorchers.data);
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -219,7 +214,8 @@ const CheckoutPage: React.FC = () => {
         })),
         totalPrice: totalPrice + shippingFee,
         shippingCost: shippingFee,
-        discountVoucher
+        discountVoucher,
+        discountCode: couponCode || null
       };
 
       if (paymentMethod === "VNPAY") {
@@ -300,7 +296,6 @@ const CheckoutPage: React.FC = () => {
         setCouponCode(coupon.code);
         setIsCouponApplied(true);
         setModalVisibleVoucher(false);
-        message.success("Mã giảm giá đã được áp dụng!");
         notification.success({
           message: "Mã giảm giá đã được áp dụng! Cảm ơn bạn đã tin tưởng!!.",
           duration: 4
@@ -318,6 +313,12 @@ const CheckoutPage: React.FC = () => {
       });
     }
   };
+  const getUserIdFromLocalStorage = () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    return user ? user.id : null;
+  };
+  const userId = getUserIdFromLocalStorage();
+  console.log("userId: ", userId);
 
   const isCouponDisabled = (coupon: Coupon) => {
     const currentDate = new Date();
@@ -331,6 +332,7 @@ const CheckoutPage: React.FC = () => {
       coupon?.quantity - coupon?.usedCount <= 0
     );
   };
+  const usedVouchers: string[] = [];
 
   const handleApplyCoupon = async () => {
     // Kiểm tra nếu đã áp dụng mã
@@ -339,7 +341,6 @@ const CheckoutPage: React.FC = () => {
         message: "Chỉ được áp dụng một mã giảm giá!",
         duration: 4
       });
-
       return;
     }
 
@@ -351,7 +352,6 @@ const CheckoutPage: React.FC = () => {
       });
       return;
     }
-
     // Tìm mã trong danh sách
     const coupon = coupons.find((c) => c.code === couponCode);
     if (!coupon) {
@@ -385,18 +385,14 @@ const CheckoutPage: React.FC = () => {
     }
 
     try {
-      // Tính toán giá trị giảm giá
       let discountAmount = 0;
-
       if (coupon.discountType === "percentage" && coupon.discountPercentage) {
         discountAmount = (totalPrice * coupon.discountPercentage) / 100;
       } else if (coupon.discountType === "amount" && coupon.discountAmount) {
         discountAmount = coupon.discountAmount;
       }
-
       // Giới hạn giá trị giảm giá không vượt quá tổng giá trị đơn hàng
       discountAmount = Math.min(discountAmount, totalPrice);
-
       // Cập nhật giá trị tổng tiền và trạng thái
       setTotalPrice((prev) => prev - discountAmount);
       setIsCouponApplied(true);
@@ -406,6 +402,10 @@ const CheckoutPage: React.FC = () => {
         duration: 4
       });
     } catch (error) {
+      if (error?.response?.data?.message === "Bạn đã sử dụng voucher này rồi") {
+        usedVouchers.push(coupon.code); // Thêm voucher vào danh sách đã sử dụng
+        console.error("Voucher đã được sử dụng:", coupon.code);
+      }
       notification.error({
         message: "Đã xảy ra lỗi khi áp dụng mã giảm giá!",
         duration: 4
@@ -523,11 +523,13 @@ const CheckoutPage: React.FC = () => {
               </Link>
             </div>
 
+            {/* ------------------------- */}
+            {/* Thông tin đơn hàng */}
             <div className="bg-gray-50 p-6 rounded-lg">
               <h4 className="text-xl font-semibold">Tóm tắt đơn hàng</h4>
               {cart?.items && cart.items.length > 0 ? (
                 <>
-                  {cart.items.map((item) => (
+                  {cart?.items.map((item) => (
                     <Card
                       key={item.id}
                       title={
@@ -629,6 +631,7 @@ const CheckoutPage: React.FC = () => {
                 <Text>Giỏ hàng rỗng</Text>
               )}
             </div>
+            {/* ------------------------- */}
           </div>
           <Modal
             title="Danh sách địa chỉ"
