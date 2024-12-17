@@ -56,9 +56,6 @@ export default function Product() {
   const handleSearch = (value: string) => {
     setSearchTerm(value.toLowerCase().trim());
   };
-  console.log(filteredData);
-  console.log("Total Products: ", dataSource.length);
-  console.log("Filtered Products: ", filteredData.length);
   const handleStatusChange = async (checked: boolean, id: string) => {
     try {
       const productData = await deleteProductStatus(id, checked);
