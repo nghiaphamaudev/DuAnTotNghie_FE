@@ -183,7 +183,7 @@ const HomePage = () => {
                 Hỗ trợ nhanh chóng
               </p>
               <p className="text-[12px] md:text-[14px] italic">
-                hotline 24/7 : 0964942121
+                Hotline 24/7: 0984282598
               </p>
             </div>
           </div>

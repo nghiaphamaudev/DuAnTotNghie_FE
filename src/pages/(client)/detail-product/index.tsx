@@ -19,6 +19,7 @@ import "./css.css";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../../config/axios";
 import { getProductById } from "../../../services/productServices";
+import { socket } from "../../../socket";
 
 const DetailProduct = () => {
   //context
@@ -96,10 +97,7 @@ const DetailProduct = () => {
       setQuantityCart(dataCartVariantSelected?.quantity || 0);
       setQuantity(1);
     }
-
   }, [cartData, product, selectedColor, selectedSize]);
-
-
 
   // function
 
@@ -183,7 +181,7 @@ const DetailProduct = () => {
       setStartIndex(startIndex - productsPerPage);
     }
   };
-  console.log(inventory)
+  console.log(inventory);
 
   const toggleAccordion = (header) => {
     const content = header.nextElementSibling;
@@ -226,7 +224,19 @@ const DetailProduct = () => {
   const isDisabled =
     !selectedVariantData?.status ||
     !selectedSizeObjectData?.status ||
-    (selectedSizeObjectData?.inventory <= 0);
+    selectedSizeObjectData?.inventory <= 0;
+  useEffect(() => {
+    const handleHiddenProduct = async (id: string) => {
+      console.log("Hidden product event detected, refetching...");
+      await getDataProductById(id);
+    };
+
+    socket.on("hidden product", (id) => handleHiddenProduct(id));
+
+    return () => {
+      socket.off("hidden product", handleHiddenProduct);
+    };
+  }, []);
 
   const handleAddToCart = async (option?: string) => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -332,7 +342,6 @@ const DetailProduct = () => {
       }
     }
 
-
     if (!product?.data) {
       message.error("Không tìm thấy thông tin sản phẩm.");
       return;
@@ -379,8 +388,9 @@ const DetailProduct = () => {
                     <img
                       key={index}
                       alt={`Thumbnail ${index + 1}`}
-                      className={`thumbnail-image ${selectedThumbnail === index ? "selected" : ""
-                        }`}
+                      className={`thumbnail-image ${
+                        selectedThumbnail === index ? "selected" : ""
+                      }`}
                       src={image}
                       onClick={() => handleThumbnailClick(index, image)}
                     />
@@ -471,8 +481,9 @@ const DetailProduct = () => {
               {product?.data?.variants?.map((variant, index) => (
                 <Button
                   key={index}
-                  className={`color-option ${selectedColor === variant.color ? "selected" : ""
-                    }`}
+                  className={`color-option ${
+                    selectedColor === variant.color ? "selected" : ""
+                  }`}
                   onClick={() => handleColorSelect(variant.color)}
                   disabled={!variant.status}
                   style={{
@@ -718,8 +729,9 @@ const DetailProduct = () => {
           <h3 className="text-2xl font-bold my-5">Sản phẩm cùng loại</h3>
           <div className="product-list">
             <i
-              className={`fas fa-chevron-left arrow ${startIndex === 0 ? "disabled" : ""
-                }`}
+              className={`fas fa-chevron-left arrow ${
+                startIndex === 0 ? "disabled" : ""
+              }`}
               onClick={handlePrevious}
               style={{ cursor: startIndex === 0 ? "not-allowed" : "pointer" }}
             />
@@ -729,10 +741,11 @@ const DetailProduct = () => {
                 .slice(startIndex, startIndex + productsPerPage)
                 .map((item, index) => <ProductCard key={index} item={item} />)}
             <i
-              className={`fas fa-chevron-right arrow ${startIndex + productsPerPage >= allProduct.length
-                ? "disabled"
-                : ""
-                }`}
+              className={`fas fa-chevron-right arrow ${
+                startIndex + productsPerPage >= allProduct.length
+                  ? "disabled"
+                  : ""
+              }`}
               onClick={handleNext}
               style={{
                 cursor:
