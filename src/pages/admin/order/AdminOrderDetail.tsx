@@ -158,6 +158,7 @@ const AdminOrderDetail = () => {
       );
       if (response?.status) {
         message.success("Đơn hàng đã được hủy thành công.");
+        socket.emit("update status order", orderId);
         await fetchOrderDetail();
       } else {
         message.error(response?.message || "Hủy đơn thất bại.");
@@ -475,42 +476,132 @@ const AdminOrderDetail = () => {
         </Modal>
       </Card>
       {/* Thông tin đơn hàng */}
-      <Card title="Thông tin đơn hàng" style={{ marginBottom: "20px" }}>
-        <Descriptions
-          bordered
-          column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}
+      <Card title="Thông tin đơn hàng">
+        <div className="flex justify-between items-center">
+          <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm w-1/2">
+            <dl className="-my-3 divide-y divide-gray-100 text-sm">
+              <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+                <dt className="font-medium text-gray-900">Mã hóa đơn</dt>
+                <dd className="text-gray-700 sm:col-span-2">
+                  {orderInfor?.code}
+                </dd>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+                <dt className="font-medium text-gray-900">Người nhận</dt>
+                <dd className="text-gray-700 sm:col-span-2">
+                  {" "}
+                  {orderInfor?.receiver}
+                </dd>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+                <dt className="font-medium text-gray-900">SĐT người nhận</dt>
+                <dd className="text-gray-700 sm:col-span-2">
+                  {orderInfor?.phoneNumber}
+                </dd>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+                <dt className="font-medium text-gray-900">Địa chỉ</dt>
+                <dd className="text-gray-700 sm:col-span-2">
+                  {orderInfor?.address}
+                </dd>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+                <dt className="font-medium text-gray-900">Trạng thái</dt>
+                <dd className="text-gray-700 sm:col-span-2">
+                  <Tag color={statusColorMap[orderInfor?.status]}>
+                    {orderInfor?.status}
+                  </Tag>
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm w-1/2">
+            <dl className="-my-3 divide-y divide-gray-100 text-sm">
+              <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+                <dt className="font-medium text-gray-900"></dt>
+                <dd className="text-gray-700 sm:col-span-2"></dd>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+                <dt className="font-medium text-gray-900">Người tạo</dt>
+                <dd className="text-gray-700 sm:col-span-2">
+                  {orderInfor?.creator}
+                </dd>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+                <dt className="font-medium text-gray-900">SĐT người tạo</dt>
+                <dd className="text-gray-700 sm:col-span-2">
+                  {" "}
+                  {orderInfor?.phoneNumberCreator}
+                </dd>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+                <dt className="font-medium text-gray-900">
+                  Phương thức thanh toán
+                </dt>
+                <dd className="text-gray-700 sm:col-span-2">
+                  {" "}
+                  <Tag
+                    color={
+                      orderInfor?.paymentMethod === "COD"
+                        ? "#2db7f5"
+                        : "#87d068"
+                    }
+                  >
+                    {orderInfor?.paymentMethod}
+                  </Tag>
+                </dd>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4">
+                <dt className="font-medium text-gray-900">Ngày tạo</dt>
+                <dd className="text-gray-700 sm:col-span-2">{createdAt}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+        <div
+          role="alert"
+          className="rounded-xl border border-gray-100 bg-white p-4"
         >
-          <Descriptions.Item label="Mã hóa đơn">
-            {orderInfor?.code}
-          </Descriptions.Item>
-          <Descriptions.Item label="Người tạo">
-            {orderInfor?.creator}
-          </Descriptions.Item>
-          <Descriptions.Item label="Người nhận">
-            {orderInfor?.receiver}
-          </Descriptions.Item>
-          <Descriptions.Item label="Số điện thoại">
-            {orderInfor?.phoneNumber}
-          </Descriptions.Item>
-          <Descriptions.Item label="Địa chỉ">
-            {orderInfor?.address}
-          </Descriptions.Item>
-          <Descriptions.Item label="Phương thức thanh toán">
-            <Tag
-              color={
-                orderInfor?.paymentMethod === "COD" ? "#2db7f5" : "#87d068"
-              }
-            >
-              {orderInfor?.paymentMethod}
-            </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="Trạng thái">
-            <Tag color={statusColorMap[orderInfor?.status]}>
-              {orderInfor?.status}
-            </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="Ngày tạo">{createdAt}</Descriptions.Item>
-        </Descriptions>
+          <div className="flex items-start gap-4">
+            <span className="text-green-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </span>
+            <div className="flex-1">
+              <strong className="block font-medium text-gray-900">
+                {" "}
+                Ghi chú cho đơn hàng
+              </strong>
+
+              <p className=" text-sm text-gray-500 italic">
+                {orderInfor?.orderNote || "Không có ghi chú cho đơn hàng này."}
+              </p>
+            </div>
+            <button className="text-gray-500 transition hover:text-gray-600">
+              <span className="sr-only">Dismiss popup</span>
+            </button>
+          </div>
+        </div>
       </Card>
 
       {/* Danh sách sản phẩm */}
