@@ -150,7 +150,7 @@ const LoginPage = () => {
                 </label>
               </div>
               <div>
-                <div className="text-md text-blue-500" onClick={showModal}>
+                <div className="text-md text-blue-500 cursor-pointer" onClick={showModal}>
                   Quên mật khẩu
                 </div>
               </div>
