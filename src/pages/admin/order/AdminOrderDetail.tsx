@@ -325,6 +325,8 @@ const AdminOrderDetail = () => {
           okText="Xác nhận"
           cancelText="Hủy"
           confirmLoading={isProcessing}
+          okButtonProps={{ disabled: isProcessing }}
+          cancelButtonProps={{ disabled: isProcessing }}
         >
           <p>
             Bạn có chắc muốn chuyển trạng thái đơn hàng sang "{newStatus}"
@@ -419,66 +421,71 @@ const AdminOrderDetail = () => {
             }}
           />
 
-          <fieldset>
-            <legend className="text-lg font-medium text-gray-900">
-              Phí giao hàng khi hoàn hàng
-            </legend>
+          {orderInfor?.paymentMethod !== "VNPAY" && (
+            <fieldset>
+              <legend className="text-lg font-medium text-gray-900">
+                Phí giao hàng khi hoàn hàng
+              </legend>
 
-            <p className="mt-1 text-pretty text-sm text-gray-700">
-              Khách hàng đã trả phí giao hàng khi hoàn chưa?
-            </p>
+              <p className="mt-1 text-pretty text-sm text-gray-700">
+                Khách hàng đã trả phí giao hàng khi hoàn chưa?
+              </p>
 
-            <div className="mt-4 space-y-2">
-              <label
-                htmlFor="Option2"
-                className="flex cursor-pointer items-start gap-4"
-              >
-                <div className="flex items-center">
-                  &#8203;
-                  <input
-                    type="checkbox"
-                    className="size-4 rounded border-gray-300"
-                    id="Option2"
-                    checked={statusShip === true}
-                    onChange={() => setStatusShip(true)}
-                  />
-                </div>
+              <div className="mt-4 space-y-2">
+                <label
+                  htmlFor="Option2"
+                  className="flex cursor-pointer items-start gap-4"
+                >
+                  <div className="flex items-center">
+                    &#8203;
+                    <input
+                      type="checkbox"
+                      className="size-4 rounded border-gray-300"
+                      id="Option2"
+                      checked={statusShip === true}
+                      onChange={() => setStatusShip(true)}
+                    />
+                  </div>
 
-                <div>
-                  <strong className="font-medium text-gray-900"> Đã trả</strong>
-                </div>
-              </label>
+                  <div>
+                    <strong className="font-medium text-gray-900">
+                      {" "}
+                      Đã trả
+                    </strong>
+                  </div>
+                </label>
 
-              <label
-                htmlFor="Option3"
-                className="flex cursor-pointer items-start gap-4"
-              >
-                <div className="flex items-center">
-                  &#8203;
-                  <input
-                    type="checkbox"
-                    className="size-4 rounded border-gray-300"
-                    id="Option3"
-                    checked={statusShip === false}
-                    onChange={() => setStatusShip(false)}
-                  />
-                </div>
+                <label
+                  htmlFor="Option3"
+                  className="flex cursor-pointer items-start gap-4"
+                >
+                  <div className="flex items-center">
+                    &#8203;
+                    <input
+                      type="checkbox"
+                      className="size-4 rounded border-gray-300"
+                      id="Option3"
+                      checked={statusShip === false}
+                      onChange={() => setStatusShip(false)}
+                    />
+                  </div>
 
-                <div>
-                  <strong className="font-medium text-gray-900">
-                    {" "}
-                    Chưa trả
-                  </strong>
-                </div>
-              </label>
-            </div>
-            <p className="mt-2 text-sm text-gray-700">
-              Trạng thái hiện tại:{" "}
-              <Tag color={statusShip ? "green" : "yellow"}>
-                {statusShip ? "Đã trả" : "Chưa trả"}
-              </Tag>
-            </p>
-          </fieldset>
+                  <div>
+                    <strong className="font-medium text-gray-900">
+                      {" "}
+                      Chưa trả
+                    </strong>
+                  </div>
+                </label>
+              </div>
+              <p className="mt-2 text-sm text-gray-700">
+                Trạng thái hiện tại:{" "}
+                <Tag color={statusShip ? "green" : "yellow"}>
+                  {statusShip ? "Đã trả" : "Chưa trả"}
+                </Tag>
+              </p>
+            </fieldset>
+          )}
         </Modal>
       </Card>
       {/* Thông tin đơn hàng */}

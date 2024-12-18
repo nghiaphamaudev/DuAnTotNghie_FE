@@ -20,8 +20,8 @@ const Orders = () => {
   const debouncedSearchQuery = useDebounce(searchQuery, 300); // Sử dụng debounce với delay 300ms
 
   const user = localStorage.getItem("useradmin");
+  const userRole = JSON.parse(user)?.role;
   const fetchOrders = async () => {
-    const userRole = JSON.parse(user)?.role;
     let response;
     if (userRole === "superadmin") {
       response = await getAllOrdersServiceForSuperAdmin();
@@ -155,17 +155,21 @@ const Orders = () => {
         );
       }
     },
-    {
-      title: "Người phụ trách",
-      dataIndex: "assignedTo",
-      key: "assignedTo",
-      width: 150,
-      render: (assignedTo) => (
-        <span style={{ fontWeight: "500" }}>
-          {assignedTo?.fullName || "Không có"}
-        </span>
-      )
-    },
+    ...(userRole === "superadmin"
+      ? [
+          {
+            title: "Người phụ trách",
+            dataIndex: "assignedTo",
+            key: "assignedTo",
+            width: 150,
+            render: (assignedTo) => (
+              <span style={{ fontWeight: "500" }}>
+                {assignedTo?.fullName || "Superadmin"}
+              </span>
+            )
+          }
+        ]
+      : []),
     {
       title: "Hành động",
       key: "action",
