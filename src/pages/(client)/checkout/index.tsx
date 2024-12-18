@@ -33,6 +33,7 @@ import { useProduct } from "../../../contexts/ProductContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCart } from "../../../contexts/CartContext";
 import { useAuth } from "../../../contexts/AuthContext";
+import { socket } from "../../../socket";
 const { Text } = Typography;
 
 const CheckoutPage: React.FC = () => {
@@ -63,6 +64,7 @@ const CheckoutPage: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
     queryClient.invalidateQueries({ queryKey: ["cart"] });
   }, []);
+
   const calculateTotalPrice = (selectedProducts: any[]) => {
     return selectedProducts.reduce(
       (total, item) => total + item.totalItemPrice,
@@ -101,7 +103,7 @@ const CheckoutPage: React.FC = () => {
 
       if (!variant?.status) {
         notification.error({
-          message: `Phiên bản sản phẩm màu ${item.color} không tồn tại!`,
+          message: `Phiên bản sản phẩm màu này đã ngừng kinh doanh!`,
           duration: 4
         });
         return false;
@@ -109,7 +111,7 @@ const CheckoutPage: React.FC = () => {
       const size = variant?.sizes.find((s) => s.id === item.sizeId);
       if (!size?.status) {
         notification.error({
-          message: `Kích thước sản phẩm ${product.name} với màu ${variant.color} không tồn tại!`,
+          message: `Kích thước sản phẩm với màu này đã ngừng kinh doanh!`,
           duration: 4
         });
         isValid = false;
@@ -117,7 +119,7 @@ const CheckoutPage: React.FC = () => {
 
       if (size?.inventory < item.quantity) {
         notification.error({
-          message: `Sản phẩm ${product.name} với kích thước ${size.name} không đủ tồn kho!`,
+          message: `Sản phẩm với kích thước này không đủ tồn kho!`,
           duration: 4
         });
         isValid = false;
@@ -125,7 +127,7 @@ const CheckoutPage: React.FC = () => {
 
       if (size?.inventory === 0) {
         notification.error({
-          message: `Sản phẩm ${product.name} với kích thước ${size.name} đã hết hàng!`,
+          message: `Sản phẩm với kích thước này đã hết hàng!`,
           duration: 4
         });
         isValid = false;
@@ -235,11 +237,11 @@ const CheckoutPage: React.FC = () => {
           if (res.status) {
             queryClient.invalidateQueries({ queryKey: ["carts"] });
             setCountItemCart(cartData?.items?.length || 0);
+            socket.emit("create order", res.data.assignedTo);
             notification.success({
               message: "Đặt hàng thành công! Cảm ơn bạn đã tin tưởng!!.",
               duration: 4
             });
-
             localStorage.removeItem("selectedProducts");
             form.resetFields();
             navigate("/home");
@@ -449,8 +451,9 @@ const CheckoutPage: React.FC = () => {
                   rules={[
                     { required: true, message: "Vui lòng nhập số điện thoại!" },
                     {
-                      pattern: /^[0-9]{10,11}$/,
-                      message: "Số điện thoại phải gồm 10-11 chữ số!"
+                      pattern: /^[0-9]{10}$/,
+                      message:
+                        "Số điện thoại phải gồm 10 chữ số và đúng cấu trúc!"
                     }
                   ]}
                 >
