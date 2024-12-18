@@ -258,7 +258,7 @@ const DetailProduct = () => {
     }
     if (!selectedVariant?.status) {
       notification.error({
-        message: "Biến thể sản phẩm này hiện không khả dụng.",
+        message: "Sản phẩm này hiện không khả dụng.",
         placement: "topRight",
         duration: 2
       });
@@ -286,7 +286,7 @@ const DetailProduct = () => {
           duration: 4
         });
         queryClient.invalidateQueries({ queryKey: ["products"] });
-        nav("/home");
+        // nav("/home");
         return;
       } else {
         if (newSizeObjectInventory === 0) {
@@ -295,21 +295,21 @@ const DetailProduct = () => {
             placement: "topRight",
             duration: 4
           });
-          nav("/home");
+          // nav("/home");
         } else if (newSizeObjectInventory < quantity) {
           notification.error({
             message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 4
           });
-          nav("/home");
+          // nav("/home");
         } else if (quantity > inventory - quantityCart) {
           notification.error({
             message: "Đã có lỗi xảy ra. Vui lòng kiểm tra lại!",
             placement: "topRight",
             duration: 2
           });
-          nav("/home");
+          // nav("/home");
 
           return;
         } else {
@@ -388,9 +388,8 @@ const DetailProduct = () => {
                     <img
                       key={index}
                       alt={`Thumbnail ${index + 1}`}
-                      className={`thumbnail-image ${
-                        selectedThumbnail === index ? "selected" : ""
-                      }`}
+                      className={`thumbnail-image ${selectedThumbnail === index ? "selected" : ""
+                        }`}
                       src={image}
                       onClick={() => handleThumbnailClick(index, image)}
                     />
@@ -481,9 +480,8 @@ const DetailProduct = () => {
               {product?.data?.variants?.map((variant, index) => (
                 <Button
                   key={index}
-                  className={`color-option ${
-                    selectedColor === variant.color ? "selected" : ""
-                  }`}
+                  className={`color-option ${selectedColor === variant.color ? "selected" : ""
+                    }`}
                   onClick={() => handleColorSelect(variant.color)}
                   disabled={!variant.status}
                   style={{
@@ -729,9 +727,8 @@ const DetailProduct = () => {
           <h3 className="text-2xl font-bold my-5">Sản phẩm cùng loại</h3>
           <div className="product-list">
             <i
-              className={`fas fa-chevron-left arrow ${
-                startIndex === 0 ? "disabled" : ""
-              }`}
+              className={`fas fa-chevron-left arrow ${startIndex === 0 ? "disabled" : ""
+                }`}
               onClick={handlePrevious}
               style={{ cursor: startIndex === 0 ? "not-allowed" : "pointer" }}
             />
@@ -741,11 +738,10 @@ const DetailProduct = () => {
                 .slice(startIndex, startIndex + productsPerPage)
                 .map((item, index) => <ProductCard key={index} item={item} />)}
             <i
-              className={`fas fa-chevron-right arrow ${
-                startIndex + productsPerPage >= allProduct.length
-                  ? "disabled"
-                  : ""
-              }`}
+              className={`fas fa-chevron-right arrow ${startIndex + productsPerPage >= allProduct.length
+                ? "disabled"
+                : ""
+                }`}
               onClick={handleNext}
               style={{
                 cursor:

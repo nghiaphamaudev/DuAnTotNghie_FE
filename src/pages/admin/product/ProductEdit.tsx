@@ -54,11 +54,11 @@ const ProductEdit: React.FC = () => {
         setInitialData(product.data);
         const coverImageFileList = product.data.coverImg
           ? [
-              {
-                url: product.data.coverImg,
-                name: "coverImage.jpg"
-              }
-            ]
+            {
+              url: product.data.coverImg,
+              name: "coverImage.jpg"
+            }
+          ]
           : [];
         form.setFieldsValue({
           name: product.data.name,
@@ -192,8 +192,7 @@ const ProductEdit: React.FC = () => {
         window.location.href = "/admin/product";
       } else {
         message.error(
-          `Cập nhật sản phẩm thất bại: ${
-            response.message || "Lỗi không xác định"
+          `Cập nhật sản phẩm thất bại: ${response.message || "Lỗi không xác định"
           }`
         );
       }
@@ -681,9 +680,17 @@ const ProductEdit: React.FC = () => {
                             <Button
                               type="dashed"
                               icon={<PlusOutlined />}
-                              onClick={() =>
-                                handleAddSize(variantIndex, addSize)
-                              }
+                              onClick={async () => {
+                                try {
+                                  await form.validateFields();
+                                  handleAddSize(variantIndex, addSize)
+                                } catch (error) {
+                                  message.error(
+                                    "Vui lòng hoàn thành thông tin tất cả các size trước khi thêm mới!"
+                                  );
+                                }
+                              }}
+
                               block
                             >
                               Thêm Size
@@ -710,9 +717,16 @@ const ProductEdit: React.FC = () => {
                 <Form.Item>
                   <Button
                     type="dashed"
-                    onClick={() => {
-                      handleAddVariant();
-                      add();
+                    onClick={async () => {
+                      try {
+                        await form.validateFields();
+                        handleAddVariant();
+                        add();
+                      } catch (error) {
+                        message.error(
+                          "Vui lòng hoàn thành thông tin tất cả biến thể trước khi thêm mới!"
+                        );
+                      }
                     }}
                     icon={<PlusOutlined />}
                   >
