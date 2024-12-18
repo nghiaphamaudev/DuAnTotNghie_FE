@@ -103,9 +103,23 @@ export const updateOrderService = async (
   }
 };
 // service lay tat ca don hang cho admin
-export const getAllOrdersServiceForAdmin = async () => {
+export const getAllOrdersServiceForSuperAdmin = async () => {
   try {
     const { data } = await instanceAdmin.get("/superadmins/all-order");
+    return data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      return error.response?.data;
+    } else {
+      throw new Error("Something went wrong!");
+    }
+  }
+};
+export const getAllOrdersServiceForAdmin = async () => {
+  try {
+    const { data } = await instanceAdmin.get("/superadmins/orders/admin");
+    console.log("data: ", data);
+
     return data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
