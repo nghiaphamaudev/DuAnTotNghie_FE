@@ -1,33 +1,32 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
 import {
-  Form,
-  Input,
-  Select,
-  Button,
-  InputNumber,
-  Row,
-  Col,
-  Upload,
-  UploadFile,
-  message,
-  Spin,
-  Switch,
-  Space
-} from "antd";
-import {
-  DeleteOutlined,
   MinusCircleOutlined,
   PlusOutlined
 } from "@ant-design/icons";
+import {
+  Button,
+  Col,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Switch,
+  Upload,
+  UploadFile
+} from "antd";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { getAllCategory } from "../../../services/categoryServices";
 import {
   getProductById,
   toggleSizeStatus,
   toggleVariantStatus,
   updateProduct
 } from "../../../services/productServices";
-import { getAllCategory } from "../../../services/categoryServices";
-import { Link, useNavigate, useParams } from "react-router-dom";
 import { socket } from "../../../socket";
 
 const { Option } = Select;
@@ -190,7 +189,7 @@ const ProductEdit: React.FC = () => {
       if (response.status) {
         message.success("Cập nhật sản phẩm thành công!");
         socket.emit("hidden product", id);
-        navigate("/admin/product");
+        window.location.href = "/admin/product";
       } else {
         message.error(
           `Cập nhật sản phẩm thất bại: ${response.message || "Lỗi không xác định"

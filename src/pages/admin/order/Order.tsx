@@ -1,27 +1,59 @@
-import { Button, Space, Table, Tabs, Tag } from "antd";
+import { Button, Dropdown, Menu, Space, Table, Tabs, Tag } from "antd";
 import { View } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
-import { getAllOrdersServiceForAdmin } from "../../../services/orderService";
+import {
+  getAllOrdersServiceForAdmin,
+  getAllOrdersServiceForSuperAdmin
+} from "../../../services/orderService";
 import { useDebounce } from "../../../hooks/useDebounce"; // Import hook useDebounce
+import { DownOutlined } from "@ant-design/icons";
+import { socket } from "../../../socket";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // State cho giá trị tìm kiếm
   const [filteredOrders, setFilteredOrders] = useState([]); // Danh sách đơn hàng đã lọc
+  const [filterByAssigned, setFilterByAssigned] = useState("");
   const [activeTab, setActiveTab] = useState("Tất cả"); // Tab hiện tại
   const debouncedSearchQuery = useDebounce(searchQuery, 300); // Sử dụng debounce với delay 300ms
 
+  const user = localStorage.getItem("useradmin");
+  const fetchOrders = async () => {
+    const userRole = JSON.parse(user)?.role;
+    let response;
+    if (userRole === "superadmin") {
+      response = await getAllOrdersServiceForSuperAdmin();
+      console.log("responseAdminSP: ", response.data);
+    } else if (userRole === "admin") {
+      response = await getAllOrdersServiceForAdmin();
+    }
+    console.log("response+++=: ", response.data);
+
+    if (response?.data) {
+      setOrders(response.data.reverse());
+      setFilteredOrders(response.data);
+    }
+  };
   useEffect(() => {
-    const fetchOrders = async () => {
-      const response = await getAllOrdersServiceForAdmin();
-      if (response?.data) {
-        setOrders(response.data.reverse());
-        setFilteredOrders(response.data);
+    fetchOrders();
+  }, []);
+  useEffect(() => {
+    // Lắng nghe sự kiện từ socket
+    const handleCreateOrder = async (idAdmin: string) => {
+      console.log("Create order event detected, refetching orders...");
+      if (idAdmin === JSON.parse(user)._id) {
+        fetchOrders();
       }
     };
-    fetchOrders();
+
+    socket.on("create order", (idAdmin) => handleCreateOrder(idAdmin));
+
+    // Cleanup khi component unmount
+    return () => {
+      socket.off("create order", handleCreateOrder);
+    };
   }, []);
 
   // Lọc danh sách theo tìm kiếm
@@ -29,11 +61,14 @@ const Orders = () => {
     const lowercasedQuery = debouncedSearchQuery.toLowerCase();
     const filtered = orders.filter(
       (order) =>
-        order.code.toLowerCase().trim().includes(lowercasedQuery) || // Tìm theo mã hóa đơn
-        order.receiver.toLowerCase().trim().includes(lowercasedQuery) // Tìm theo tên khách hàng
+        (order?.code.toLowerCase().trim().includes(lowercasedQuery) ||
+          order?.receiver.toLowerCase().trim().includes(lowercasedQuery)) &&
+        (filterByAssigned
+          ? order?.assignedTo?.fullName === filterByAssigned
+          : true) // Lọc theo người phụ trách
     );
     setFilteredOrders(filtered);
-  }, [debouncedSearchQuery, orders]);
+  }, [debouncedSearchQuery, orders, filterByAssigned]);
 
   // Lọc đơn hàng theo trạng thái
   const filterByStatus = (status) => {
@@ -66,7 +101,7 @@ const Orders = () => {
       title: "Tên khách hàng",
       dataIndex: "receiver",
       key: "receiver",
-      width: 150,
+      width: 200,
       render: (text) => <span style={{ fontWeight: "500" }}>{text}</span>
     },
     {
@@ -101,7 +136,7 @@ const Orders = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      width: 120,
+      width: 150,
       render: (status) => {
         const colorMap = {
           "Chờ xác nhận": "blue",
@@ -119,6 +154,17 @@ const Orders = () => {
           </Tag>
         );
       }
+    },
+    {
+      title: "Người phụ trách",
+      dataIndex: "assignedTo",
+      key: "assignedTo",
+      width: 150,
+      render: (assignedTo) => (
+        <span style={{ fontWeight: "500" }}>
+          {assignedTo?.fullName || "Không có"}
+        </span>
+      )
     },
     {
       title: "Hành động",
@@ -148,23 +194,70 @@ const Orders = () => {
     { key: "Đã hủy", label: "Đã hủy" }
   ];
 
+  // Menu cho dropdown
+  const menuItems = orders.reduce((acc, order) => {
+    if (
+      order.assignedTo?.fullName &&
+      !acc.some((item) => item.label === order.assignedTo.fullName)
+    ) {
+      acc.push({
+        key: order?.assignedTo?.fullName,
+        label: order?.assignedTo?.fullName
+      });
+    }
+    return acc;
+  }, []);
+
+  const menu = (
+    <Menu
+      items={menuItems.map((item) => ({
+        key: item.key,
+        label: item.label
+      }))}
+      onClick={(info) => {
+        setFilterByAssigned(info.key); // Cập nhật giá trị bộ lọc
+      }}
+    />
+  );
+
   return (
     <>
       <BreadcrumbsCustom nameHere={"Đơn hàng"} listLink={[]} />
+      <div className="flex items-start justify-start gap-4">
+        <div className="relative mb-4 w-3/4">
+          <label htmlFor="Search" className="sr-only">
+            Search
+          </label>
 
-      <div className="relative mb-4">
-        <label htmlFor="Search" className="sr-only">
-          Search
-        </label>
-
-        <input
-          type="text"
-          id="Search"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)} // Cập nhật giá trị tìm kiếm
-          placeholder="Tìm kiếm theo mã hóa đơn hoặc tên khách hàng..."
-          className="w-full rounded-md border-gray-200 py-2.5 ps-4 pe-10 shadow-sm sm:text-sm"
-        />
+          <input
+            type="text"
+            id="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)} // Cập nhật giá trị tìm kiếm
+            placeholder="Tìm kiếm theo mã hóa đơn hoặc tên khách hàng..."
+            className="w-full rounded-md border-gray-200 py-2.5 ps-4 pe-10 shadow-sm sm:text-sm"
+          />
+        </div>
+        {JSON.parse(user)?.role === "superadmin" && (
+          <div className="flex items-center gap-4">
+            <Dropdown overlay={menu} trigger={["click"]}>
+              <Button style={{ padding: "18px 10px" }}>
+                {filterByAssigned
+                  ? `Lọc theo: ${filterByAssigned}`
+                  : "Đơn hàng phân công theo admin"}{" "}
+                <DownOutlined />
+              </Button>
+            </Dropdown>
+            {filterByAssigned && (
+              <Button
+                type="default"
+                onClick={() => setFilterByAssigned("")} // Xóa bộ lọc
+              >
+                Xóa bộ lọc
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       <Tabs
