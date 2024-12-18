@@ -242,7 +242,7 @@ const ProductAdd: React.FC = () => {
                             name="images"
                             listType="picture-card"
                             beforeUpload={() => false}
-                            maxCount={3}
+                            maxCount={4}
                             multiple
                             accept=".jpg,.png,.jpeg">
                             <div>
