@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
-import { Button, Card, Col, Row, Switch, Table, Radio, Input } from "antd";
 import {
   DownloadOutlined,
   EditOutlined,
@@ -8,16 +6,18 @@ import {
   LoadingOutlined,
   PlusCircleFilled
 } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button, Card, Col, Input, Radio, Row, Switch, Table } from "antd";
+import { ColumnType } from "antd/es/table";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import * as XLSX from "xlsx";
+import { Products, ProductVariant } from "../../../common/types/Product";
+import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 import {
   deleteProductStatus,
   getAllProduct
 } from "../../../services/productServices";
-import { Products, ProductVariant } from "../../../common/types/Product";
-import { ColumnType } from "antd/es/table";
-import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
-import * as XLSX from "xlsx";
-import { useQuery } from "@tanstack/react-query";
 import { socket } from "../../../socket";
 
 export default function Product() {
@@ -25,6 +25,8 @@ export default function Product() {
   const [statusFilter, setStatusFilter] = useState(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const { Search } = Input;
+  const { pathname } = useLocation();
+  const queryClient = useQueryClient();
 
   // Fetch products function
   const { data, isError, isLoading } = useQuery<
@@ -40,8 +42,10 @@ export default function Product() {
       setDataSource(data.data);
     }
   }, [data]);
-  console.log(dataSource);
-  console.log(data);
+  
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+  },[pathname.includes("/admin/product")])
 
   const filteredData = dataSource
     .filter((product) => {
