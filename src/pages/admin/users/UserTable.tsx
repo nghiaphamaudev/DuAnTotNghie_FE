@@ -214,8 +214,8 @@ export default function Users() {
         <Button
           type="primary"
           style={{
-            backgroundColor: record.active ? "#4CAF50" : "#FF7043",
-            borderColor: record.active ? "#4CAF50" : "#FF7043",
+            backgroundColor: record.active ? "#4CAF50" : "#FE3939",
+            borderColor: record.active ? "#4CAF50" : "#FE3939",
             color: "white", 
           }}
         >
@@ -262,7 +262,7 @@ export default function Users() {
           onClick={() => handleViewDetails(record)}
           className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
         >
-          Xem chi tiết
+          Chi tiết
         </button>
       ),
       

@@ -2,11 +2,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { LoadingOutlined, PlusCircleFilled } from "@ant-design/icons";
-import { Button, Card, Col, Input, Popconfirm, Radio, Row, Switch, Table, message } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Input,
+  Popconfirm,
+  Radio,
+  Row,
+  Switch,
+  Table,
+  message
+} from "antd";
 import BreadcrumbsCustom from "../../../components/common/(admin)/BreadcrumbsCustom";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteVoucher, fetchVouchers, updateVoucherStatus } from "../../../services/voucher";
+import {
+  deleteVoucher,
+  fetchVouchers,
+  updateVoucherStatus
+} from "../../../services/voucher";
 import { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 export default function Voucher() {
@@ -14,23 +29,23 @@ export default function Voucher() {
   const queryClient = useQueryClient();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["vouchers"],
-    queryFn: async () => await fetchVouchers(),
+    queryFn: async () => await fetchVouchers()
   });
   const [filterStatus, setFilterStatus] = useState<number>(1);
   const [searchKeyword, setSearchKeyword] = useState<string>("");
-  const [filteredData, setFilteredData] = useState<any[]>([])
+  const [filteredData, setFilteredData] = useState<any[]>([]);
   const mutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) =>
       await updateVoucherStatus(id, status),
     onSuccess: () => {
       message.success("Cập nhật trạng thái thành công!");
       queryClient.invalidateQueries({
-        queryKey: ["vouchers"],
+        queryKey: ["vouchers"]
       });
     },
     onError: () => {
       message.error("Cập nhật trạng thái thất bại!");
-    },
+    }
   });
   const handleStatusChange = (e: any) => {
     setFilterStatus(e.target.value);
@@ -44,7 +59,6 @@ export default function Voucher() {
     const newStatus = checked ? "active" : "inactive";
     mutation.mutate({ id: record._id, status: newStatus });
     console.log(record._id);
-
   };
 
   useEffect(() => {
@@ -53,7 +67,10 @@ export default function Voucher() {
       const interval = setInterval(() => {
         const updatedData = data.map((voucher: any) => {
           const isExpired = dayjs(voucher.expirationDate).isBefore(dayjs());
-          return { ...voucher, status: isExpired ? "inactive" : voucher.status };
+          return {
+            ...voucher,
+            status: isExpired ? "inactive" : voucher.status
+          };
         });
         setFilteredData(updatedData);
       }, 3000); // 1 phút cập nhật một lần
@@ -71,12 +88,14 @@ export default function Voucher() {
     },
     onError: () => {
       message.error("Xóa mã giảm giá thất bại!");
-    },
+    }
   });
   const updateFilteredData = (vouchers: any[]) => {
     const updatedData = vouchers.map((voucher) => ({
       ...voucher,
-      status: dayjs(voucher.expirationDate).isBefore(dayjs()) ? "inactive" : voucher.status,
+      status: dayjs(voucher.expirationDate).isBefore(dayjs())
+        ? "inactive"
+        : voucher.status
     }));
     const filtered = updatedData
       .filter((voucher) => {
@@ -87,7 +106,7 @@ export default function Voucher() {
       .filter((voucher) =>
         searchKeyword
           ? voucher.code.toLowerCase().includes(searchKeyword) ||
-          voucher.description?.toLowerCase().includes(searchKeyword)
+            voucher.description?.toLowerCase().includes(searchKeyword)
           : true
       );
     setFilteredData(filtered);
@@ -106,35 +125,35 @@ export default function Voucher() {
       key: "stt",
       align: "center" as const,
       width: "5%",
-      render: (_text: any, _record: any, index: number) => index + 1,
+      render: (_text: any, _record: any, index: number) => index + 1
     },
     {
       title: "Mã giảm giá",
       dataIndex: "code",
       key: "code",
       align: "center" as const,
-      width: "15%",
+      width: "15%"
     },
     {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
       align: "center" as const,
-      width: "15%",
+      width: "15%"
     },
     {
       title: "Số lượng",
       dataIndex: "quantity",
       key: "quantity",
       align: "center" as const,
-      width: "10%",
+      width: "10%"
     },
     {
       title: "Đã sử dụng",
       dataIndex: "usedCount",
       key: "usedCount",
       align: "center" as const,
-      width: "10%",
+      width: "10%"
     },
     {
       title: "Giảm giá",
@@ -145,7 +164,7 @@ export default function Voucher() {
       render: (_text: string, record: any) =>
         record.discountType === "percentage"
           ? `${record.discountPercentage}%`
-          : `${record.discountAmount} VNĐ`,
+          : `${record.discountAmount} VNĐ`
     },
     {
       title: "Ngày bắt đầu",
@@ -153,8 +172,7 @@ export default function Voucher() {
       key: "startDate",
       align: "center" as const,
       width: "10%",
-      render: (startDate: string) =>
-        dayjs(startDate).format("DD/MM/YYYY HH:mm"),
+      render: (startDate: string) => dayjs(startDate).format("DD/MM/YYYY HH:mm")
     },
     {
       title: "Ngày kết thúc",
@@ -163,7 +181,7 @@ export default function Voucher() {
       align: "center" as const,
       width: "10%",
       render: (expirationDate: string) =>
-        dayjs(expirationDate).format("DD/MM/YYYY HH:mm"),
+        dayjs(expirationDate).format("DD/MM/YYYY HH:mm")
     },
     {
       title: "Trạng thái",
@@ -181,33 +199,33 @@ export default function Voucher() {
             disabled={isExpired}
           />
         );
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      align: "center" as const,
-      width: "15%",
-      render: (_text: string, record: any) => {
-        const isExpired = dayjs(record.expirationDate).isBefore(dayjs());
-        return (
-          <>
-            {isExpired && (
-              <Popconfirm
-                title="Bạn có chắc muốn xóa mã giảm giá này không?"
-                onConfirm={() => handleDelete.mutate(record._id)}
-                okText="Xóa"
-                cancelText="Hủy"
-              >
-                <Button type="primary" danger>
-                  Xóa
-                </Button>
-              </Popconfirm>
-            )}
-          </>
-        );
-      },
-    },
+      }
+    }
+    // {
+    //   title: "Thao tác",
+    //   key: "actions",
+    //   align: "center" as const,
+    //   width: "15%",
+    //   render: (_text: string, record: any) => {
+    //     const isExpired = dayjs(record.expirationDate).isBefore(dayjs());
+    //     return (
+    //       <>
+    //         {isExpired && (
+    //           <Popconfirm
+    //             title="Bạn có chắc muốn xóa mã giảm giá này không?"
+    //             onConfirm={() => handleDelete.mutate(record._id)}
+    //             okText="Xóa"
+    //             cancelText="Hủy"
+    //           >
+    //             <Button type="primary" danger>
+    //               Xóa
+    //             </Button>
+    //           </Popconfirm>
+    //         )}
+    //       </>
+    //     );
+    //   },
+    // },
   ];
 
   if (isLoading)
@@ -238,7 +256,7 @@ export default function Voucher() {
               type="primary"
               icon={<PlusCircleFilled />}
               style={{
-                float: "right",
+                float: "right"
               }}
             >
               <Link to="/admin/voucher/add">Tạo mã</Link>
@@ -263,7 +281,7 @@ export default function Voucher() {
           rowKey="_id"
           pagination={{
             pageSize: 10,
-            showSizeChanger: false,
+            showSizeChanger: false
           }}
         />
       </Card>

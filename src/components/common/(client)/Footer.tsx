@@ -73,8 +73,7 @@ const FooterClient = () => {
                         className="text-gray-700 transition hover:opacity-75"
                       >
                         {" "}
-                        <strong> Địa chỉ:</strong>Tầng 8, tòa nhà Ford, số 313
-                        Trường Chinh, quận Thanh Xuân, Hà Nội
+                        <strong> Địa chỉ:</strong> Tòa nhà FPT Polytechnic., Cổng số 2, 13 P. Trịnh Văn Bô, Xuân Phương, Nam Từ Liêm, Hà Nội
                       </a>
                     </li>
 
@@ -106,7 +105,7 @@ const FooterClient = () => {
                   <ul className="mt-6 space-y-4 text-sm">
                     <li>
                       <a
-                        href="#"
+                        href="/home"
                         className="text-gray-700 transition hover:opacity-75"
                       >
                         {" "}
@@ -126,7 +125,7 @@ const FooterClient = () => {
 
                     <li>
                       <a
-                        href="#"
+                        href="/product"
                         className="text-gray-700 transition hover:opacity-75"
                       >
                         {" "}
