@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { message } from "antd";
+import { message, notification } from "antd";
 import instance from "../../../config/axios";
 
 const VNPayReturn: React.FC = () => {
@@ -21,17 +21,29 @@ const VNPayReturn: React.FC = () => {
 
         if (response.data.status) {
           if (paymentData.vnp_TransactionStatus === "00") {
-            message.success("Thanh toán thành công!");
+            notification.success({
+              message: "Đặt hàng thành công! Cảm ơn bạn đã tin tưởng!!.",
+              duration: 4
+            });
             navigate("/home");
           } else {
-            message.warning("Thanh toán thất bại!");
+            notification.warning({
+              message: "Thanh toán thất bại!",
+              duration: 4
+            });
           }
         } else {
-          message.error("Xử lý giao dịch thất bại từ backend.");
+          notification.error({
+            message: "Xử lý giao dịch thất bại",
+            duration: 4
+          });
         }
       } catch (error) {
         console.error("Error sending data to backend: ", error);
-        message.error("Không thể gửi thông tin thanh toán đến máy chủ!");
+        notification.error({
+          message: "Không thể gửi thông tin thanh toán đến máy chủ!",
+          duration: 4
+        });
       }
     };
 

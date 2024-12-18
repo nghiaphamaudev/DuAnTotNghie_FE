@@ -194,7 +194,7 @@ const CheckoutPage: React.FC = () => {
   const handleFinish = async (values: Record<string, any>) => {
     const isValid = await validateCartItems();
     if (!isValid) {
-      // navigate("/home");
+      navigate("/home");
       return;
     }
 
@@ -335,6 +335,7 @@ const CheckoutPage: React.FC = () => {
     );
   };
   const usedVouchers: string[] = [];
+  console.log("usedVouchers: ", usedVouchers);
 
   const handleApplyCoupon = async () => {
     // Kiểm tra nếu đã áp dụng mã
